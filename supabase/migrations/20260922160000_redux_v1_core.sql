@@ -244,7 +244,7 @@ begin
         v_activity_id,
         v_name,
         v_email,
-        pg_catalog.nullif(
+        nullif(
             pg_catalog.btrim(p_phone),
             ''
         ),
