@@ -1,379 +1,413 @@
 ---
-const title = 'Calendrier | Atelier Expression';
+import BaseLayout from '../components/BaseLayout.astro';
+import {
+  activities,
+  activityTypes,
+  activityStatuses,
+  formatActivityDate,
+  formatPrice,
+} from '../lib/reduxActivities';
+
+const calendarData = activities.map((activity) => ({
+  slug: activity.slug,
+  title: activity.title,
+  date: activity.startsAt.slice(0, 10),
+}));
+
+const initialMonth = new Date().toLocaleDateString(
+  'en-CA',
+  { timeZone: 'America/Toronto', year: 'numeric', month: '2-digit' }
+);
 ---
 
-<!doctype html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Calendrier social Atelier Expression : ateliers, rencontres et événements." />
-    <title>{title}</title>
-</head>
+<BaseLayout
+  title="Calendrier social"
+  description="Ateliers, rencontres et gym social."
+>
+  <section class="redux-calendar container">
+    <header class="intro">
+      <p class="eyebrow">
+        On rit. On joue. On s'exprime.
+      </p>
 
-<body>
-    <header class="header">
-        <a class="brand" href="/">Atelier Expression</a>
-        <nav aria-label="Navigation principale">
-            <a href="/">Accueil</a>
-            <a href="/ateliers/">Ateliers</a>
-            <a href="/evenements/">Événements</a>
-            <a href="/contact/">Contact</a>
-        </nav>
+      <h1>Le calendrier social</h1>
+
+      <p>
+        Des activités pour se rencontrer,
+        bouger, jouer et prendre sa place.
+      </p>
     </header>
 
-    <main>
-        <section class="intro">
-            <p class="eyebrow">On rit. On joue. On s'exprime.</p>
-            <h1>Le calendrier social</h1>
-            <p>
-                Des ateliers et des rencontres pour se retrouver,
-                bouger, jouer et prendre sa place.
-            </p>
-        </section>
+    <div
+      id="redux-calendar"
+      class="calendar-panel"
+      data-activities={JSON.stringify(calendarData)}
+      data-initial-month={initialMonth}
+    >
+      <div class="calendar-toolbar">
+        <button
+          id="redux-previous"
+          type="button"
+          aria-label="Mois précédent"
+        >
+          ←
+        </button>
 
-        <section class="calendar" aria-label="Calendrier des activités">
-            <div class="toolbar">
-                <button id="previous" type="button" aria-label="Mois précédent">
-                    ←
-                </button>
+        <h2 id="redux-month" aria-live="polite">
+          Calendrier
+        </h2>
 
-                <h2 id="month" aria-live="polite"></h2>
+        <button
+          id="redux-next"
+          type="button"
+          aria-label="Mois suivant"
+        >
+          →
+        </button>
+      </div>
 
-                <button id="next" type="button" aria-label="Mois suivant">
-                    →
-                </button>
-            </div>
+      <div class="weekdays" aria-hidden="true">
+        <span>Lun</span>
+        <span>Mar</span>
+        <span>Mer</span>
+        <span>Jeu</span>
+        <span>Ven</span>
+        <span>Sam</span>
+        <span>Dim</span>
+      </div>
 
-            <div class="weekdays" aria-hidden="true">
-                <span>Lun</span>
-                <span>Mar</span>
-                <span>Mer</span>
-                <span>Jeu</span>
-                <span>Ven</span>
-                <span>Sam</span>
-                <span>Dim</span>
-            </div>
+      <div
+        id="redux-days"
+        class="calendar-days"
+        aria-label="Jours du mois"
+      ></div>
+    </div>
 
-            <div id="days" class="days" role="grid"
-                 aria-label="Jours du mois"></div>
+    <section class="activity-list" aria-labelledby="activities-heading">
+      <h2 id="activities-heading">Les activités</h2>
 
-            <div id="events" aria-live="polite"></div>
-        </section>
+      {activities.length === 0 ? (
+        <div class="empty">
+          <h3>La programmation se prépare.</h3>
 
-        <section class="footer-cta">
-            <h2>Une question ?</h2>
-            <p>Écris-nous pour en apprendre davantage sur les activités.</p>
-            <a href="/contact/">Nous contacter →</a>
-        </section>
-    </main>
+          <p>
+            Aucune activité n'a encore de date
+            confirmée dans le calendrier Redux.
+          </p>
 
-    <script is:inline>
-        const monthLabel = document.querySelector('#month');
-        const days = document.querySelector('#days');
-        const eventsBox = document.querySelector('#events');
+          <a href="/contact/">
+            Nous contacter →
+          </a>
+        </div>
+      ) : (
+        <div class="activity-grid">
+          {activities.map((activity) => (
+            <article class="activity-card">
+              <span class="category">
+                {activityTypes[activity.type]}
+              </span>
 
-        const now = new Date();
-        const displayed = new Date(
-            now.getFullYear(),
-            now.getMonth(),
-            1
-        );
+              <h3>{activity.title}</h3>
 
-        let activities = [];
+              <time datetime={activity.startsAt}>
+                {formatActivityDate(activity.startsAt)}
+              </time>
 
-        function make(tag, text, className) {
-            const el = document.createElement(tag);
-            if (text !== undefined) el.textContent = text;
-            if (className) el.className = className;
-            return el;
+              <p>{activity.summary}</p>
+
+              <p class="meta">
+                {activity.location} · {formatPrice(activity.priceCents)}
+              </p>
+
+              <p class="status">
+                {activityStatuses[activity.status]}
+              </p>
+
+              <a href={`/activites/${activity.slug}/`}>
+                Voir les détails →
+              </a>
+            </article>
+          ))}
+        </div>
+      )}
+    </section>
+  </section>
+</BaseLayout>
+
+<script>
+  const root = document.querySelector<HTMLElement>('#redux-calendar');
+  const monthLabel = document.querySelector<HTMLElement>('#redux-month');
+  const days = document.querySelector<HTMLElement>('#redux-days');
+
+  if (root && monthLabel && days) {
+    const entries: Array<{
+      slug: string;
+      title: string;
+      date: string;
+    }> = JSON.parse(root.dataset.activities ?? '[]');
+
+    const initial = root.dataset.initialMonth ?? '2026-09';
+
+    const [initialYear, initialMonth] = initial.split('-').map(Number);
+
+    const displayed = new Date(
+      initialYear,
+      initialMonth - 1,
+      1
+    );
+
+    function render() {
+      if (!monthLabel || !days) return;
+
+      days.replaceChildren();
+
+      const year = displayed.getFullYear();
+      const month = displayed.getMonth();
+
+      monthLabel.textContent = displayed.toLocaleDateString(
+        'fr-CA',
+        {
+          month: 'long',
+          year: 'numeric',
+        }
+      );
+
+      const offset = (
+        new Date(year, month, 1).getDay() + 6
+      ) % 7;
+
+      const count = new Date(
+        year,
+        month + 1,
+        0
+      ).getDate();
+
+      for (let i = 0; i < offset; i++) {
+        const blank = document.createElement('span');
+        blank.setAttribute('aria-hidden', 'true');
+        days.append(blank);
+      }
+
+      for (let day = 1; day <= count; day++) {
+        const date = [
+          year,
+          String(month + 1).padStart(2, '0'),
+          String(day).padStart(2, '0'),
+        ].join('-');
+
+        const cell = document.createElement('div');
+        cell.className = 'calendar-day';
+
+        const number = document.createElement('strong');
+        number.textContent = String(day);
+        cell.append(number);
+
+        for (const entry of entries) {
+          if (entry.date !== date) continue;
+
+          const link = document.createElement('a');
+          link.href = `/activites/${entry.slug}/`;
+          link.textContent = entry.title;
+          link.className = 'calendar-event';
+
+          cell.append(link);
         }
 
-        function render() {
-            days.replaceChildren();
-            eventsBox.replaceChildren();
+        days.append(cell);
+      }
+    }
 
-            const year = displayed.getFullYear();
-            const month = displayed.getMonth();
-
-            monthLabel.textContent = displayed.toLocaleDateString(
-                'fr-CA',
-                { month: 'long', year: 'numeric' }
-            );
-
-            const first = new Date(year, month, 1);
-            const count = new Date(year, month + 1, 0).getDate();
-
-            // Lundi = premier jour de la semaine.
-            const offset = (first.getDay() + 6) % 7;
-
-            for (let i = 0; i < offset; i++) {
-                const blank = make('span', '', 'blank');
-                blank.setAttribute('aria-hidden', 'true');
-                days.append(blank);
-            }
-
-            for (let day = 1; day <= count; day++) {
-                const date = [
-                    year,
-                    String(month + 1).padStart(2, '0'),
-                    String(day).padStart(2, '0')
-                ].join('-');
-
-                const matching = activities.filter(
-                    activity => activity.date === date
-                );
-
-                const cell = make('div', undefined, 'day');
-                cell.setAttribute('role', 'gridcell');
-
-                const number = make('strong', String(day));
-                cell.append(number);
-
-                for (const activity of matching) {
-                    const item = make('span', activity.title, 'event');
-                    cell.append(item);
-                }
-
-                days.append(cell);
-            }
-
-            const prefix = [
-                year,
-                String(month + 1).padStart(2, '0')
-            ].join('-');
-
-            const monthly = activities.filter(
-                activity => activity.date?.startsWith(prefix)
-            );
-
-            if (monthly.length === 0) {
-                eventsBox.append(
-                    make(
-                        'p',
-                        'Aucune activité confirmée pour ce mois. Consulte cette page pour les prochaines annonces.',
-                        'empty'
-                    )
-                );
-                return;
-            }
-
-            for (const activity of monthly) {
-                const article = make('article', undefined, 'activity');
-
-                article.append(make('h3', activity.title));
-                article.append(make('p', activity.date));
-
-                if (activity.description) {
-                    article.append(make('p', activity.description));
-                }
-
-                eventsBox.append(article);
-            }
-        }
-
-        document.querySelector('#previous').addEventListener(
-            'click',
-            () => {
-                displayed.setMonth(displayed.getMonth() - 1);
-                render();
-            }
-        );
-
-        document.querySelector('#next').addEventListener(
-            'click',
-            () => {
-                displayed.setMonth(displayed.getMonth() + 1);
-                render();
-            }
-        );
-
-        fetch('/activites.json')
-            .then(response => {
-                if (!response.ok) throw new Error('Calendrier indisponible');
-                return response.json();
-            })
-            .then(data => {
-                if (!Array.isArray(data)) {
-                    throw new Error('Format de calendrier invalide');
-                }
-
-                activities = data;
-                render();
-            })
-            .catch(() => {
-                eventsBox.replaceChildren(
-                    make(
-                        'p',
-                        'Impossible de charger les activités pour le moment.',
-                        'empty'
-                    )
-                );
-            });
-
+    document.querySelector('#redux-previous')?.addEventListener(
+      'click',
+      () => {
+        displayed.setMonth(displayed.getMonth() - 1);
         render();
-    </script>
-</body>
-</html>
+      }
+    );
+
+    document.querySelector('#redux-next')?.addEventListener(
+      'click',
+      () => {
+        displayed.setMonth(displayed.getMonth() + 1);
+        render();
+      }
+    );
+
+    render();
+  }
+</script>
 
 <style is:global>
-    :root {
-        font-family: system-ui, sans-serif;
-        color: #1c1c2e;
-        background: #f7f3ee;
+  .redux-calendar {
+    max-width: 1100px;
+    margin-inline: auto;
+    padding-top: 4rem;
+    padding-bottom: 6rem;
+  }
+
+  .redux-calendar .eyebrow {
+    color: #d4237a;
+    font-weight: 800;
+  }
+
+  .redux-calendar .intro h1 {
+    font-family: Georgia, serif;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    line-height: 1.1;
+    margin: 1rem 0;
+  }
+
+  .redux-calendar .intro > p:last-child {
+    max-width: 680px;
+    font-size: 1.2rem;
+    line-height: 1.7;
+  }
+
+  .calendar-panel {
+    padding: 2rem;
+    margin-top: 3rem;
+    background: #fff;
+    border-radius: 1.3rem;
+    border: 1px solid #ded5d8;
+  }
+
+  .calendar-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .calendar-toolbar h2 {
+    text-transform: capitalize;
+    text-align: center;
+    font-size: clamp(1.1rem, 3vw, 2rem);
+  }
+
+  .calendar-toolbar button {
+    border: 0;
+    background: #d4237a;
+    color: #fff;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .weekdays,
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: .3rem;
+  }
+
+  .weekdays {
+    text-align: center;
+    font-weight: 800;
+    padding-bottom: .7rem;
+  }
+
+  .calendar-day {
+    min-height: 95px;
+    border: 1px solid #e8dfe2;
+    border-radius: .5rem;
+    padding: .5rem;
+    background: #faf8f6;
+  }
+
+  .calendar-event {
+    display: block;
+    background: #f9deeb;
+    color: #8b1650;
+    border-radius: .3rem;
+    font-size: .8rem;
+    padding: .3rem;
+    margin-top: .4rem;
+    overflow-wrap: anywhere;
+  }
+
+  .activity-list {
+    padding-top: 4rem;
+  }
+
+  .activity-list > h2 {
+    font-family: Georgia, serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    margin-bottom: 2rem;
+  }
+
+  .activity-grid {
+    display: grid;
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, 300px), 1fr)
+    );
+    gap: 1.5rem;
+  }
+
+  .activity-card,
+  .empty {
+    padding: 2rem;
+    background: #fff;
+    border: 1px solid #ded5d8;
+    border-radius: 1rem;
+  }
+
+  .activity-card h3,
+  .empty h3 {
+    font-family: Georgia, serif;
+    font-size: 1.5rem;
+    margin: 1rem 0;
+  }
+
+  .activity-card p,
+  .empty p {
+    line-height: 1.7;
+  }
+
+  .category {
+    color: #d4237a;
+    font-weight: 800;
+  }
+
+  .activity-card .meta {
+    font-weight: 700;
+  }
+
+  .activity-card .status {
+    color: #1a8f7f;
+  }
+
+  .activity-card a,
+  .empty a {
+    color: #d4237a;
+    font-weight: 800;
+  }
+
+  @media (max-width: 600px) {
+    .redux-calendar {
+      padding-inline: 1rem;
     }
 
-    * { box-sizing: border-box; }
-
-    body { margin: 0; }
-
-    a { color: inherit; }
-
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 2rem;
-        padding: 1.5rem 5%;
-        flex-wrap: wrap;
-        border-bottom: 1px solid #ded5d8;
+    .calendar-panel {
+      padding: .6rem;
     }
 
-    .brand {
-        font-size: 1.3rem;
-        font-weight: 800;
-        text-decoration: none;
-    }
-
-    nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-
-    .intro {
-        padding: 5rem 5% 3rem;
-        max-width: 1000px;
-        margin: auto;
-    }
-
-    .eyebrow {
-        color: #d4237a;
-        font-weight: 700;
-    }
-
-    h1 {
-        font-family: Georgia, serif;
-        font-size: clamp(2.5rem, 7vw, 5rem);
-        line-height: 1.1;
-        margin: 1rem 0;
-    }
-
-    .intro > p:last-child {
-        font-size: 1.2rem;
-        line-height: 1.7;
-        max-width: 650px;
-    }
-
-    .calendar {
-        max-width: 1000px;
-        margin: auto;
-        padding: 2rem 5% 5rem;
-    }
-
-    .toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-
-    .toolbar button {
-        border: 0;
-        border-radius: 50%;
-        background: #d4237a;
-        color: white;
-        width: 3rem;
-        height: 3rem;
-        cursor: pointer;
-        font-size: 1.5rem;
-    }
-
-    .toolbar h2 {
-        text-transform: capitalize;
-        text-align: center;
-    }
-
-    .weekdays, .days {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
-        gap: .3rem;
+    .calendar-day {
+      min-height: 52px;
+      padding: .2rem;
+      font-size: .8rem;
     }
 
     .weekdays {
-        text-align: center;
-        font-weight: 700;
-        margin-bottom: .5rem;
+      font-size: .75rem;
     }
 
-    .day, .blank {
-        min-height: 90px;
-        padding: .6rem;
+    .calendar-event {
+      font-size: .65rem;
     }
-
-    .day {
-        border: 1px solid #dfd5da;
-        border-radius: .6rem;
-        background: white;
-    }
-
-    .event {
-        display: block;
-        margin-top: .4rem;
-        padding: .3rem;
-        background: #f8dce9;
-        border-radius: .3rem;
-        font-size: .8rem;
-        overflow-wrap: anywhere;
-    }
-
-    .empty {
-        margin-top: 2rem;
-        padding: 2rem;
-        background: white;
-        border-radius: 1rem;
-        line-height: 1.6;
-    }
-
-    .activity {
-        margin-top: 1rem;
-        padding: 1rem;
-        background: white;
-        border-radius: .7rem;
-    }
-
-    .footer-cta {
-        text-align: center;
-        padding: 4rem 5%;
-        background: #1c1c2e;
-        color: white;
-    }
-
-    .footer-cta a {
-        color: #ff92c6;
-    }
-
-    @media (max-width: 600px) {
-        .day, .blank {
-            min-height: 55px;
-            padding: .25rem;
-        }
-
-        .weekdays { font-size: .75rem; }
-
-        .day { font-size: .8rem; }
-
-        .toolbar h2 { font-size: 1.2rem; }
-    }
+  }
 </style>

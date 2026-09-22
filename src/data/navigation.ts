@@ -8,6 +8,7 @@ export interface NavItem {
 }
 
 export const mainNav: NavItem[] = [
+  { label: 'Calendrier', href: '/calendrier' },
   { label: 'Ateliers', href: '/ateliers' },
   { label: 'Parcours', href: '/parcours' },
   { label: 'Événements', href: '/evenements' },

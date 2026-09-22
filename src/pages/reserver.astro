@@ -8,7 +8,12 @@ import { getNextWorkshop } from '../lib/content/publicContent';
 
 const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
 const isBuilding = nextWorkshop.status === 'building';
-const statusCopy = workshopStatusCopy[nextWorkshop.status];
+const statusCopy = nextWorkshop.status === 'registration-open'
+  ? {
+      badge: 'Inscriptions indisponibles',
+      note: 'Le portail de réservation Redux doit encore être activé.',
+    }
+  : workshopStatusCopy[nextWorkshop.status];
 ---
 
 <BaseLayout
@@ -89,7 +94,18 @@ const statusCopy = workshopStatusCopy[nextWorkshop.status];
           {isBuilding ? (
             <InterestForm />
           ) : (
-            <ReservationForm workshopId="atelier-decouverte" />
+            <div class="reservation-proto-notice" role="status">
+  <h2>Inscriptions en préparation</h2>
+  <p>
+    Le portail de réservation Redux n'est pas encore
+    connecté. Aucune place ne peut être réservée ici
+    pour le moment.
+  </p>
+  <p>
+    Le paiement des activités se fera sur place.
+  </p>
+  <a href="/contact/">Nous contacter</a>
+</div>
           )}
         </div>
       </div>
