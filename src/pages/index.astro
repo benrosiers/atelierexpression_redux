@@ -1,0 +1,1641 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import SectionIntro from '../components/SectionIntro.astro';
+import ValuePillars from '../components/ValuePillars.astro';
+import TestimonialCard from '../components/TestimonialCard.astro';
+import InterestForm from '../components/InterestForm.astro';
+import CindyInvitation from '../components/CindyInvitation.astro';
+import DemoRecap from '../components/DemoRecap.astro';
+import { testimonials as staticTestimonials } from '../data/testimonials';
+import { faqs as staticFaqs } from '../data/faqs';
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import Doodle from '../components/Doodle.astro';
+import PaintDivider from '../components/PaintDivider.astro';
+import { getTestimonials, getFaqs, getNextWorkshop, getSectionItems } from '../lib/content/publicContent';
+
+const cmsTestimonials = await getTestimonials();
+const testimonials = cmsTestimonials.length > 0 ? cmsTestimonials : staticTestimonials;
+
+const cmsFaqs = await getFaqs();
+const faqs = cmsFaqs.length > 0 ? cmsFaqs : staticFaqs;
+
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+
+const staticExpressItems = [
+  { word: 'Parler', doodle: 'speechBubble' as const },
+  { word: 'Écrire', doodle: 'pencil' as const },
+  { word: 'Bouger', doodle: 'dancer' as const },
+  { word: 'Créer', doodle: 'palette' as const },
+  { word: 'Chanter', doodle: 'notes' as const },
+  { word: 'Rire', doodle: 'smile' as const },
+  { word: 'Respirer', doodle: 'airWaves' as const },
+  { word: 'Poser une limite', doodle: 'hand' as const },
+  { word: 'Dire non', doodle: 'non' as const },
+  { word: 'Dire oui', doodle: 'oui' as const },
+  { word: 'Exister', doodle: 'star' as const },
+  { word: 'Prendre ta place', doodle: 'sun' as const },
+];
+const cmsExpressItems = await getSectionItems('home', 'express-grid');
+const expressItems = cmsExpressItems.length > 0
+  ? cmsExpressItems.map((i) => ({ word: i.body ?? '', doodle: (i.iconKey ?? 'star') as any }))
+  : staticExpressItems;
+
+const staticForwhomCards = [
+  { icon: 'heart' as const, text: 'Tu te sens coupé·e de toi-même et tu cherches une façon de te reconnecter.' },
+  { icon: 'star' as const, text: 'Tu as toujours eu envie d\'essayer quelque chose comme ça, mais tu n\'as jamais osé.' },
+  { icon: 'speechBubble' as const, text: 'Tu aimerais t\'exprimer plus librement — ta voix, ton corps, tes idées, tes émotions.' },
+  { icon: 'smile' as const, text: 'Tu as l\'impression d\'avoir perdu quelque chose : ta légèreté, ton élan, ta spontanéité.' },
+  { icon: 'leaf' as const, text: 'Tu veux grandir, mais avec du jeu, de la chaleur, et des gens vrais — pas des méthodes sérieuses.' },
+  { icon: 'hand' as const, text: 'Tu as besoin d\'un espace où exister sans te rétrécir. Où essayer sans être jugé·e.' },
+];
+const cmsForwhomCards = await getSectionItems('home', 'forwhom-cards');
+const forwhomCards = cmsForwhomCards.length > 0
+  ? cmsForwhomCards.map((i) => ({ icon: (i.iconKey ?? 'star') as any, text: i.body ?? '' }))
+  : staticForwhomCards;
+---
+
+<BaseLayout
+  title="Accueil"
+  description="Atelier Expression — Des ateliers joyeux pour adultes qui veulent se sentir plus vivants. Expression, voix, mouvement, rire. À Longueuil, Rive-Sud de Montréal."
+  pageSlug="home"
+>
+  <!-- ─── HERO ─────────────────────────────────────────────────────────────── -->
+  <Hero />
+
+  <PaintDivider variant="hero" asset="wave-pink-peach" depth={0.28} />
+
+  <!-- Scene A — hero → manifeste: giant peach mass + long rose ellipse
+       overlapping, so no straight edge shows between the two sections.
+       Bias kept upward reach well inside Hero's measured 242px clearance
+       below its last CTA (giant: ~30% of ~460px rotated height ≈ 138px;
+       long: ~20% of ~220px ≈ 44px — both safely under 242px). -->
+  <div class="scene-seam" aria-hidden="true">
+    <div class="paint-ellipse paint-ellipse--giant" style="--paint-ellipse-color:#FFE1CF; --paint-ellipse-tilt:-3deg; --paint-ellipse-bias:-30%;"></div>
+    <div class="paint-ellipse paint-ellipse--long paint-ellipse--overlap paint-ellipse--soft" style="--paint-ellipse-color:#F02E8A; --paint-ellipse-tilt:4deg; --paint-ellipse-bias:-20%;"></div>
+  </div>
+
+  <!-- ─── CONTAINMENT SECTION (manifesto wave transition) ───────────────────── -->
+  <section class="section section--contain" aria-labelledby="contain-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="paint-layer paint-layer--l1 contain__paint-wave"
+        data-parallax
+        data-parallax-depth="0.1"
+        data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-wave.webp" alt="" width="1553" height="767" loading="lazy" />
+      </div>
+      <span
+        class="paint-sparkle contain__sparkle"
+        data-parallax
+        data-parallax-depth="0.17"
+        data-parallax-axis="y"
+        aria-hidden="true"
+        style="--sparkle-size: 1.3rem;"
+      >🦋</span>
+    </div>
+    <div class="container">
+      <div class="contain-layout">
+        <div class="contain-left" data-reveal>
+          <span class="accent-handwritten" style="color: #F02E8A">depuis longtemps</span>
+          <h2 id="contain-heading" class="contain-heading">
+            On t'a appris à te retenir.
+          </h2>
+          <p class="contain-intro">
+            Dès l'enfance, les messages s'accumulent.
+          </p>
+          <ul class="contain-rules" role="list" aria-label="Messages reçus">
+            {[
+              'Sois sage.',
+              'Ne pleure pas.',
+              'Ne fais pas de vagues.',
+              'Ne prends pas trop de place.',
+              'Ne dérange pas.',
+              'Rentre dans le cadre.',
+            ].map((rule) => (
+              <li class="contain-rule">
+                <span aria-hidden="true">—</span>
+                <em>{rule}</em>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="contain-right" data-reveal="right">
+          <div class="contain-consequence">
+            <p class="contain-consequence__lead">
+              Et peu à peu, quelque chose se bloque.
+            </p>
+            <p class="contain-consequence__body">
+              On se coupe de ses émotions.
+              L'énergie vivante n'a plus où aller.
+              Le corps ralentit.
+              Le système nerveux entre en mode survie.
+              La vie intérieure devient silencieuse.
+            </p>
+            <p class="contain-consequence__body">
+              Ce n'est pas une faiblesse. C'est ce qui arrive quand on retient trop longtemps
+              ce qui aurait dû être vécu, exprimé, bougé.
+            </p>
+            <div class="contain-pivot">
+              <p class="contain-pivot__text">
+                L'humain n'a jamais été créé pour se contenir en permanence.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── IMMERSIVE PHOTO — full-width, Cindy au micro ──────────────────────── -->
+  <div class="immersive-photo">
+    <picture>
+      <source srcset="/assets/images/cindy-invitation-micro.webp" type="image/webp" />
+      <img
+        src="/assets/images/cindy-invitation-micro.jpg"
+        alt="Cindy, au micro, en pleine facilitation d'atelier"
+        width="1400"
+        height="788"
+        loading="lazy"
+      />
+    </picture>
+  </div>
+
+  <PaintDivider variant="expressions" asset="bold-wave" flip depth={0.32} />
+
+  <!-- ─── EXPRESSION MEANS ──────────────────────────────────────────────────── -->
+  <section class="section section--express" aria-labelledby="express-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="logo-patch logo-patch--ambient-visible express__circle"
+        data-parallax
+        data-parallax-depth="0.11"
+        data-parallax-axis="y"
+      >
+        <div class="logo-patch__frame">
+          <img src="/assets/images/brand/atelier-expression-logo-mark.webp" alt="" width="1245" height="1245" loading="lazy" />
+        </div>
+      </div>
+      <div
+        class="paint-layer paint-layer--l2 express__mass"
+        data-parallax data-parallax-depth="0.2" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-flame.webp" alt="" width="828" height="1385" loading="lazy" />
+      </div>
+      <div class="express__doodle express__doodle--flower doodle--drift" style="animation-duration: 8s;">
+        <Doodle name="flower" color="pink" />
+      </div>
+      <div class="express__doodle express__doodle--star doodle--rotate" style="animation-duration: 6.5s;">
+        <Doodle name="star" color="orange" />
+      </div>
+      <div class="express__doodle express__doodle--leaf doodle--float" style="animation-duration: 9s;">
+        <Doodle name="leaf" color="ink" />
+      </div>
+    </div>
+    <div class="container">
+      <div class="express-intro" data-reveal>
+        <span class="accent-handwritten">ce que ça veut dire</span>
+        <h2 id="express-heading" class="express-heading">
+          S'exprimer, ce n'est pas seulement parler.
+        </h2>
+        <p class="express-sub">
+          C'est retrouver tous les chemins que le corps et la voix peuvent emprunter.
+        </p>
+      </div>
+
+      <div class="express-grid" data-reveal>
+        {expressItems.map((item, i) => {
+          const variant = ['orange', 'pink', 'coral', 'peach'][i % 4];
+          const doodleColor = 'ink';
+          return (
+            <div
+              class:list={['express-item', `express-item--${variant}`, i % 5 === 0 && 'express-item--overlap']}
+              style={`--tilt: ${((i % 5) - 2) * 1.4}deg;`}
+            >
+              <span class="express-item__icon"><Doodle name={item.doodle} color={doodleColor as any} /></span>
+              <span class="express-item__word">{item.word}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div class="express-coda" data-reveal>
+        <p>
+          Chaque expression libère de la vie.<br/>
+          <strong>Ta vie mérite ta voix.</strong>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOR WHOM — dense painted scene, not a two-column layout on a flat band -->
+  <section class="section section--forwhom" aria-labelledby="forwhom-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="paint-layer paint-layer--l1 forwhom__mass"
+        data-parallax data-parallax-depth="0.11" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-soft-peach.webp" alt="" width="1344" height="939" loading="lazy" />
+      </div>
+      <div
+        class="paint-layer paint-layer--l2 forwhom__arc"
+        data-parallax data-parallax-depth="0.18" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-wave.webp" alt="" width="1553" height="767" loading="lazy" />
+      </div>
+      <div
+        class="logo-patch logo-patch--ambient-visible forwhom__circle"
+        data-parallax data-parallax-depth="0.13" data-parallax-axis="y"
+      >
+        <div class="logo-patch__frame">
+          <img src="/assets/images/brand/atelier-expression-logo-mark.webp" alt="" width="1245" height="1245" loading="lazy" />
+        </div>
+      </div>
+      <div class="forwhom__doodle forwhom__doodle--arrow doodle--drift" style="animation-duration: 8s;">
+        <Doodle name="arrow" color="pink" />
+      </div>
+      <div class="forwhom__doodle forwhom__doodle--star doodle--rotate" style="animation-duration: 6s;">
+        <Doodle name="star" color="orange" />
+      </div>
+      <div class="forwhom__doodle forwhom__doodle--dots doodle--pulse" style="animation-duration: 5.5s;">
+        <Doodle name="dots" color="ink" />
+      </div>
+    </div>
+    <div class="container">
+      <div class="forwhom-grid">
+        <div class="forwhom-intro" data-reveal>
+          <span class="accent-handwritten">est-ce pour toi?</span>
+          <h2 id="forwhom-heading">Tu n'as pas besoin d'être à l'aise pour commencer.</h2>
+          <div class="divider"></div>
+          <p class="forwhom-lead">
+            Ces ateliers sont précisément pour les personnes qui ne le sont pas encore.
+          </p>
+        </div>
+
+        <div class="forwhom-cards" data-reveal="right">
+          {forwhomCards.map((item, i) => (
+            <div class:list={['paint-card', i % 2 === 0 ? 'paint-card--pink' : 'paint-card--orange']}>
+              <span class="forwhom-card__icon"><Doodle name={item.icon} color={i % 2 === 0 ? 'pink' : 'orange'} /></span>
+              <p class="forwhom-card__text">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <PaintDivider variant="manifest" asset="wave-pink-peach" flip depth={0.22} />
+
+  <!-- Scene D (entry) — curved limit into the red/orange atelier band: one
+       giant deep-red/orange mass overlapping both neighbors. -->
+  <div class="scene-seam" aria-hidden="true">
+    <div class="paint-ellipse paint-ellipse--giant paint-ellipse--dense paint-ellipse--overlap" style="--paint-ellipse-color:#C94222; --paint-ellipse-tilt:-2deg; --paint-ellipse-bias:-50%;"></div>
+  </div>
+
+  <!-- ─── WORKSHOP INTRO FEATURE — painted scene, no more cropped photo ─────── -->
+  <section class="section band band--encre section--workshop-feature" aria-labelledby="workshop-feat-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="paint-layer paint-layer--l3 wf__brush"
+        data-parallax data-parallax-depth="0.16" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-crescent.webp" alt="" width="1322" height="1037" loading="lazy" />
+      </div>
+      <div class="wf__doodle wf__doodle--sparkle doodle--pulse" style="animation-duration: 5s;">
+        <Doodle name="sparkle" color="pink" />
+      </div>
+      <div class="wf__doodle wf__doodle--spiral doodle--rotate" style="animation-duration: 9s;">
+        <Doodle name="spiral" color="orange" />
+      </div>
+    </div>
+    <div class="container">
+      <div class="wf-layout">
+        <div class="wf-badge-col" data-reveal="left">
+          <div class="wf-badge">
+            <span class="wf-badge__icon"><Doodle name="sparkle" color="pink" /></span>
+            <span class="wf-badge__label">Atelier découverte</span>
+            <span class="wf-badge__price">{nextWorkshop.price}</span>
+            <span class="wf-badge__duration">2 heures</span>
+            <span class="wf-badge__group">{nextWorkshop.capacity}</span>
+          </div>
+        </div>
+
+        <div class="wf-content" data-reveal>
+          <span class="accent-handwritten" style="color: #FF5A1F">le format qu'on prépare</span>
+          <h2 id="workshop-feat-heading" class="wf-title">
+            Ici, on ose.<br/>On rit. On vit plus pleinement.
+          </h2>
+          <p class="wf-body">
+            Deux heures. Un petit groupe. Un espace où on ne vient pas performer — on vient essayer.
+            Des jeux simples, des rires vrais, du mouvement, des voix, et un cercle de partage
+            à la fin. Aucun talent requis. Aucune bonne façon d'être là.
+          </p>
+
+          <h3 class="wf-subtitle">Ce qui se passe en 2 heures :</h3>
+          <ol class="wf-steps">
+            {[
+              'Accueil et sécurité — on pose le cadre ensemble',
+              'Jeux simples pour briser la glace (vraiment briser)',
+              'Rire et mouvement guidé — le corps se réveille',
+              'Voix, présence, mini-expressions — sans pression',
+              'Cercle de partage léger',
+              'Retour au calme et prochaine invitation',
+            ].map((step, i) => (
+              <li class="wf-step">
+                <span class="wf-step__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                <span>{step}</span>
+              </li>
+            ))}
+          </ol>
+
+          <div class="wf-ctas">
+            <a
+              href={nextWorkshop.status === 'building' ? '#interet-prochain-atelier' : '/reserver'}
+              class="btn btn--primary btn--lg"
+            >
+              {nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}
+            </a>
+            <a href="/ateliers" class="btn btn--outline-white">Tout savoir sur l'atelier</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CINDY'S INVITATION (filmed before the demo workshop existed) ──────── -->
+  <CindyInvitation />
+
+  <!-- ─── DEMO WORKSHOP RECAP (real group session, 2026-07-08, Longueuil) ───── -->
+  <DemoRecap />
+
+  <!-- ─── NEXT WORKSHOP — EN PRÉPARATION + INTÉRÊT ──────────────────────────── -->
+  <section class="section band band--pink-soft section--next-workshop" aria-labelledby="next-workshop-heading" id="prochain-atelier">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="paint-layer paint-layer--l1 nw__mass"
+        data-parallax data-parallax-depth="0.13" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-cluster-pink-peach.webp" alt="" width="1029" height="1269" loading="lazy" />
+      </div>
+      <div class="nw__doodle nw__doodle--envelope doodle--float" style="animation-duration: 7s;">
+        <Doodle name="speechBubble" color="pink" />
+      </div>
+      <div class="nw__doodle nw__doodle--sparkle doodle--pulse" style="animation-duration: 5.5s;">
+        <Doodle name="sparkle" color="orange" />
+      </div>
+    </div>
+    <div class="container">
+      <div class="nw-layout">
+        <div class="nw-intro" data-reveal="left">
+          <span class="accent-handwritten">le prochain atelier</span>
+          <h2 id="next-workshop-heading" class="nw-heading">La prochaine édition se prépare.</h2>
+          <p class="nw-body">{nextWorkshop.details}</p>
+          <p class="nw-body nw-body--emphasis">
+            Laisse ton courriel pour recevoir la date dès qu'elle sera annoncée.
+            Aucun engagement — seulement la priorité quand les inscriptions ouvriront.
+          </p>
+        </div>
+        <div class="nw-form-col" data-reveal="right">
+          <InterestForm />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TRANSFORMATION ────────────────────────────────────────────────────── -->
+  <section class="section section--transform" aria-labelledby="transform-heading">
+    <div class="container">
+      <SectionIntro
+        accent="avant / après"
+        title="On commence par un rire nerveux. C'est déjà une porte."
+        centered
+      />
+
+      <div class="transform-grid" data-reveal>
+        <div class="transform-col transform-col--before">
+          <div class="transform-label transform-label--before">Avant</div>
+          <ul class="transform-list" role="list">
+            {[
+              'Se retenir',
+              'S\'adapter',
+              'Se couper de soi',
+              'Minimiser',
+              'Figer',
+              'Survivre',
+              'Rester petit·e',
+            ].map((item) => (
+              <li class="transform-item transform-item--before">
+                <span aria-hidden="true">✕</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="transform-arrow" aria-hidden="true">
+          <div class="transform-arrow__line"></div>
+          <div class="transform-arrow__label">
+            <span class="accent-handwritten" style="font-size: 1.1rem">après l'atelier</span>
+          </div>
+        </div>
+
+        <div class="transform-col transform-col--after">
+          <div class="transform-label transform-label--after">Après</div>
+          <ul class="transform-list" role="list">
+            {[
+              'Ressentir',
+              'Bouger',
+              'Respirer',
+              'Jouer',
+              'Prendre sa place',
+              'Retrouver sa voix',
+              'Reconnecter à son élan',
+            ].map((item) => (
+              <li class="transform-item transform-item--after">
+                <span aria-hidden="true">✓</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PILLARS ────────────────────────────────────────────────────────────── -->
+  <section class="section band band--gris section--pillars" aria-labelledby="pillars-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="paint-layer paint-layer--l2 pillars__wave"
+        data-parallax data-parallax-depth="0.15" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-wave.webp" alt="" width="1553" height="767" loading="lazy" />
+      </div>
+      <div
+        class="logo-patch logo-patch--ambient-visible pillars__circle"
+        data-parallax data-parallax-depth="0.12" data-parallax-axis="y"
+      >
+        <div class="logo-patch__frame">
+          <img src="/assets/images/brand/atelier-expression-logo-mark.webp" alt="" width="1245" height="1245" loading="lazy" />
+        </div>
+      </div>
+      <div class="pillars__doodle pillars__doodle--star doodle--rotate" style="animation-duration: 7s;">
+        <Doodle name="star" color="orange" />
+      </div>
+      <div class="pillars__doodle pillars__doodle--leaf doodle--float" style="animation-duration: 8.5s;">
+        <Doodle name="leaf" color="ink" />
+      </div>
+    </div>
+    <div class="container">
+      <SectionIntro
+        accent="la méthode"
+        title="Six portes pour retrouver sa place."
+        subtitle="Chaque atelier passe par ces six dimensions. Pas toutes en profondeur — mais chacune ouverte, juste un peu."
+        centered
+      />
+      <ValuePillars />
+    </div>
+  </section>
+
+  <!-- ─── CINDY INTRO ────────────────────────────────────────────────────────── -->
+  <section class="section section--cindy" aria-labelledby="cindy-heading">
+    <div class="container">
+      <div class="cindy-layout">
+        <div class="cindy-visual" data-reveal="left">
+          <div class="cindy-img-wrap">
+            <img
+              src="/assets/images/cindy_01.png"
+              alt="Cindy — facilitatrice et animatrice d'Atelier Expression"
+              class="cindy-img"
+              width="400"
+              height="480"
+              loading="lazy"
+            />
+          </div>
+          <div class="cindy-doodle" aria-hidden="true">
+            <svg viewBox="0 0 100 100" width="80" height="80" fill="none">
+              <path d="M50 10 Q70 30 60 50 Q50 70 30 60 Q10 50 20 30 Q30 10 50 10Z" stroke="#FF5A1F" stroke-width="2" fill="none"/>
+              <circle cx="50" cy="50" r="4" fill="#FF5A1F"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="cindy-content" data-reveal>
+          <span class="accent-handwritten">la facilitatrice</span>
+          <div class="cindy-bar" aria-hidden="true"></div>
+          <h2 id="cindy-heading">Cindy ouvre des espaces où les adultes peuvent revenir à eux-mêmes.</h2>
+          <p class="cindy-core-message">
+            Elle ne demande à personne ce qu'elle ne se demande pas à elle-même : Cindy tente
+            constamment d'incarner ce qu'elle enseigne.
+          </p>
+          <p class="cindy-body">
+            Elle n'enseigne pas. Elle transmet. Elle n'impose pas. Elle crée les conditions
+            pour que quelque chose s'ouvre — doucement, joyeusement, sans forcer.
+          </p>
+          <p class="cindy-body">
+            Cindy croit que l'expression n'est pas réservée aux artistes ou aux personnes
+            "à l'aise". Elle appartient à tout le monde — et surtout à celles et ceux qui
+            pensent qu'elle n'est pas pour eux.
+          </p>
+          <p class="cindy-body">
+            Elle croit que les adultes ont droit à la permission d'exister pleinement.
+            Pas de performer. Pas de survivre. D'exister — avec voix, corps, rire, et élan.
+          </p>
+          <a href="/a-propos" class="btn btn--secondary">En savoir plus sur Cindy</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <PaintDivider variant="community" asset="bold-wave" depth={0.3} />
+
+  <!-- ─── TESTIMONIALS — painted scene, not title+cards on empty bg ─────────── -->
+  <section class="section band band--gris section--testimonials" aria-labelledby="testimonials-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="paint-layer paint-layer--l2 testimonials__wave"
+        data-parallax data-parallax-depth="0.16" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-wave.webp" alt="" width="1553" height="767" loading="lazy" />
+      </div>
+      <div
+        class="paint-layer paint-layer--l1 testimonials__mass"
+        data-parallax data-parallax-depth="0.11" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-cluster-pink-peach.webp" alt="" width="1029" height="1269" loading="lazy" />
+      </div>
+      <div class="testimonials__doodle testimonials__doodle--star doodle--rotate" style="animation-duration: 7s;">
+        <Doodle name="star" color="orange" />
+      </div>
+      <div class="testimonials__doodle testimonials__doodle--flower doodle--drift" style="animation-duration: 9s;">
+        <Doodle name="flower" color="pink" />
+      </div>
+      <div class="testimonials__doodle testimonials__doodle--dots doodle--pulse" style="animation-duration: 5.5s;">
+        <Doodle name="dots" color="ink" />
+      </div>
+    </div>
+    <div class="container">
+      <SectionIntro
+        accent="ils et elles témoignent"
+        title="Ce que les participant·es ressentent."
+        subtitle="Les témoignages seront ajoutés après les premiers ateliers."
+        centered
+      />
+      <div class="grid-3 testimonials__grid" data-reveal>
+        {testimonials.map((t, i) => (
+          <TestimonialCard testimonial={t} index={i} />
+        ))}
+      </div>
+      <div class="text-center" style="margin-top: 3rem;">
+        <a href="/temoignages" class="btn btn--primary btn--lg">Voir tous les témoignages</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FAQ PREVIEW ─────────────────────────────────────────────────────────── -->
+  <section class="section section--faq-preview" aria-labelledby="faq-prev-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="logo-patch logo-patch--ambient-visible faq__circle-left"
+        data-parallax data-parallax-depth="0.14" data-parallax-axis="y"
+      >
+        <div class="logo-patch__frame">
+          <img src="/assets/images/brand/atelier-expression-logo-mark.webp" alt="" width="1245" height="1245" loading="lazy" />
+        </div>
+      </div>
+      <div
+        class="paint-layer paint-layer--l2 faq__circle-right"
+        data-parallax data-parallax-depth="0.19" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-orb.webp" alt="" width="1169" height="1115" loading="lazy" />
+      </div>
+      <div
+        class="paint-layer paint-layer--l1 faq__wave"
+        data-parallax data-parallax-depth="0.1" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-wave-pink-peach.webp" alt="" width="1576" height="518" loading="lazy" />
+      </div>
+      <div class="faq__doodle faq__doodle--sparkle doodle--pulse" style="animation-duration: 5.5s;">
+        <Doodle name="sparkle" color="pink" />
+      </div>
+    </div>
+    <div class="container container--text" style="max-width: 760px; margin-inline: auto;">
+      <SectionIntro
+        accent="questions fréquentes"
+        title="On répond à ce que tu te demandes."
+        centered
+      />
+      <div data-reveal class="faq-quick-list">
+        {faqs.slice(0, 4).map((faq, i) => (
+          <details class:list={['faq-quick', i % 2 === 1 && 'faq-quick--offset']}>
+            <summary class="faq-quick__q">{faq.question}</summary>
+            <p class="faq-quick__a">{faq.answer}</p>
+          </details>
+        ))}
+      </div>
+      <div class="text-center" style="margin-top: 2rem;">
+        <a href="/faq" class="btn btn--secondary">Toutes les questions</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FINAL CTA — calm closing, real brand mark, no invented signature ──── -->
+  <section class="section section--final-cta band band--orange" aria-labelledby="final-cta-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div class="logo-patch logo-patch--ambient final-cta__mark" aria-hidden="true">
+        <div class="logo-patch__frame">
+          <img src="/assets/images/brand/atelier-expression-logo-mark.webp" alt="" width="1245" height="1245" loading="lazy" />
+        </div>
+      </div>
+    </div>
+    <div class="container text-center">
+      <div class="final-cta__stripe" aria-hidden="true"></div>
+      <span class="accent-handwritten" style="color: #351426;">c'est le moment</span>
+      <h2 id="final-cta-heading" class="final-cta-title">Ta vie mérite ta voix.</h2>
+      <p class="final-cta-sub">Exprime-toi. Libère-toi. Retrouve l'espace où tu n'as plus besoin de te rétrécir.</p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+        <a
+          href={nextWorkshop.status === 'building' ? '#interet-prochain-atelier' : '/reserver'}
+          class="btn btn--outline-white btn--lg"
+        >
+          {nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}
+        </a>
+        <a href="/ateliers" class="btn btn--outline-white btn--lg">Voir les ateliers</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer entry — the PaintDivider wave below is pale pink/peach sitting
+       between two dark-orange bands, so its own rectangular image edge reads
+       as a hard line against both. This soft, blurred, oversized mass in the
+       same pale tone feathers into the orange on both sides, masking that
+       edge.
+       BUG FIXED HERE (two bugs, actually): (1) --paint-ellipse-bias was
+       previously named --paint-ellipse-top and applied as a percentage
+       `top` — but .scene-seam is height:0, and a percentage `top` against
+       a zero-height container always resolves to 0px, so that property
+       never had any effect; the mass was ALWAYS centered on the seam via
+       the transform's own -50% regardless of what was set. (2) centered
+       that way, ~half its height (up to 230px) sat over final-cta's own
+       CTA buttons — a scene-seam sits AFTER final-cta in DOM with equal
+       z-index, so ties go to the seam and it painted over the buttons
+       entirely (confirmed empirically: sampled pixel matched the
+       ellipse's own color regardless of what was behind it). Measured
+       clearance between the buttons and final-cta's bottom edge is only
+       ~115px, so bias is now -8% (only ~8% of the rotated height bleeds
+       up into final-cta's empty bottom padding — safe; the rest bleeds
+       down into the footer transition where there is no text to cover).
+       Any future seam that bleeds backward into a preceding section must
+       keep its real (measured) upward reach within that section's real
+       content-to-edge clearance, not just assume "half its height" is
+       safe by default. -->
+  <div class="scene-seam" aria-hidden="true">
+    <div class="paint-ellipse paint-ellipse--giant paint-ellipse--soft" style="--paint-ellipse-color:#FFD7C8; --paint-ellipse-tilt:-1.5deg; --paint-ellipse-bias:-8%; --paint-ellipse-opacity:0.85;"></div>
+  </div>
+
+  <PaintDivider variant="footer" asset="wave-pink-peach" flip depth={0.24} />
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  // ─── CONTAINMENT / MANIFESTO WAVE ───────────────────────────────────────────
+  .section--contain {
+    position: relative;
+    background-color: $c-peach;
+    overflow: visible;
+  }
+
+  .contain__paint-wave {
+    width: clamp(28rem, 46vw, 48rem);
+    top: -8%;
+    right: -14%;
+    transform: rotate(8deg);
+  }
+
+  .contain__sparkle {
+    top: 12%;
+    left: 6%;
+  }
+
+  .contain-layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 1fr 1fr; gap: $space-12; }
+  }
+
+  .contain-heading {
+    font-family: $font-serif;
+    font-size: $text-4xl;
+    color: $c-plum;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+    margin-bottom: $space-5;
+  }
+
+  .contain-intro {
+    font-size: $text-base;
+    color: $c-plum-soft;
+    margin-bottom: $space-5;
+  }
+
+  .contain-rules {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
+
+  .contain-rule {
+    display: flex;
+    gap: $space-3;
+    align-items: baseline;
+    font-family: $font-serif;
+    font-style: italic;
+    font-size: $text-xl;
+    color: rgba($c-plum, 0.75);
+
+    span:first-child {
+      color: $c-pink;
+      font-style: normal;
+      flex-shrink: 0;
+    }
+  }
+
+  .contain-consequence__lead {
+    font-family: $font-serif;
+    font-size: $text-2xl;
+    color: $c-plum;
+    line-height: $leading-snug;
+    margin-bottom: $space-5;
+  }
+
+  .contain-consequence__body {
+    font-size: $text-base;
+    color: $c-plum-soft;
+    line-height: $leading-loose;
+    margin-bottom: $space-4;
+  }
+
+  .contain-pivot {
+    margin-top: $space-8;
+    padding: $space-5 $space-6;
+    border-left: 4px solid $c-orange;
+    background-color: rgba($c-orange, 0.08);
+    border-radius: 0 $radius-md $radius-md 0;
+  }
+
+  .contain-pivot__text {
+    font-family: $font-serif;
+    font-style: italic;
+    font-size: $text-xl;
+    color: $c-orange;
+    line-height: $leading-snug;
+  }
+
+  // ─── EXPRESSION ─────────────────────────────────────────────────────────────
+  .section--express {
+    position: relative;
+    overflow: visible;
+  }
+
+  .express__circle {
+    width: clamp(16rem, 26vw, 26rem);
+    top: 10%;
+    left: -9%;
+  }
+
+  .express__mass {
+    width: clamp(10rem, 16vw, 15rem);
+    bottom: -10%;
+    right: 2%;
+    opacity: 0.55;
+
+    @media (max-width: 700px) { display: none; }
+  }
+
+  .express__doodle { position: absolute; filter: drop-shadow(0 0.3rem 0.5rem rgba($c-plum, 0.14)); }
+  .express__doodle--flower { width: 2.2rem; top: 4%; right: 10%; }
+  .express__doodle--star   { width: 1.9rem; bottom: 8%; left: 6%; }
+  .express__doodle--leaf   { width: 2.4rem; top: 40%; right: 3%; opacity: 0.7; }
+
+  .express-intro {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-bottom: $space-10;
+  }
+
+  .express-heading {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    color: $color-encre;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+  }
+
+  .express-sub {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    margin-top: $space-3;
+  }
+
+  .express-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: $space-4;
+    max-width: 800px;
+    margin-inline: auto;
+
+    @include sm { grid-template-columns: repeat(4, 1fr); }
+    @include lg { grid-template-columns: repeat(6, 1fr); }
+  }
+
+  // Twelve individual painted blotches — irregular silhouettes, varied
+  // saturation, warm layered shadows, slight tilt and occasional overlap.
+  // Deliberately not a uniform grid of identical disks.
+  .express-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-5 $space-3;
+    text-align: center;
+    transform: rotate(var(--tilt, 0deg));
+    transition: transform $transition-base, box-shadow $transition-base;
+    box-shadow: $paint-shadow-low;
+
+    &:nth-child(6n+1) { border-radius: 42% 58% 61% 39% / 46% 42% 58% 54%; }
+    &:nth-child(6n+2) { border-radius: 58% 42% 39% 61% / 54% 58% 42% 46%; }
+    &:nth-child(6n+3) { border-radius: 50% 50% 65% 35% / 40% 60% 40% 60%; }
+    &:nth-child(6n+4) { border-radius: 38% 62% 45% 55% / 60% 40% 65% 35%; }
+    &:nth-child(6n+5) { border-radius: 64% 36% 55% 45% / 42% 58% 38% 62%; }
+    &:nth-child(6n+6) { border-radius: 46% 54% 38% 62% / 55% 45% 62% 38%; }
+
+    &:hover {
+      transform: rotate(0deg) translateY(-4px) scale(1.05);
+      box-shadow: $paint-shadow-mid;
+      @include reduced-motion { transform: rotate(var(--tilt, 0deg)); }
+    }
+
+    &--overlap {
+      @include lg { margin-top: $space-6; }
+    }
+
+    // All four are bright/light backgrounds — ink text scores 4.4–6.3:1
+    // (WCAG AA) uniformly here; cream measured 2.7–3.6:1 on these same
+    // hues and was the inconsistent-contrast bug flagged in pass 3.
+    &--orange { background-color: rgba($c-orange, 0.85); .express-item__word { color: $c-ink; } }
+    &--pink   { background-color: $c-pink;              .express-item__word { color: $c-ink; } }
+    &--coral  { background-color: rgba($c-coral, 0.88);  .express-item__word { color: $c-ink; } }
+    &--peach  { background-color: $c-peach-deep;         .express-item__word { color: $c-ink; } }
+  }
+
+  .express-item__icon {
+    display: inline-flex;
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .express-item__word {
+    font-size: $text-xs;
+    font-weight: $weight-bold;
+    text-align: center;
+    line-height: $leading-tight;
+  }
+
+  .express-coda {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-top: $space-10;
+
+    p {
+      font-family: $font-serif;
+      font-size: $text-xl;
+      color: $color-encre;
+      line-height: $leading-snug;
+
+      strong { color: $c-orange; }
+    }
+  }
+
+  // ─── FOR WHOM — dense painted scene ─────────────────────────────────────────
+  .section--forwhom {
+    position: relative;
+    overflow: visible;
+    background-color: $c-peach-deep;
+  }
+
+  .forwhom__mass {
+    width: clamp(26rem, 48vw, 48rem);
+    top: -18%;
+    right: -16%;
+  }
+
+  .forwhom__arc {
+    width: clamp(24rem, 42vw, 40rem);
+    bottom: -16%;
+    left: -18%;
+    transform: rotate(-10deg);
+  }
+
+  .forwhom__circle {
+    width: clamp(14rem, 22vw, 22rem);
+    bottom: -12%;
+    right: 4%;
+    opacity: 0.5;
+
+    @media (max-width: 700px) { width: 10rem; }
+  }
+
+  .forwhom__doodle { position: absolute; filter: drop-shadow(0 0.3rem 0.5rem rgba($c-plum, 0.14)); }
+  .forwhom__doodle--arrow { width: 4rem; top: 12%; left: 32%; @media (max-width: 900px) { display: none; } }
+  .forwhom__doodle--star  { width: 2rem; top: 8%; left: 6%; }
+  .forwhom__doodle--dots  { width: 3.5rem; bottom: 10%; left: 42%; }
+
+  .forwhom-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 1fr 1.5fr; }
+  }
+
+  .forwhom-intro h2 {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    color: $c-plum;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+  }
+
+  .forwhom-lead {
+    font-size: $text-base;
+    color: $c-plum-soft;
+    margin-top: $space-4;
+    line-height: $leading-normal;
+  }
+
+  .forwhom-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $space-5;
+
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+    @include lg { grid-template-columns: repeat(2, 1fr); }
+
+    .paint-card {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: $space-3;
+    }
+  }
+
+  .forwhom-card__icon {
+    display: inline-flex;
+    width: 2.2rem;
+    height: 2.2rem;
+    flex-shrink: 0;
+  }
+
+  .forwhom-card__text {
+    font-size: $text-sm;
+    color: $c-plum;
+    line-height: $leading-normal;
+    font-weight: $weight-medium;
+  }
+
+  .forwhom-card__icon {
+    font-size: $text-xl;
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+
+  .forwhom-card__text {
+    font-size: $text-sm;
+    color: $color-encre;
+    line-height: $leading-normal;
+  }
+
+  // ─── WORKSHOP FEATURE ───────────────────────────────────────────────────────
+  .section--workshop-feature {
+    position: relative;
+    overflow: visible;
+  }
+
+  .wf__brush {
+    width: clamp(20rem, 34vw, 32rem);
+    top: -14%;
+    right: -10%;
+    opacity: 0.5;
+  }
+
+  .wf__doodle { position: absolute; filter: drop-shadow(0 0.3rem 0.5rem rgba(30, 8, 3, 0.3)); }
+  .wf__doodle--sparkle { width: 2.2rem; top: 10%; left: 8%; }
+  .wf__doodle--spiral  { width: 2.6rem; bottom: 8%; right: 34%; opacity: 0.6; }
+
+  .wf-layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 280px 1fr; align-items: center; }
+  }
+
+  // Painted medallion — irregular blotch shape, not a rectangular badge.
+  .wf-badge {
+    position: relative;
+    background-color: rgba($c-orange, 0.14);
+    border-radius: 48% 52% 58% 42% / 52% 46% 54% 48%;
+    box-shadow: $paint-shadow-mid;
+    padding: $space-6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-3;
+    text-align: center;
+    color: $c-on-dark;
+    transform: rotate(-2deg);
+  }
+
+  .wf-badge__icon {
+    display: inline-flex;
+    width: 2.2rem;
+    height: 2.2rem;
+  }
+
+  .wf-badge__label {
+    font-family: $font-serif;
+    font-size: $text-xl;
+    font-weight: $weight-bold;
+  }
+
+  .wf-badge__price {
+    font-size: $text-3xl;
+    font-family: $font-serif;
+    font-weight: $weight-black;
+    color: #FFD9E8;
+  }
+
+  .wf-badge__duration,
+  .wf-badge__group {
+    font-size: $text-sm;
+    color: rgba($c-on-dark, 0.8);
+  }
+
+  .wf-title {
+    font-family: $font-serif;
+    font-size: $text-4xl;
+    color: $c-on-dark;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+    margin-bottom: $space-5;
+  }
+
+  .wf-body {
+    font-size: $text-base;
+    color: rgba($c-on-dark, 0.9);
+    line-height: $leading-loose;
+    margin-bottom: $space-6;
+  }
+
+  .wf-subtitle {
+    font-family: $font-sans;
+    font-size: $text-sm;
+    font-weight: $weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $color-fuchsia;
+    margin-bottom: $space-4;
+  }
+
+  .wf-steps {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    margin-bottom: $space-8;
+    counter-reset: none;
+  }
+
+  .wf-step {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-4;
+    font-size: $text-base;
+    color: rgba($c-on-dark, 0.92);
+    line-height: $leading-snug;
+  }
+
+  .wf-step__num {
+    font-family: $font-serif;
+    font-size: $text-2xl;
+    font-weight: $weight-bold;
+    color: $color-fuchsia;
+    flex-shrink: 0;
+    line-height: 1;
+    width: 2.5ch;
+  }
+
+  .wf-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+    margin-top: $space-6;
+  }
+
+  // ─── NEXT WORKSHOP ──────────────────────────────────────────────────────────
+  .section--next-workshop {
+    position: relative;
+    overflow: visible;
+  }
+
+  // Global .accent-handwritten defaults to $c-orange, which measures only
+  // ~2.6:1 against this section's pale pink-peach background (fails WCAG AA
+  // even at large-text size) — the orange-on-light-orange pairing the brief
+  // explicitly forbids. Deepened locally rather than in the shared class,
+  // since other sections place it on darker backgrounds where it's fine.
+  .nw-intro .accent-handwritten {
+    color: $c-orange-deep;
+  }
+
+  .nw__mass {
+    width: clamp(16rem, 26vw, 24rem);
+    top: -8%;
+    right: 4%;
+    opacity: 0.6;
+  }
+
+  .nw__doodle { position: absolute; filter: drop-shadow(0 0.3rem 0.5rem rgba($c-plum, 0.14)); }
+  .nw__doodle--envelope { width: 2.6rem; top: 14%; right: 20%; }
+  .nw__doodle--sparkle  { width: 2rem; bottom: 16%; right: 10%; }
+
+  .nw-layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 1fr 1fr; }
+  }
+
+  .nw-heading {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    color: $color-encre;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+    margin-bottom: $space-5;
+  }
+
+  .nw-body {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+    margin-bottom: $space-4;
+
+    &--emphasis {
+      color: $color-encre;
+      font-weight: $weight-medium;
+    }
+  }
+
+  // ─── TRANSFORMATION ─────────────────────────────────────────────────────────
+  .transform-grid {
+    display: grid;
+    gap: $space-6;
+    align-items: center;
+    grid-template-columns: 1fr;
+
+    @include md { grid-template-columns: 1fr auto 1fr; }
+  }
+
+  .transform-col {
+    padding: $space-6;
+    border-radius: 12px;
+
+    &--before {
+      background-color: rgba($c-peach-deep, 0.55);
+    }
+
+    &--after {
+      background-color: rgba($c-pink, 0.07);
+      border: 2px solid rgba($c-pink, 0.25);
+    }
+  }
+
+  .transform-label {
+    font-size: $text-xs;
+    font-weight: $weight-bold;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: $space-4;
+    display: block;
+
+    &--before { color: $c-plum-soft; }
+    &--after  { color: $c-orange; }
+  }
+
+  .transform-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+  }
+
+  .transform-item {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-3;
+    font-size: $text-sm;
+    line-height: $leading-snug;
+
+    &--before {
+      color: $c-plum-soft;
+      span:first-child { color: rgba($c-plum-soft, 0.5); font-weight: $weight-bold; flex-shrink: 0; }
+    }
+
+    &--after {
+      color: $c-plum;
+      span:first-child { color: $c-pink; font-weight: $weight-bold; flex-shrink: 0; }
+    }
+  }
+
+  .transform-arrow {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-3;
+
+    @include md { display: flex; }
+  }
+
+  .transform-arrow__line {
+    width: 2px;
+    height: 80px;
+    background: linear-gradient($c-orange, $c-pink);
+    border-radius: $radius-full;
+    position: relative;
+
+    &::after {
+      content: '▼';
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: $c-pink;
+      font-size: $text-sm;
+    }
+  }
+
+  .transform-arrow__label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  // ─── PILLARS ────────────────────────────────────────────────────────────────
+  .section--pillars {
+    position: relative;
+    overflow: visible;
+
+    .container { position: relative; z-index: 1; }
+  }
+
+  .pillars__wave {
+    width: clamp(26rem, 44vw, 44rem);
+    top: -14%;
+    left: -12%;
+    opacity: 0.6;
+    transform: rotate(-6deg);
+  }
+
+  .pillars__circle {
+    width: clamp(14rem, 22vw, 22rem);
+    bottom: -14%;
+    right: -6%;
+  }
+
+  .pillars__doodle { position: absolute; filter: drop-shadow(0 0.3rem 0.5rem rgba($c-plum, 0.14)); }
+  .pillars__doodle--star { width: 2rem; top: 6%; right: 12%; }
+  .pillars__doodle--leaf { width: 2.4rem; bottom: 6%; left: 8%; opacity: 0.7; }
+
+  // ─── CINDY ──────────────────────────────────────────────────────────────────
+  .cindy-bar {
+    width: 48px;
+    height: 4px;
+    background-color: $c-pink;
+    border-radius: 2px;
+    margin: $space-2 0 $space-4;
+  }
+
+  .cindy-layout {
+    display: grid;
+    gap: $space-10;
+    align-items: center;
+
+    @include lg { grid-template-columns: 400px 1fr; }
+  }
+
+  .cindy-visual {
+    position: relative;
+  }
+
+  .cindy-img-wrap {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: $shadow-lg;
+    aspect-ratio: 4/5;
+    max-width: 340px;
+  }
+
+  .cindy-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .cindy-img-accent {
+    position: absolute;
+    bottom: -16px;
+    right: 0;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid $color-creme;
+    box-shadow: $shadow-md;
+  }
+
+  .cindy-img-sm {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .cindy-doodle {
+    position: absolute;
+    bottom: 90px;
+    right: -20px;
+    z-index: 2;
+    animation: spin-slow 15s linear infinite;
+
+    @include reduced-motion { animation: none; }
+  }
+
+  .cindy-content {
+    h2 {
+      font-family: $font-serif;
+      font-size: $text-3xl;
+      color: $color-encre;
+      line-height: $leading-tight;
+      margin-top: $space-3;
+      margin-bottom: $space-5;
+    }
+  }
+
+  .cindy-body {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+    margin-bottom: $space-4;
+
+    &:last-of-type { margin-bottom: $space-6; }
+  }
+
+  .cindy-core-message {
+    font-family: $font-serif;
+    font-style: italic;
+    font-size: $text-lg;
+    color: $c-plum;
+    line-height: $leading-snug;
+    border-left: 3px solid $c-orange;
+    padding-left: $space-4;
+    margin: $space-3 0 $space-5;
+  }
+
+  // ─── TESTIMONIALS ───────────────────────────────────────────────────────────
+  .section--testimonials {
+    position: relative;
+    overflow: visible;
+
+    .container { position: relative; z-index: 1; }
+  }
+
+  .testimonials__wave {
+    width: clamp(26rem, 44vw, 44rem);
+    top: -16%;
+    right: -14%;
+    opacity: 0.55;
+  }
+
+  .testimonials__mass {
+    width: clamp(16rem, 26vw, 24rem);
+    bottom: -18%;
+    left: -8%;
+    opacity: 0.6;
+  }
+
+  .testimonials__doodle { position: absolute; filter: drop-shadow(0 0.3rem 0.5rem rgba($c-plum, 0.14)); }
+  .testimonials__doodle--star    { width: 2rem; top: 8%; left: 6%; }
+  .testimonials__doodle--flower  { width: 2.2rem; bottom: 10%; right: 8%; }
+  .testimonials__doodle--dots    { width: 3rem; top: 40%; right: 4%; opacity: 0.7; }
+
+  .testimonials__grid {
+    > :nth-child(2) { @include lg { margin-top: $space-8; } }
+    > :nth-child(3) { @include lg { margin-top: -#{$space-4}; } }
+  }
+
+  // ─── FAQ SCENE ──────────────────────────────────────────────────────────────
+  .section--faq-preview {
+    position: relative;
+    overflow: visible;
+    padding-block: $section-pad;
+
+    .container { position: relative; z-index: 1; }
+  }
+
+  // 2–4x larger than a typical local accent, deliberately bleeding past the
+  // section on both edges so it reads as part of the continuous fresco
+  // rather than "this section's decoration."
+  .faq__circle-left {
+    width: clamp(28rem, 46vw, 46rem);
+    top: -26%;
+    left: -20%;
+  }
+
+  .faq__circle-right {
+    width: clamp(22rem, 36vw, 36rem);
+    bottom: -30%;
+    right: -14%;
+    opacity: 0.75;
+  }
+
+  .faq__wave {
+    width: clamp(24rem, 40vw, 38rem);
+    top: 30%;
+    right: -10%;
+    opacity: 0.4;
+
+    @media (max-width: 700px) { display: none; }
+  }
+
+  .faq__doodle { position: absolute; filter: drop-shadow(0 0.3rem 0.5rem rgba($c-plum, 0.14)); }
+  .faq__doodle--sparkle { width: 2rem; top: 10%; right: 20%; }
+
+  // Organic-adjacent, not deformed into blobs — still a usable list, but
+  // pêche-clair panels with warm shadow instead of white rectangles.
+  .faq-quick-list {
+    position: relative;
+    z-index: 1;
+  }
+
+  .faq-quick {
+    background-color: rgba($c-peach-deep, 0.4);
+    border: 1px solid rgba($c-orange, 0.25);
+    border-radius: 18px;
+    padding-inline: $space-5;
+    margin-bottom: $space-4;
+    box-shadow: $paint-shadow-low;
+    transform: rotate(-0.6deg);
+
+    &--offset {
+      transform: rotate(0.6deg);
+      border-color: rgba($c-pink, 0.3);
+    }
+
+    &[open] summary { color: $color-fuchsia; }
+  }
+
+  .faq-quick__q {
+    font-size: $text-base;
+    font-weight: $weight-medium;
+    color: $color-encre;
+    padding: $space-4 0;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: color $transition-base;
+
+    &::after {
+      content: '+';
+      font-size: $text-xl;
+      font-weight: $weight-regular;
+      color: $color-fuchsia;
+      transition: transform $transition-base;
+    }
+
+    &:hover { color: $color-fuchsia; }
+
+    details[open] &::after {
+      transform: rotate(45deg);
+    }
+  }
+
+  .faq-quick__a {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+    padding-bottom: $space-4;
+    padding-right: $space-8;
+  }
+
+  // ─── IMMERSIVE PHOTO ────────────────────────────────────────────────────────
+  .immersive-photo {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    height: 320px;
+
+    @include sm { height: 420px; }
+    @include lg { height: 560px; }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 30%;
+      display: block;
+    }
+  }
+
+  // ─── FINAL CTA ──────────────────────────────────────────────────────────────
+  .section--final-cta {
+    position: relative;
+    overflow: visible;
+  }
+
+  // .btn--outline-white (cream text/border on transparent) is correct on the
+  // site's genuinely deep/dark bands (orange-deep, pink-deep) — but this
+  // section's background is $c-orange, the bright/vivid tone, not a deep
+  // one. Measured: cream text there is 2.51:1, well under WCAG AA. Scoped
+  // override (not a change to the shared class, which is fine elsewhere):
+  // filled pale pill with dark ink text instead of a pale outline.
+  .section--final-cta .btn--outline-white {
+    background-color: $c-cream;
+    color: $c-plum;
+    border-color: $c-plum;
+    box-shadow: 0 10px 22px rgba(50, 17, 31, 0.22);
+
+    &:hover {
+      background-color: $color-blanc;
+      color: $c-plum;
+      border-color: $c-plum;
+      box-shadow: 0 14px 28px rgba(50, 17, 31, 0.28);
+    }
+  }
+
+  .final-cta__mark {
+    width: clamp(20rem, 34vw, 34rem);
+    bottom: -22%;
+    right: -10%;
+  }
+
+  .section--final-cta .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .final-cta__stripe {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(to right, $c-pink, $c-orange-deep);
+    border-radius: 2px;
+    margin: 0 auto $space-4;
+  }
+
+  .final-cta-title {
+    font-family: $font-serif;
+    font-size: $text-4xl;
+    color: $c-plum;
+    margin-top: $space-3;
+    line-height: $leading-tight;
+  }
+
+  .final-cta-sub {
+    font-size: $text-lg;
+    color: rgba($c-plum, 0.75);
+    margin-top: $space-4;
+    max-width: 480px;
+    margin-inline: auto;
+    line-height: $leading-snug;
+  }
+
+  // Paint-in-motion coverage for this page now comes from the site-wide
+  // continuous layer in BaseLayout.astro, not per-section overlays.
+</style>

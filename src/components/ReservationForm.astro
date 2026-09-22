@@ -1,0 +1,279 @@
+---
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getNextWorkshop, getPublicSiteSetting, type FormMessagesSetting } from '../lib/content/publicContent';
+
+interface Props {
+  workshopId?: string;
+}
+const { workshopId } = Astro.props;
+const configured = isFormConfigured();
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+
+const cmsMessages = (await getPublicSiteSetting<FormMessagesSetting>('form_messages'))?.reservation;
+const submitLabel = cmsMessages?.submitLabel || 'Confirmer ma réservation';
+const loadingLabel = cmsMessages?.loadingLabel || 'Envoi en cours…';
+const successTitle = cmsMessages?.successTitle || 'Demande reçue!';
+const successBody = cmsMessages?.successBody || 'Nous te confirmons ta place par courriel dans les 24 heures. On a hâte de rire avec toi.';
+---
+
+<div class="reservation-form-wrap">
+  {!configured && (
+    <div class="reservation-proto-notice">
+      <p>
+        <strong>Pas encore branché</strong> — la collecte de réservations n'est pas encore
+        connectée à un service d'envoi. Écris-nous à <a href={`mailto:${site.email}`}>{site.email}</a>{' '}
+        pour réserver ta place directement.
+      </p>
+    </div>
+  )}
+
+  <form class="reservation-form" data-reservation-form aria-label="Formulaire de réservation">
+    <input type="hidden" name="workshop" value={workshopId ?? 'atelier-decouverte'} />
+
+    <div class="rf-field">
+      <label for="rf-name" class="rf-label">Ton prénom et nom</label>
+      <input type="text" id="rf-name" name="name" class="rf-input" required autocomplete="name" placeholder="Marie Tremblay" />
+    </div>
+
+    <div class="rf-field">
+      <label for="rf-email" class="rf-label">Ton courriel</label>
+      <input type="email" id="rf-email" name="email" class="rf-input" required autocomplete="email" placeholder="marie@example.ca" />
+    </div>
+
+    <div class="rf-field">
+      <label for="rf-phone" class="rf-label">Téléphone <span class="rf-optional">(facultatif)</span></label>
+      <input type="tel" id="rf-phone" name="phone" class="rf-input" autocomplete="tel" placeholder="514 555-0123" />
+    </div>
+
+    <div class="rf-field">
+      <label for="rf-workshop" class="rf-label">Atelier souhaité</label>
+      <select id="rf-workshop" name="workshop_choice" class="rf-input">
+        <option value="atelier-decouverte">Atelier découverte — On rit. On joue. On s'exprime.</option>
+        <option value="waitlist">Je veux être sur la liste d'attente (prochain atelier)</option>
+      </select>
+    </div>
+
+    <div class="rf-field">
+      <label for="rf-message" class="rf-label">Un mot, une question? <span class="rf-optional">(facultatif)</span></label>
+      <textarea id="rf-message" name="message" class="rf-input rf-textarea" rows="3" placeholder="Je suis un peu nerveux·se mais motivé·e..."></textarea>
+    </div>
+
+    <div class="rf-field rf-field--check">
+      <input type="checkbox" id="rf-consent" name="consent" class="rf-checkbox" required />
+      <label for="rf-consent" class="rf-check-label">
+        J'accepte d'être contacté·e par Atelier Expression concernant ma réservation et les ateliers à venir.
+        <a href="/mentions-legales" class="rf-link">Politique de confidentialité</a>
+      </label>
+    </div>
+
+    <div class="rf-actions">
+      <button type="submit" class="btn btn--primary btn--lg rf-submit">
+        <span class="rf-submit-label">{submitLabel}</span>
+        <span class="rf-submit-loading" hidden>{loadingLabel}</span>
+      </button>
+      <p class="rf-notice">Places limitées ({nextWorkshop.capacity}). Confirmation par courriel.</p>
+    </div>
+
+    <div class="rf-success" role="status" aria-live="polite" hidden>
+      <div class="rf-success-inner">
+        <span class="rf-success-icon" aria-hidden="true">✓</span>
+        <h3>{successTitle}</h3>
+        <p>{successBody}</p>
+      </div>
+    </div>
+
+    <div class="rf-error" role="alert" aria-live="assertive" hidden>
+      <p>
+        L'envoi a échoué. Écris-nous directement à <a href={`mailto:${site.email}`}>{site.email}</a>.
+      </p>
+    </div>
+  </form>
+</div>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .reservation-proto-notice {
+    background-color: rgba($color-soleil, 0.15);
+    border: 1px solid rgba($color-soleil, 0.4);
+    border-radius: $radius-md;
+    padding: $space-4 $space-5;
+    margin-bottom: $space-6;
+
+    p {
+      font-size: $text-sm;
+      color: $color-encre;
+      line-height: $leading-normal;
+    }
+
+    strong { font-weight: $weight-bold; }
+  }
+
+  .reservation-form {
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+  }
+
+  .rf-field {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+
+    &--check {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: $space-3;
+    }
+  }
+
+  .rf-label {
+    font-size: $text-sm;
+    font-weight: $weight-medium;
+    color: $color-encre;
+  }
+
+  .rf-optional {
+    color: $color-gris-moyen;
+    font-weight: $weight-regular;
+  }
+
+  .rf-input {
+    font-family: $font-sans;
+    font-size: $text-base;
+    color: $color-encre;
+    background-color: $color-blanc;
+    border: 1.5px solid $color-gris-doux;
+    border-radius: $radius-md;
+    padding: 0.7em 1em;
+    outline: none;
+    transition: border-color $transition-base, box-shadow $transition-base;
+    width: 100%;
+
+    &:focus {
+      border-color: $color-fuchsia;
+      box-shadow: 0 0 0 3px rgba($color-fuchsia, 0.12);
+    }
+
+    &::placeholder { color: $color-gris-moyen; }
+  }
+
+  .rf-textarea { resize: vertical; min-height: 100px; }
+
+  .rf-checkbox {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    accent-color: $color-fuchsia;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+
+  .rf-check-label {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+  }
+
+  .rf-link {
+    color: $color-fuchsia;
+    text-decoration: underline;
+  }
+
+  .rf-actions {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    align-items: flex-start;
+  }
+
+  .rf-submit { min-width: 220px; }
+
+  .rf-notice {
+    font-size: $text-xs;
+    color: $color-gris-moyen;
+  }
+
+  .rf-success {
+    &:not([hidden]) {
+      display: block;
+    }
+  }
+
+  .rf-success-inner {
+    background-color: rgba($c-orange, 0.1);
+    border: 2px solid $c-orange;
+    border-radius: 12px;
+    padding: $space-8;
+    text-align: center;
+  }
+
+  .rf-success-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: $radius-full;
+    background-color: $c-orange;
+    color: $c-on-orange;
+    font-size: $text-2xl;
+    margin-bottom: $space-4;
+  }
+
+  .rf-error {
+    margin-top: $space-4;
+    padding: $space-4 $space-5;
+    background-color: rgba($color-corail, 0.08);
+    border: 2px solid rgba($color-corail, 0.35);
+    border-radius: $radius-md;
+    color: $color-encre;
+
+    &:not([hidden]) { display: block; }
+
+    a { color: $color-fuchsia; }
+  }
+</style>
+
+<script>
+  import { submitForm } from '../lib/formspree';
+
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-reservation-form]');
+
+  forms.forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formFields = form.querySelectorAll<HTMLElement>('.rf-field, .rf-actions');
+      const success = form.querySelector<HTMLElement>('.rf-success');
+      const errorBox = form.querySelector<HTMLElement>('.rf-error');
+      const submitBtn = form.querySelector<HTMLButtonElement>('.rf-submit');
+      const label = form.querySelector<HTMLElement>('.rf-submit-label');
+      const loading = form.querySelector<HTMLElement>('.rf-submit-loading');
+
+      if (submitBtn) submitBtn.disabled = true;
+      label?.setAttribute('hidden', 'true');
+      loading?.removeAttribute('hidden');
+      errorBox?.setAttribute('hidden', 'true');
+
+      const formData = new FormData(form);
+      const data: Record<string, string> = {};
+      formData.forEach((value, key) => { data[key] = String(value); });
+
+      const result = await submitForm('reservation', data);
+
+      if (submitBtn) submitBtn.disabled = false;
+      loading?.setAttribute('hidden', 'true');
+      label?.removeAttribute('hidden');
+
+      if (result.ok) {
+        formFields.forEach((el) => { el.style.display = 'none'; });
+        if (success) success.hidden = false;
+      } else if (errorBox) {
+        errorBox.hidden = false;
+      }
+    });
+  });
+</script>

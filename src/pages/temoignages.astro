@@ -1,0 +1,127 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import TestimonialCard from '../components/TestimonialCard.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
+import { testimonials as staticTestimonials } from '../data/testimonials';
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getTestimonials, getNextWorkshop } from '../lib/content/publicContent';
+
+const cmsTestimonials = await getTestimonials();
+const testimonials = cmsTestimonials.length > 0 ? cmsTestimonials : staticTestimonials;
+
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+---
+
+<BaseLayout
+  title="Témoignages"
+  description="Ce que les participant·es d'Atelier Expression ressentent. Témoignages à venir après les premiers ateliers."
+  pageSlug="temoignages"
+>
+  <PageHero
+    accent="ils et elles témoignent"
+    title="Témoignages"
+    subtitle="Ce que les participant·es ressentent après un atelier. Les premiers témoignages arrivent bientôt."
+  />
+
+  <!-- ─── PLACEHOLDER NOTICE ────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="container">
+      <div class="temoignages-notice" data-reveal>
+        <span class="temoignages-notice__icon" aria-hidden="true">✦</span>
+        <div>
+          <h2 class="temoignages-notice__title">Les premiers ateliers n'ont pas encore eu lieu.</h2>
+          <p class="temoignages-notice__body">
+            Ces témoignages sont des exemples de ce que les participant·es pourraient ressentir.
+            Ils seront remplacés par de vrais témoignages dès les premiers ateliers.
+            <strong>Ce sont des placeholders fictifs.</strong>
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top: 3rem;" data-reveal>
+        {testimonials.map((t) => (
+          <TestimonialCard testimonial={t} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PHOTO BAND ────────────────────────────────────────────────────────── -->
+  <div class="photo-band" aria-hidden="true">
+    <img src="/assets/images/cindy_group_02.png" alt="" width="1200" height="500" loading="lazy" class="photo-band__img" />
+  </div>
+
+  <!-- ─── BE THE FIRST ──────────────────────────────────────────────────────── -->
+  <section class="section band band--encre" aria-labelledby="first-heading">
+    <div class="container text-center">
+      <span class="accent-handwritten" style="color: #FF5A1F;">toi, peut-être?</span>
+      <h2 id="first-heading" style="color: #FFF7EF; margin-top: 0.5rem;">
+        Sois parmi les premières personnes à partager ton expérience.
+      </h2>
+      <p style="color: rgba(247,243,238,0.7); margin-top: 1rem; font-size: 1.125rem; max-width: 520px; margin-inline: auto;">
+        Les premières places sont limitées. Les premières personnes qui y participent seront
+        aussi celles qui nous aideront à construire quelque chose de vrai.
+      </p>
+      <div style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/reserver" class="btn btn--primary btn--lg">{nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}</a>
+        <a href="/ateliers" class="btn btn--outline-white">Voir les ateliers</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <NewsletterSignup />
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .photo-band {
+    height: 280px;
+    overflow: hidden;
+
+    @include lg { height: 360px; }
+  }
+
+  .photo-band__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    display: block;
+  }
+
+  .temoignages-notice {
+    background-color: rgba($color-soleil, 0.12);
+    border: 2px solid rgba($color-soleil, 0.3);
+    border-radius: $radius-lg;
+    padding: $space-6;
+    display: flex;
+    gap: $space-4;
+    align-items: flex-start;
+  }
+
+  .temoignages-notice__icon {
+    font-size: 2rem;
+    color: $color-soleil;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .temoignages-notice__title {
+    font-family: $font-serif;
+    font-size: $text-xl;
+    color: $color-encre;
+    margin-bottom: $space-2;
+  }
+
+  .temoignages-notice__body {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+  }
+</style>

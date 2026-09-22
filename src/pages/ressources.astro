@@ -1,0 +1,168 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
+---
+
+<BaseLayout
+  title="Ressources"
+  description="Articles, réflexions et ressources sur l'expression, le rire, la présence, et la confiance. Par Atelier Expression."
+  pageSlug="ressources"
+>
+  <PageHero
+    accent="lire, réfléchir, ressentir"
+    title="Ressources"
+    subtitle="Des réflexions courtes sur l'expression, le rire, la peur du jugement, et le droit de prendre sa place."
+  />
+
+  <section class="section" aria-labelledby="ressources-heading">
+    <div class="container">
+      <div class="ressources-notice" data-reveal>
+        <span class="ressources-notice__icon" aria-hidden="true">✦</span>
+        <div>
+          <h2 id="ressources-heading" class="ressources-notice__title">Le contenu arrive bientôt.</h2>
+          <p class="ressources-notice__body">
+            Des articles, des réflexions courtes, des extraits d'ateliers, et des pensées sur
+            l'expression adulte seront publiés ici. Inscris-toi à l'infolettre pour ne rien
+            manquer.
+          </p>
+        </div>
+      </div>
+
+      <!-- Placeholder article cards -->
+      <div class="ressources-grid" style="margin-top: 3rem;">
+        {[
+          {
+            tag: 'Expression',
+            title: 'Pourquoi les adultes ont arrêté de jouer (et comment revenir)',
+            excerpt: 'À quel moment exactement a-t-on décidé que jouer était réservé aux enfants? Et qu\'est-ce qu\'on perd quand on arrête?',
+            color: 'fuchsia',
+          },
+          {
+            tag: 'Rire',
+            title: 'Le rire nerveux est un début, pas une fin',
+            excerpt: 'On commence souvent par rire de sa propre gêne. C\'est souvent ce rire-là qui ouvre la première porte.',
+            color: 'corail',
+          },
+          {
+            tag: 'Confiance',
+            title: 'Tu n\'as pas besoin d\'être sûr·e de toi pour prendre ta place',
+            excerpt: 'La confiance n\'est pas un prérequis. C\'est un résultat. Et ça commence par un seul petit essai.',
+            color: 'soleil',
+          },
+          {
+            tag: 'Connexion',
+            title: 'Comment le groupe peut devenir ta ressource',
+            excerpt: 'On a souvent peur des autres. Mais les autres ont aussi peur. Et c\'est là que quelque chose de surprenant peut se créer.',
+            color: 'emeraude',
+          },
+        ].map((article) => (
+          <div class:list={['ressource-card', `ressource-card--${article.color}`]}>
+            <span class="ressource-card__tag">{article.tag}</span>
+            <h3 class="ressource-card__title">{article.title}</h3>
+            <p class="ressource-card__excerpt">{article.excerpt}</p>
+            <span class="ressource-card__coming">Article à venir</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <NewsletterSignup
+        title="Sois averti·e à chaque nouvelle publication"
+        subtitle="Les premiers articles, les réflexions, et les coulisses d'ateliers — directement dans ta boîte."
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .ressources-notice {
+    background-color: rgba($color-fuchsia, 0.06);
+    border: 2px solid rgba($color-fuchsia, 0.2);
+    border-radius: $radius-lg;
+    padding: $space-6;
+    display: flex;
+    gap: $space-4;
+    align-items: flex-start;
+  }
+
+  .ressources-notice__icon {
+    font-size: 2rem;
+    color: $color-fuchsia;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .ressources-notice__title {
+    font-family: $font-serif;
+    font-size: $text-xl;
+    color: $color-encre;
+    margin-bottom: $space-2;
+  }
+
+  .ressources-notice__body {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+  }
+
+  .ressources-grid {
+    display: grid;
+    gap: $space-5;
+    grid-template-columns: 1fr;
+
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+    @include xl { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .ressource-card {
+    background-color: $color-blanc;
+    border-radius: $radius-lg;
+    padding: $space-5;
+    box-shadow: $shadow-card;
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    border-top: 4px solid;
+    opacity: 0.8;
+
+    &--fuchsia  { border-top-color: $c-orange; }
+    &--corail   { border-top-color: $c-pink; }
+    &--soleil   { border-top-color: $c-orange; }
+    &--emeraude { border-top-color: $c-pink; }
+  }
+
+  .ressource-card__tag {
+    font-size: $text-xs;
+    font-weight: $weight-bold;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $color-gris-moyen;
+  }
+
+  .ressource-card__title {
+    font-family: $font-serif;
+    font-size: $text-lg;
+    color: $color-encre;
+    line-height: $leading-snug;
+    flex: 1;
+  }
+
+  .ressource-card__excerpt {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+  }
+
+  .ressource-card__coming {
+    font-size: $text-xs;
+    color: $color-gris-moyen;
+    font-style: italic;
+    margin-top: auto;
+  }
+</style>

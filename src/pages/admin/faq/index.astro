@@ -1,0 +1,76 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="FAQ" activeNav="faq">
+  <h1>FAQ</h1>
+  <p class="admin-page-sub">Affichées sur /faq (toutes) et sur la page d'accueil (les 4 premières, par ordre).</p>
+
+  <div class="admin-card">
+    <table class="admin-table" id="faq-table">
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th>Catégorie</th>
+          <th>Statut</th>
+          <th>Visible</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="faq-tbody">
+        <tr><td colspan="5" class="admin-empty-note">Chargement…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    .admin-page-sub { color: #6B6255; font-size: 0.9rem; margin: -0.5rem 0 1.5rem; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .admin-table th { text-align: left; padding: 0.6em 0.8em; border-bottom: 2px solid #E5E2DA; color: #6B6255; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .admin-table td { padding: 0.7em 0.8em; border-bottom: 1px solid #EFEDE7; }
+    .status-pill { display: inline-block; padding: 0.2em 0.7em; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .status-pill--published { background: #E4F5E9; color: #1E5C33; }
+    .status-pill--draft { background: #FFF4E0; color: #6B4A00; }
+    .status-pill--archived { background: #EDEBE6; color: #6B6255; }
+    .category-group-heading { margin-top: 1.5rem; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; color: #6B6255; }
+  </style>
+
+  <script>
+    import { listFaqs, listFaqCategories } from '../../../lib/content/faq';
+    import { isSupabaseConfigured } from '../../../lib/supabase/client';
+
+    async function render() {
+      const tbody = document.getElementById('faq-tbody');
+      if (!tbody) return;
+
+      if (!isSupabaseConfigured()) {
+        tbody.innerHTML = '<tr><td colspan="5" class="admin-empty-note">CMS non configuré.</td></tr>';
+        return;
+      }
+
+      const [faqs, categories] = await Promise.all([listFaqs(), listFaqCategories()]);
+      if (faqs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="admin-empty-note">Aucune question pour l\'instant.</td></tr>';
+        return;
+      }
+
+      const categoryTitleById = new Map(categories.map((c) => [c.id, c.title ?? c.stable_key]));
+
+      tbody.innerHTML = faqs.map((f) => {
+        const excerpt = (f.question ?? '').slice(0, 70) + ((f.question ?? '').length > 70 ? '…' : '');
+        const categoryTitle = f.category_id ? (categoryTitleById.get(f.category_id) ?? '—') : '—';
+        return `
+          <tr>
+            <td>${excerpt}</td>
+            <td>${categoryTitle}</td>
+            <td><span class="status-pill status-pill--${f.status}">${f.status}</span></td>
+            <td>${f.visible ? '✓' : '—'}</td>
+            <td><a href="/admin/faq/edit?id=${f.id}" class="admin-btn admin-btn--ghost">Modifier</a></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    render();
+  </script>
+</AdminLayout>

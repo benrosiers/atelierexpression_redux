@@ -1,0 +1,232 @@
+// ─── ATELIER EXPRESSION — GLOBAL STYLES ──────────────────────────────────────
+@use 'tokens' as *;
+@use 'paint';
+
+// ─── GOOGLE FONTS ─────────────────────────────────────────────────────────────
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@400;500;700&family=Caveat:wght@500;700&display=swap');
+
+// ─── RESET ────────────────────────────────────────────────────────────────────
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+
+  @include reduced-motion {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  font-family: $font-sans;
+  font-size: $text-base;
+  line-height: $leading-normal;
+  color: $text-primary;
+  background-color: $bg-primary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  isolation: isolate;
+  // `overflow-x: hidden` (not `clip`) computes `overflow-y: auto` per spec
+  // whenever the other axis stays `visible` — silently turning body into its
+  // own scroll container. That breaks position:sticky on the header (its
+  // containing block becomes body's inert scrollport instead of the
+  // viewport) and was the cause of the header floating mid-page with a
+  // blank void above/below it once the page got tall. `clip` doesn't
+  // establish a scroll container, so it blocks horizontal scroll without
+  // this side effect.
+  overflow-x: clip;
+
+  @include paint.paint-tokens;
+}
+
+// ─── TYPOGRAPHY BASE ──────────────────────────────────────────────────────────
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-serif;
+  font-weight: $weight-bold;
+  line-height: $leading-tight;
+  color: $text-primary;
+}
+
+h1 { font-size: $text-5xl; }
+h2 { font-size: $text-4xl; }
+h3 { font-size: $text-3xl; }
+h4 { font-size: $text-2xl; }
+h5 { font-size: $text-xl; }
+h6 { font-size: $text-lg; }
+
+p {
+  font-size: $text-base;
+  line-height: $leading-normal;
+  color: $text-primary;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color $transition-base;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button {
+  font-family: $font-sans;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+input, textarea, select {
+  font-family: $font-sans;
+  font-size: $text-base;
+}
+
+// ─── UTILITY CLASSES ──────────────────────────────────────────────────────────
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: $container-max;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 5vw, 3rem);
+}
+
+.container--text {
+  max-width: $container-text;
+}
+
+.container--wide {
+  max-width: $container-wide;
+}
+
+// ─── ACCENT STYLES ────────────────────────────────────────────────────────────
+.text-serif { font-family: $font-serif; }
+.text-handwritten { font-family: $font-handwritten; }
+
+.text-orange   { color: $c-orange; }
+.text-pink     { color: $c-pink; }
+.text-espresso { color: $c-espresso; }
+.text-creme    { color: $color-creme; }
+.text-encre    { color: $color-encre; }
+
+// Legacy aliases (cascade to new colors via tokens)
+.text-fuchsia  { color: $color-fuchsia; }
+.text-corail   { color: $color-corail; }
+.text-soleil   { color: $color-soleil; }
+.text-emeraude { color: $c-plum-soft; }
+
+.bg-espresso { background-color: $c-pink-deep; color: $c-on-dark; }
+.bg-orange   { background-color: $c-orange;   color: $c-on-orange; }
+.bg-pink     { background-color: $c-pink;     color: $c-on-pink; }
+.bg-encre    { background-color: $c-orange-deep; color: $color-creme; }
+.bg-creme    { background-color: $color-creme; color: $color-encre; }
+
+// ─── FOCUS STYLES (ACCESSIBILITY) ─────────────────────────────────────────────
+:focus-visible {
+  outline: 3px solid $c-orange;
+  outline-offset: 3px;
+  border-radius: $radius-sm;
+}
+
+// ─── SELECTION ────────────────────────────────────────────────────────────────
+::selection {
+  background-color: $c-orange;
+  color: $color-blanc;
+}
+
+// ─── SECTION BASE ─────────────────────────────────────────────────────────────
+.section {
+  padding-block: $section-pad;
+
+  &--sm {
+    padding-block: $section-pad-sm;
+  }
+}
+
+// ─── HANDWRITTEN ACCENT ───────────────────────────────────────────────────────
+.accent-handwritten {
+  font-family: $font-handwritten;
+  font-size: $text-xl;
+  font-weight: 700;
+  color: $c-orange;
+  display: block;
+  line-height: 1.2;
+}
+
+.accent-handwritten--pink {
+  color: $c-pink;
+}
+
+// ─── INLINE MARK (UNDERLINE HIGHLIGHT) ────────────────────────────────────────
+.mark-highlight {
+  display: inline;
+  background-image: linear-gradient(transparent 60%, rgba($color-soleil, 0.4) 60%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.mark-corail {
+  display: inline;
+  background-image: linear-gradient(transparent 60%, rgba($color-corail, 0.25) 60%);
+}
+
+// ─── SCROLL REVEAL ────────────────────────────────────────────────────────────
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 600ms ease, transform 600ms ease;
+
+  &.revealed {
+    opacity: 1;
+    transform: none;
+  }
+
+  @include reduced-motion {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+[data-reveal="left"] {
+  transform: translateX(-24px);
+  &.revealed { transform: none; }
+}
+
+[data-reveal="right"] {
+  transform: translateX(24px);
+  &.revealed { transform: none; }
+}
+
+// ─── PROSE ────────────────────────────────────────────────────────────────────
+.prose {
+  p + p { margin-top: $space-4; }
+  ul, ol {
+    list-style: disc;
+    padding-left: $space-5;
+    li + li { margin-top: $space-2; }
+  }
+  strong { font-weight: $weight-bold; }
+  em { font-style: italic; }
+}

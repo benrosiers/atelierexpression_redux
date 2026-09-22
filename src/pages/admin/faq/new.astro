@@ -1,0 +1,78 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Nouvelle question" activeNav="faq">
+  <h1>Nouvelle question</h1>
+  <div class="admin-card">
+    <div class="admin-form-field">
+      <label for="new-question">Question</label>
+      <input type="text" id="new-question" placeholder="Question" />
+    </div>
+    <div class="admin-form-field">
+      <label for="new-answer">Réponse</label>
+      <textarea id="new-answer" rows="4" placeholder="Réponse"></textarea>
+    </div>
+    <div class="admin-form-field">
+      <label for="new-category">Catégorie</label>
+      <select id="new-category">
+        <option value="">Chargement…</option>
+      </select>
+    </div>
+    <button type="button" class="admin-btn admin-btn--primary" id="create-btn">Créer (brouillon)</button>
+  </div>
+
+  <script>
+    import { getSupabaseClient, isSupabaseConfigured } from '../../../lib/supabase/client';
+    import { listFaqCategories } from '../../../lib/content/faq';
+
+    function notify(message: string, kind: 'success' | 'error') {
+      const container = document.getElementById('admin-notifications');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `admin-notice admin-notice--${kind}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    async function init() {
+      const select = document.getElementById('new-category') as HTMLSelectElement;
+      if (!isSupabaseConfigured()) {
+        select.innerHTML = '<option value="">CMS non configuré</option>';
+        return;
+      }
+      const categories = await listFaqCategories();
+      select.innerHTML = categories.map((c) => `<option value="${c.id}">${c.title ?? c.stable_key}</option>`).join('');
+    }
+    init();
+
+    document.getElementById('create-btn')?.addEventListener('click', async () => {
+      if (!isSupabaseConfigured()) { notify('CMS non configuré.', 'error'); return; }
+      const question = (document.getElementById('new-question') as HTMLInputElement).value.trim();
+      const answer = (document.getElementById('new-answer') as HTMLTextAreaElement).value.trim();
+      const categoryId = (document.getElementById('new-category') as HTMLSelectElement).value || null;
+
+      if (!question) {
+        notify('La question ne peut pas être vide.', 'error');
+        return;
+      }
+
+      const client = getSupabaseClient();
+      const { data: faq, error } = await client!
+        .from('faqs')
+        .insert({ status: 'draft', visible: false, category_id: categoryId })
+        .select('id').single();
+
+      if (error || !faq) {
+        notify(`Erreur : ${error?.message ?? 'inconnue'}`, 'error');
+        return;
+      }
+
+      const { data: frLocale } = await client!.from('locales').select('id').eq('code', 'fr-CA').single();
+      await client!.from('faq_translations').insert({ faq_id: faq.id, locale_id: frLocale.id, question, answer });
+
+      window.location.href = `/admin/faq/edit?id=${faq.id}`;
+    });
+  </script>
+</AdminLayout>

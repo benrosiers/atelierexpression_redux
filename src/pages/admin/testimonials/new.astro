@@ -1,0 +1,61 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Nouveau témoignage" activeNav="testimonials">
+  <h1>Nouveau témoignage</h1>
+  <div class="admin-card">
+    <div class="admin-form-field">
+      <label for="new-quote">Citation</label>
+      <textarea id="new-quote" rows="4" placeholder="Citation du témoignage"></textarea>
+    </div>
+    <div class="admin-form-field">
+      <label for="new-initials">Initiales</label>
+      <input type="text" id="new-initials" placeholder="ex. J.D." />
+    </div>
+    <button type="button" class="admin-btn admin-btn--primary" id="create-btn">Créer (brouillon)</button>
+  </div>
+
+  <script>
+    import { getSupabaseClient, isSupabaseConfigured } from '../../../lib/supabase/client';
+
+    function notify(message: string, kind: 'success' | 'error') {
+      const container = document.getElementById('admin-notifications');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `admin-notice admin-notice--${kind}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    document.getElementById('create-btn')?.addEventListener('click', async () => {
+      if (!isSupabaseConfigured()) { notify('CMS non configuré.', 'error'); return; }
+      const quote = (document.getElementById('new-quote') as HTMLTextAreaElement).value.trim();
+      const initials = (document.getElementById('new-initials') as HTMLInputElement).value.trim();
+
+      if (!quote) {
+        notify('La citation ne peut pas être vide.', 'error');
+        return;
+      }
+
+      const client = getSupabaseClient();
+      // Real testimonials created here are never placeholders — only the
+      // 3 seeded fictional examples carry is_placeholder=true.
+      const { data: testimonial, error } = await client!
+        .from('testimonials')
+        .insert({ status: 'draft', visible: false, is_placeholder: false, author_initials: initials || null })
+        .select('id').single();
+
+      if (error || !testimonial) {
+        notify(`Erreur : ${error?.message ?? 'inconnue'}`, 'error');
+        return;
+      }
+
+      const { data: frLocale } = await client!.from('locales').select('id').eq('code', 'fr-CA').single();
+      await client!.from('testimonial_translations').insert({ testimonial_id: testimonial.id, locale_id: frLocale.id, quote });
+
+      window.location.href = `/admin/testimonials/edit?id=${testimonial.id}`;
+    });
+  </script>
+</AdminLayout>

@@ -1,0 +1,122 @@
+---
+import Doodle from './Doodle.astro';
+import { getSectionItems } from '../lib/content/publicContent';
+
+interface Pillar {
+  icon: 'smile' | 'sparkle' | 'dancer' | 'speechBubble' | 'sun' | 'spiral';
+  title: string;
+  description: string;
+  variant: 'orange' | 'pink' | 'coral' | 'peach';
+}
+
+// CMS-first, static-fallback (see Hero.astro for the same pattern). The
+// static array below stays as the fallback source — never deleted, per
+// docs/CMS_MIGRATION_PLAN.md.
+const staticPillars: Pillar[] = [
+  {
+    icon: 'smile',
+    title: 'Rire',
+    description: 'Le rire comme premier outil. Pas le rire performé — le rire qui sort tout seul, maladroit et vrai.',
+    variant: 'orange',
+  },
+  {
+    icon: 'sparkle',
+    title: 'Jeu',
+    description: 'Les exercices sont simples et accessibles. On joue. On essaie. On recommence. Sans score.',
+    variant: 'pink',
+  },
+  {
+    icon: 'dancer',
+    title: 'Corps',
+    description: 'L\'expression passe par le corps. On bouge un peu. Rien d\'athlétique. Juste réhabiter sa propre peau.',
+    variant: 'coral',
+  },
+  {
+    icon: 'speechBubble',
+    title: 'Voix',
+    description: 'Parler, tonner, chuchoter, faire du bruit. Retrouver le droit d\'exister avec sa voix.',
+    variant: 'peach',
+  },
+  {
+    icon: 'sun',
+    title: 'Présence',
+    description: 'Être là, pleinement. Pas dans sa tête, pas dans ses inquiétudes. Juste là, avec les autres.',
+    variant: 'orange',
+  },
+  {
+    icon: 'spiral',
+    title: 'Cercle',
+    description: 'Chaque atelier finit par un cercle de partage. Court, libre, sans pression. Tu peux juste écouter.',
+    variant: 'pink',
+  },
+];
+
+const cmsItems = await getSectionItems('home', 'pillars');
+const pillars: Pillar[] = cmsItems.length > 0
+  ? cmsItems.map((item) => ({
+      icon: (item.iconKey ?? 'smile') as Pillar['icon'],
+      title: item.title ?? '',
+      description: item.body ?? '',
+      variant: (item.visualVariant ?? 'orange') as Pillar['variant'],
+    }))
+  : staticPillars;
+---
+
+<div class="value-pillars">
+  {pillars.map((pillar, i) => (
+    <div
+      class:list={['paint-card', `paint-card--${pillar.variant}`, 'pillar-card']}
+      style={`--tilt: ${((i % 5) - 2) * 1.2}deg;`}
+    >
+      <div class="pillar-card__icon">
+        <Doodle name={pillar.icon} color="ink" />
+      </div>
+      <h3 class="pillar-card__title">{pillar.title}</h3>
+      <p class="pillar-card__description">{pillar.description}</p>
+    </div>
+  ))}
+</div>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .value-pillars {
+    display: grid;
+    gap: $space-4;
+    grid-template-columns: 1fr;
+
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+    @include lg { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  // Every variant here is a bright/light background — ink text measured
+  // 4.4–6.3:1 (WCAG AA) uniformly; cream measured 2.7–3.6:1 on the same
+  // hues. One ink color across all four keeps this scene coherent instead
+  // of alternating white/black by variant.
+  .pillar-card {
+    padding: $space-6;
+
+    .pillar-card__title,
+    .pillar-card__description { color: $c-ink; }
+
+    .pillar-card__description { opacity: 0.85; }
+  }
+
+  .pillar-card__icon {
+    width: 2.4rem;
+    height: 2.4rem;
+    margin-bottom: $space-4;
+  }
+
+  .pillar-card__title {
+    font-family: $font-serif;
+    font-size: $text-xl;
+    font-weight: $weight-bold;
+    margin-bottom: $space-3;
+  }
+
+  .pillar-card__description {
+    font-size: $text-sm;
+    line-height: $leading-normal;
+  }
+</style>

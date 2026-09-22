@@ -1,0 +1,244 @@
+---
+// URL is /admin/pages/edit?slug=<slug>, not the literal /admin/pages/[slug]
+// dynamic-path shape the brief describes. Deliberate, not an oversight: this
+// whole project builds to a fully static dist/ (see docs/CMS_MIGRATION_PLAN.md
+// — /admin has no SSR host either). A literal [slug].astro route needs
+// getStaticPaths() to enumerate every slug AT BUILD TIME, which means a page
+// Cindy creates in the CMS wouldn't get an editor URL until the next
+// build+deploy — exactly the kind of admin-infrastructure staleness the
+// "publish triggers a rebuild" model is meant to apply to PUBLIC content
+// changes, not to the admin tool's own responsiveness. A query-param route
+// is one static shell that reads `slug` client-side and fetches that page's
+// data from Supabase directly — works for any page, including ones created
+// seconds ago, with zero rebuild dependency.
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Modifier une page" activeNav="pages">
+  <div class="locale-tabs" id="locale-tabs"></div>
+  <div id="page-editor-root">
+    <p class="admin-empty-note">Chargement…</p>
+  </div>
+
+  <style>
+    .locale-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .locale-tab {
+      background: #fff;
+      border: 1.5px solid #CFCBC0;
+      border-radius: 999px;
+      padding: 0.3em 0.9em;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #6B6255;
+    }
+    .locale-tab.is-active {
+      background: #32111F;
+      border-color: #32111F;
+      color: #FFF1E8;
+    }
+    .section-block {
+      border: 1px solid #E5E2DA;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      background: #fff;
+    }
+    .section-block__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .section-block__meta {
+      font-size: 0.8rem;
+      color: #6B6255;
+    }
+    .content-item-row {
+      display: grid;
+      grid-template-columns: 1fr 2fr auto auto;
+      gap: 0.75rem;
+      align-items: start;
+      padding: 0.75rem 0;
+      border-top: 1px solid #EFEDE7;
+    }
+    .content-item-row input, .content-item-row textarea, .content-item-row select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0.4em 0.6em;
+      border: 1px solid #CFCBC0;
+      border-radius: 6px;
+    }
+    .content-item-row textarea { min-height: 3.5em; resize: vertical; }
+    .toggle-visible { display: flex; align-items: center; gap: 0.4em; font-size: 0.85rem; }
+    .missing-translation-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #6B4A00;
+      background: #FFF4E0;
+      border-radius: 999px;
+      padding: 0.15em 0.6em;
+      margin-top: 0.4em;
+    }
+  </style>
+
+  <script>
+    import {
+      getPageBySlug, getContentItems, listLocales, getContentItemTranslationStatus,
+      updateSectionVisibility, updateContentItemVisibility, updateContentItemTranslation, updateContentItemStatus,
+    } from '../../../lib/content/pages';
+    import { isSupabaseConfigured } from '../../../lib/supabase/client';
+
+    const root = document.getElementById('page-editor-root')!;
+    const localeTabsEl = document.getElementById('locale-tabs')!;
+    const slug = new URLSearchParams(window.location.search).get('slug');
+    let currentLocale = 'fr-CA';
+    let locales: { code: string; label: string }[] = [];
+
+    function notify(message: string, kind: 'success' | 'error') {
+      const container = document.getElementById('admin-notifications');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `admin-notice admin-notice--${kind}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    async function renderLocaleTabs() {
+      locales = await listLocales();
+      localeTabsEl.innerHTML = locales.map((l) => `
+        <button type="button" class="locale-tab ${l.code === currentLocale ? 'is-active' : ''}" data-locale="${l.code}">${l.label}</button>
+      `).join('');
+      localeTabsEl.querySelectorAll<HTMLButtonElement>('.locale-tab').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          currentLocale = btn.dataset.locale!;
+          await renderLocaleTabs();
+          await renderEditor();
+        });
+      });
+    }
+
+    async function renderEditor() {
+      if (!isSupabaseConfigured()) {
+        root.innerHTML = '<p class="admin-empty-note">CMS non configuré.</p>';
+        return;
+      }
+      if (!slug) {
+        root.innerHTML = '<p class="admin-empty-note">Aucun slug fourni (utiliser ?slug=...).</p>';
+        return;
+      }
+
+      const result = await getPageBySlug(slug, currentLocale);
+      if (!result) {
+        root.innerHTML = `<p class="admin-empty-note">Page "${slug}" introuvable.</p>`;
+        return;
+      }
+
+      const { page, sections } = result;
+      const isFallback = currentLocale !== 'fr-CA';
+
+      let html = `<h1>${page.title ?? page.slug}</h1><p class="admin-page-sub">Slug : <code>${page.slug}</code> — statut : ${page.status}${isFallback && !page.title ? ' — <em>titre non traduit, repli fr-CA affiché ci-dessous si vide</em>' : ''}</p>`;
+
+      for (const section of sections) {
+        const items = await getContentItems(section.id, currentLocale);
+        const rows = await Promise.all(items.map(async (item) => {
+          const statusMap = await getContentItemTranslationStatus(item.id);
+          const missing = Object.entries(statusMap).filter(([, complete]) => !complete).map(([code]) => code);
+          return `
+            <div class="content-item-row" data-item-id="${item.id}">
+              <div>
+                <input type="text" class="item-title-input" data-item-id="${item.id}" value="${(item.title ?? '').replace(/"/g, '&quot;')}" placeholder="Titre" />
+                <label class="toggle-visible" style="margin-top:0.4em;">
+                  <input type="checkbox" class="item-visible-toggle" data-item-id="${item.id}" ${item.visible ? 'checked' : ''} />
+                  Visible
+                </label>
+                ${missing.length > 0 ? `<div class="missing-translation-badge">Manquant : ${missing.join(', ')}</div>` : ''}
+              </div>
+              <textarea class="item-body-input" data-item-id="${item.id}" placeholder="Texte">${item.body ?? ''}</textarea>
+              <select class="item-status-select" data-item-id="${item.id}">
+                <option value="draft" ${item.status === 'draft' ? 'selected' : ''}>Brouillon</option>
+                <option value="published" ${item.status === 'published' ? 'selected' : ''}>Publié</option>
+                <option value="archived" ${item.status === 'archived' ? 'selected' : ''}>Archivé</option>
+              </select>
+              <button type="button" class="admin-btn admin-btn--ghost item-save-btn" data-item-id="${item.id}">Enregistrer</button>
+            </div>
+          `;
+        }));
+
+        html += `
+          <div class="section-block" data-section-id="${section.id}">
+            <div class="section-block__header">
+              <div>
+                <strong>${section.title ?? section.stable_key}</strong>
+                <div class="section-block__meta">${section.component_type} — ${items.length} élément(s)</div>
+              </div>
+              <label class="toggle-visible">
+                <input type="checkbox" class="section-visible-toggle" data-section-id="${section.id}" ${section.visible ? 'checked' : ''} />
+                Visible
+              </label>
+            </div>
+            ${rows.join('')}
+          </div>
+        `;
+      }
+
+      root.innerHTML = html;
+      wireEvents();
+    }
+
+    function wireEvents() {
+      root.querySelectorAll<HTMLInputElement>('.section-visible-toggle').forEach((el) => {
+        el.addEventListener('change', async () => {
+          const id = el.dataset.sectionId!;
+          const result = await updateSectionVisibility(id, el.checked);
+          notify(result.ok ? 'Section mise à jour.' : `Erreur : ${result.error}`, result.ok ? 'success' : 'error');
+        });
+      });
+
+      root.querySelectorAll<HTMLInputElement>('.item-visible-toggle').forEach((el) => {
+        el.addEventListener('change', async () => {
+          const id = el.dataset.itemId!;
+          const result = await updateContentItemVisibility(id, el.checked);
+          notify(result.ok ? 'Élément mis à jour.' : `Erreur : ${result.error}`, result.ok ? 'success' : 'error');
+        });
+      });
+
+      root.querySelectorAll<HTMLSelectElement>('.item-status-select').forEach((el) => {
+        el.addEventListener('change', async () => {
+          const id = el.dataset.itemId!;
+          const result = await updateContentItemStatus(id, el.value as 'draft' | 'published' | 'archived');
+          notify(result.ok ? 'Statut mis à jour.' : `Erreur : ${result.error}`, result.ok ? 'success' : 'error');
+        });
+      });
+
+      root.querySelectorAll<HTMLButtonElement>('.item-save-btn').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.itemId!;
+          const titleInput = root.querySelector<HTMLInputElement>(`.item-title-input[data-item-id="${id}"]`);
+          const bodyInput = root.querySelector<HTMLTextAreaElement>(`.item-body-input[data-item-id="${id}"]`);
+          btn.disabled = true;
+          const result = await updateContentItemTranslation(id, {
+            title: titleInput?.value ?? '',
+            body: bodyInput?.value ?? '',
+          }, currentLocale);
+          btn.disabled = false;
+          notify(result.ok ? 'Enregistré.' : `Erreur : ${result.error}`, result.ok ? 'success' : 'error');
+          await renderEditor();
+        });
+      });
+    }
+
+    (async () => {
+      await renderLocaleTabs();
+      await renderEditor();
+    })();
+  </script>
+</AdminLayout>

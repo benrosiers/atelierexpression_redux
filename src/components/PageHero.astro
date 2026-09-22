@@ -1,0 +1,163 @@
+---
+import Doodle from './Doodle.astro';
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  accent?: string;
+  bg?: 'peach' | 'plum' | 'orange';
+  accentColor?: 'orange' | 'pink';
+}
+
+const { title, subtitle, accent, bg = 'peach', accentColor = 'orange' } = Astro.props;
+---
+
+<section class:list={['page-hero', `page-hero--${bg}`]}>
+  <!-- Paint-in-motion composition — organic blotches instead of hard blocks -->
+  <div class="paint-scene" aria-hidden="true">
+    <div
+      class="paint-layer paint-layer--l2 page-hero__paint-main"
+      data-parallax
+      data-parallax-depth="0.14"
+      data-parallax-axis="y"
+    >
+      <img src="/assets/images/decor/paint-bold-orb.webp" alt="" width="1169" height="1115" loading="lazy" />
+    </div>
+    <div
+      class="paint-layer paint-layer--l1 page-hero__paint-wave"
+      data-parallax
+      data-parallax-depth="0.09"
+      data-parallax-axis="y"
+    >
+      <img src="/assets/images/decor/paint-wave-pink-peach.webp" alt="" width="1576" height="518" loading="lazy" />
+    </div>
+    <div
+      class="paint-layer paint-layer--l2 page-hero__paint-orb2"
+      data-parallax
+      data-parallax-depth="0.17"
+      data-parallax-axis="y"
+    >
+      <img src="/assets/images/decor/paint-pink-orb.webp" alt="" width="1169" height="1115" loading="lazy" />
+    </div>
+    <div
+      class="page-hero__doodle page-hero__doodle--flower doodle--drift"
+      data-parallax data-parallax-depth="0.14" data-parallax-axis="y"
+      style="animation-duration: 8.5s;"
+    ><Doodle name="flower" color="orange" /></div>
+    <div
+      class="page-hero__doodle page-hero__doodle--star doodle--rotate"
+      data-parallax data-parallax-depth="0.2" data-parallax-axis="y"
+      style="animation-duration: 7s;"
+    ><Doodle name="star" color="orange" /></div>
+    <div
+      class="page-hero__doodle page-hero__doodle--sparkle doodle--pulse"
+      data-parallax data-parallax-depth="0.15" data-parallax-axis="y"
+      style="animation-duration: 5s;"
+    ><Doodle name="sparkle" color="pink" /></div>
+  </div>
+
+  <div class="page-hero__inner container">
+    {accent && (
+      <span class:list={['accent-handwritten', `accent-handwritten--${accentColor}`]}>
+        {accent}
+      </span>
+    )}
+    <h1 class="page-hero__title">{title}</h1>
+    {subtitle && <p class="page-hero__subtitle">{subtitle}</p>}
+  </div>
+</section>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .page-hero {
+    position: relative;
+    padding-block: $space-16 $space-12;
+
+    &--peach {
+      background-color: $c-peach;
+      color: $c-plum;
+
+      .page-hero__subtitle { color: $c-plum-soft; }
+    }
+
+    &--plum {
+      background-color: $c-pink-deep;
+      color: $c-on-dark;
+
+      .page-hero__subtitle { color: rgba($c-on-dark, 0.75); }
+      .accent-handwritten  { color: $c-orange; }
+    }
+
+    &--orange {
+      background-color: $c-orange;
+      color: $c-on-orange;
+
+      .page-hero__subtitle { color: rgba($c-plum, 0.75); }
+      .accent-handwritten  { color: $c-plum; }
+    }
+  }
+
+  .page-hero__paint-main {
+    width: clamp(14rem, 24vw, 22rem);
+    top: -12%;
+    right: -8%;
+  }
+
+  .page-hero__paint-wave {
+    width: clamp(18rem, 34vw, 32rem);
+    bottom: -18%;
+    left: -12%;
+  }
+
+  .page-hero__paint-orb2 {
+    width: clamp(10rem, 16vw, 15rem);
+    top: 30%;
+    left: 6%;
+    opacity: 0.7;
+
+    @media (max-width: 700px) { display: none; }
+  }
+
+  .page-hero__doodle--flower {
+    width: clamp(1.8rem, 2.6vw, 2.4rem);
+    bottom: 30%;
+    left: 22%;
+  }
+
+  .page-hero__doodle {
+    position: absolute;
+    filter: drop-shadow(0 0.2rem 0.4rem rgba($c-plum, 0.14));
+  }
+
+  .page-hero__doodle--star {
+    width: clamp(1.6rem, 2.4vw, 2.2rem);
+    top: 14%;
+    left: clamp(2rem, 6vw, 4rem);
+  }
+
+  .page-hero__doodle--sparkle {
+    width: clamp(1.2rem, 1.8vw, 1.6rem);
+    bottom: 18%;
+    right: 30%;
+  }
+
+  .page-hero__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-hero__title {
+    font-size: $text-4xl;
+    line-height: $leading-tight;
+    max-width: 680px;
+    margin-top: $space-3;
+  }
+
+  .page-hero__subtitle {
+    font-size: $text-xl;
+    max-width: 560px;
+    margin-top: $space-4;
+    line-height: $leading-normal;
+  }
+</style>

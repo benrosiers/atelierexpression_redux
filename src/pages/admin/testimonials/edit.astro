@@ -1,0 +1,145 @@
+---
+// /admin/testimonials/edit?id=<uuid> — same query-param pattern as
+// /admin/workshops/edit (static site, no build-time knowledge of every
+// testimonial id).
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Modifier un témoignage" activeNav="testimonials">
+  <div id="testimonial-editor-root">
+    <p class="admin-empty-note">Chargement…</p>
+  </div>
+
+  <style>
+    .testimonial-form {
+      display: grid;
+      gap: 1rem;
+      max-width: 640px;
+    }
+    .testimonial-toggles {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .testimonial-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 0.9rem;
+    }
+    .placeholder-warning {
+      background: #FFF4E0;
+      border: 1px solid #E5C77A;
+      border-radius: 8px;
+      padding: 0.8em 1em;
+      font-size: 0.85rem;
+      color: #6B4A00;
+      margin-bottom: 1rem;
+    }
+  </style>
+
+  <script>
+    import { getTestimonial, updateTestimonial, updateTestimonialTranslation } from '../../../lib/content/testimonials';
+    import { isSupabaseConfigured } from '../../../lib/supabase/client';
+
+    const root = document.getElementById('testimonial-editor-root')!;
+    const id = new URLSearchParams(window.location.search).get('id');
+
+    function notify(message: string, kind: 'success' | 'error') {
+      const container = document.getElementById('admin-notifications');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `admin-notice admin-notice--${kind}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    async function render() {
+      if (!isSupabaseConfigured()) {
+        root.innerHTML = '<p class="admin-empty-note">CMS non configuré.</p>';
+        return;
+      }
+      if (!id) {
+        root.innerHTML = '<p class="admin-empty-note">Aucun id fourni (utiliser ?id=...).</p>';
+        return;
+      }
+
+      const t = await getTestimonial(id);
+      if (!t) {
+        root.innerHTML = `<p class="admin-empty-note">Témoignage introuvable.</p>`;
+        return;
+      }
+
+      root.innerHTML = `
+        <h1>Témoignage — ${t.author_initials ?? 'sans initiales'}</h1>
+
+        ${t.is_placeholder ? `
+          <div class="placeholder-warning">
+            Ce témoignage est un <strong>placeholder fictif</strong>, pas un vrai témoignage
+            de participant·e. Décocher « Placeholder » ne devrait se faire que lorsqu'il est
+            remplacé par un vrai témoignage.
+          </div>
+        ` : ''}
+
+        <div class="testimonial-form">
+          <div class="admin-form-field">
+            <label for="tf-quote">Citation</label>
+            <textarea id="tf-quote" rows="4">${t.quote ?? ''}</textarea>
+          </div>
+          <div class="admin-form-field">
+            <label for="tf-author-role">Détail (rôle / contexte)</label>
+            <input type="text" id="tf-author-role" value="${(t.author_role ?? '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="admin-form-field">
+            <label for="tf-author-initials">Initiales</label>
+            <input type="text" id="tf-author-initials" value="${(t.author_initials ?? '').replace(/"/g, '&quot;')}" />
+          </div>
+
+          <div class="admin-form-field">
+            <label for="tf-status">Statut</label>
+            <select id="tf-status">
+              <option value="draft" ${t.status === 'draft' ? 'selected' : ''}>Brouillon</option>
+              <option value="published" ${t.status === 'published' ? 'selected' : ''}>Publié</option>
+              <option value="archived" ${t.status === 'archived' ? 'selected' : ''}>Archivé</option>
+            </select>
+          </div>
+
+          <div class="testimonial-toggles">
+            <label class="testimonial-toggle"><input type="checkbox" id="tf-visible" ${t.visible ? 'checked' : ''} /> Visible</label>
+            <label class="testimonial-toggle"><input type="checkbox" id="tf-featured" ${t.featured ? 'checked' : ''} /> Mis en avant</label>
+            <label class="testimonial-toggle"><input type="checkbox" id="tf-placeholder" ${t.is_placeholder ? 'checked' : ''} /> Placeholder (fictif)</label>
+          </div>
+
+          <div>
+            <button type="button" class="admin-btn admin-btn--primary" id="tf-save-btn">Enregistrer</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('tf-save-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('tf-save-btn') as HTMLButtonElement;
+        btn.disabled = true;
+
+        const fieldsResult = await updateTestimonial(id, {
+          status: (document.getElementById('tf-status') as HTMLSelectElement).value as any,
+          visible: (document.getElementById('tf-visible') as HTMLInputElement).checked,
+          featured: (document.getElementById('tf-featured') as HTMLInputElement).checked,
+          is_placeholder: (document.getElementById('tf-placeholder') as HTMLInputElement).checked,
+          author_initials: (document.getElementById('tf-author-initials') as HTMLInputElement).value,
+        });
+
+        const translationResult = await updateTestimonialTranslation(id, {
+          quote: (document.getElementById('tf-quote') as HTMLTextAreaElement).value,
+          author_role: (document.getElementById('tf-author-role') as HTMLInputElement).value,
+        });
+
+        btn.disabled = false;
+        const ok = fieldsResult.ok && translationResult.ok;
+        notify(ok ? 'Enregistré.' : `Erreur : ${fieldsResult.error ?? translationResult.error}`, ok ? 'success' : 'error');
+      });
+    }
+
+    render();
+  </script>
+</AdminLayout>

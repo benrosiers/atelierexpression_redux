@@ -1,0 +1,30 @@
+---
+// Oversized horizontal paint-wave marking a scene change between two major
+// sections. Deliberately wider than the viewport (never clipped) and
+// scroll-parallaxed. The two source waves are reused and flipped/rotated
+// per instance for variety rather than generating a new asset per divider.
+interface Props {
+  variant: 'hero' | 'manifest' | 'expressions' | 'community' | 'footer';
+  asset?: 'bold-wave' | 'wave-pink-peach';
+  flip?: boolean;
+  depth?: number;
+}
+
+const { variant, asset = 'bold-wave', flip = false, depth = 0.16 } = Astro.props;
+const dims: Record<string, [number, number]> = {
+  'bold-wave': [1553, 767],
+  'wave-pink-peach': [1576, 518],
+};
+const [w, h] = dims[asset];
+---
+
+<div
+  class:list={['paint-divider', `paint-divider--${variant}`]}
+  style={flip ? 'transform: scaleX(-1);' : ''}
+  data-parallax
+  data-parallax-depth={depth}
+  data-parallax-axis="y"
+  aria-hidden="true"
+>
+  <img src={`/assets/images/decor/paint-${asset}.webp`} alt="" width={w} height={h} loading="lazy" />
+</div>

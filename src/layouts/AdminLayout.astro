@@ -1,0 +1,198 @@
+---
+// Admin shell — sidebar + topbar + content, per docs/CMS_MIGRATION_PLAN.md §9.
+// Deliberately NOT BaseLayout: no paint-scene, no parallax, no doodles. Light
+// reuse of the public site's ink/cream/orange palette for brand coherence,
+// but usability comes first here, not art direction.
+import '../styles/admin.scss';
+
+interface Props {
+  title: string;
+  activeNav?: string;
+}
+
+const { title, activeNav = '' } = Astro.props;
+
+const navItems = [
+  { key: 'dashboard', label: 'Tableau de bord', href: '/admin' },
+  { key: 'pages', label: 'Pages', href: '/admin/pages' },
+  { key: 'workshops', label: 'Ateliers', href: '/admin/workshops' },
+  { key: 'events', label: 'Événements', href: '/admin/events' },
+  { key: 'parcours', label: 'Parcours', href: '/admin/parcours' },
+  { key: 'faq', label: 'FAQ', href: '/admin/faq' },
+  { key: 'testimonials', label: 'Témoignages', href: '/admin/testimonials' },
+  { key: 'media', label: 'Médias', href: '/admin/media' },
+  { key: 'translations', label: 'Traductions', href: '/admin/translations' },
+  { key: 'navigation', label: 'Navigation et footer', href: '/admin/navigation' },
+  { key: 'settings', label: 'Paramètres', href: '/admin/settings' },
+  { key: 'account', label: 'Mon compte', href: '/admin/account' },
+];
+---
+
+<!doctype html>
+<html lang="fr-CA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} — Admin Atelier Expression</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-mandala-32.png" />
+  </head>
+  <body>
+    <div id="admin-not-configured" class="admin-banner admin-banner--warning" hidden>
+      <p>
+        <strong>CMS non configuré.</strong>
+        Les variables <code>PUBLIC_SUPABASE_URL</code> et
+        <code>PUBLIC_SUPABASE_ANON_KEY</code> ne sont pas définies
+        (voir <code>docs/CMS_MIGRATION_PLAN.md</code>). Aucune donnée ne peut
+        être lue ou modifiée tant qu'un projet Supabase n'est pas branché.
+      </p>
+    </div>
+
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-sidebar__brand">Atelier Expression</a>
+        <nav aria-label="Navigation admin">
+          <ul role="list">
+            {navItems.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class:list={['admin-nav-link', { 'is-active': activeNav === item.key }]}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+
+      <div class="admin-main">
+        <header class="admin-topbar">
+          <div class="admin-topbar__locale">
+            <label for="admin-locale-select">Langue d'édition</label>
+            <select id="admin-locale-select">
+              <option value="fr-CA">Français (fr-CA)</option>
+              <option value="en-CA">English (en-CA)</option>
+            </select>
+          </div>
+
+          <div class="admin-topbar__actions">
+            <span id="admin-save-state" class="admin-save-state">—</span>
+            <button type="button" class="admin-btn admin-btn--ghost" id="admin-preview-btn">Aperçu</button>
+            <button type="button" class="admin-btn admin-btn--ghost" id="admin-save-btn">Enregistrer</button>
+            <button type="button" class="admin-btn admin-btn--primary" id="admin-publish-btn">Publier</button>
+          </div>
+
+          <div class="admin-topbar__user">
+            <span id="admin-user-email">…</span>
+            <button type="button" class="admin-btn admin-btn--ghost" id="admin-logout-btn">Déconnexion</button>
+          </div>
+        </header>
+
+        <div id="admin-notifications" class="admin-notifications" aria-live="polite"></div>
+
+        <main class="admin-content">
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <script>
+      import { isSupabaseConfigured, getSupabaseClient } from '../lib/supabase/client';
+      import { requireAdminSession, signOut } from '../lib/supabase/auth';
+      import { getAdminConfig } from '../lib/supabase/adminConfig';
+
+      const notConfiguredBanner = document.getElementById('admin-not-configured');
+      const userEmailEl = document.getElementById('admin-user-email');
+      const logoutBtn = document.getElementById('admin-logout-btn');
+      const publishBtn = document.getElementById('admin-publish-btn') as HTMLButtonElement | null;
+      const notifications = document.getElementById('admin-notifications');
+
+      // Set right before an intentional signOut() so the SIGNED_OUT event it
+      // triggers doesn't race the logout button's own redirect and show
+      // "session expirée" instead of "déconnexion réussie" — both fire from
+      // the same underlying Supabase event otherwise.
+      let intentionalSignOut = false;
+
+      function notify(message: string, kind: 'success' | 'error' | 'info') {
+        if (!notifications) return;
+        const el = document.createElement('div');
+        el.className = `admin-notice admin-notice--${kind}`;
+        el.textContent = message;
+        notifications.appendChild(el);
+        setTimeout(() => el.remove(), 6000);
+      }
+
+      async function guard() {
+        if (!isSupabaseConfigured()) {
+          notConfiguredBanner?.removeAttribute('hidden');
+          if (userEmailEl) userEmailEl.textContent = 'non connecté';
+          return;
+        }
+
+        const result = await requireAdminSession();
+        if (!result.ok) {
+          const notice = result.reason === 'no-profile' ? 'access-denied' : 'login-required';
+          window.location.href = `/admin/login?notice=${notice}`;
+          return;
+        }
+
+        if (userEmailEl) {
+          userEmailEl.textContent = `${result.profile.display_name ?? result.profile.email} (${result.profile.role})`;
+        }
+
+        const client = getSupabaseClient();
+        client?.auth.onAuthStateChange((event) => {
+          if (event === 'SIGNED_OUT' && !intentionalSignOut) {
+            window.location.href = '/admin/login?notice=session-expired';
+          }
+        });
+      }
+
+      logoutBtn?.addEventListener('click', async () => {
+        intentionalSignOut = true;
+        await signOut();
+        window.location.href = '/admin/login?notice=logged-out';
+      });
+
+      // Rebuilds the public site from the current published content. The
+      // site is a static build (Astro output: 'static'), so edits saved to
+      // Supabase are not live until a rebuild runs — this hook is the
+      // equivalent of the repository_dispatch trigger described in
+      // docs/CMS_MIGRATION_PLAN.md §5 Option C, now backed by a Cloudflare
+      // Pages deploy hook instead of GitHub Actions. The hook URL itself
+      // lives in admin_config (RLS: admin role only) rather than a PUBLIC_
+      // env var, because this shell's HTML is reachable without login.
+      publishBtn?.addEventListener('click', async () => {
+        if (!publishBtn) return;
+        publishBtn.disabled = true;
+        const originalLabel = publishBtn.textContent;
+        publishBtn.textContent = 'Publication…';
+
+        try {
+          const hookUrl = await getAdminConfig('cf_deploy_hook_url');
+          if (!hookUrl) {
+            notify("Publication non configurée — le lien de publication n'a pas été trouvé.", 'error');
+            return;
+          }
+
+          const res = await fetch(hookUrl, { method: 'POST' });
+          if (!res.ok) {
+            notify('La publication a échoué (le serveur a refusé la demande). Réessaie ou contacte le développeur.', 'error');
+            return;
+          }
+
+          notify('Publication lancée — le site sera à jour dans 1 à 3 minutes.', 'success');
+        } catch {
+          notify('La publication a échoué (connexion). Réessaie dans un instant.', 'error');
+        } finally {
+          publishBtn.disabled = false;
+          publishBtn.textContent = originalLabel;
+        }
+      });
+
+      guard();
+    </script>
+  </body>
+</html>

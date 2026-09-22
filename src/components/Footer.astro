@@ -1,0 +1,612 @@
+---
+import { footerNav } from '../data/navigation';
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+import type {
+  TreshSiteBranding,
+  TreshSiteFooter,
+  TreshSiteLink,
+} from '../lib/treshRelease';
+import Doodle from './Doodle.astro';
+
+interface Props {
+  branding?: TreshSiteBranding | undefined;
+  footer?: TreshSiteFooter | undefined;
+}
+
+const { branding, footer } = Astro.props;
+const formConfigured = isFormConfigured();
+const footerVisible = footer?.visible ?? true;
+const brandText = footer?.brandText || branding?.title || site.name;
+const footerBody =
+  footer?.body ||
+  'Des ateliers pour adultes qui veulent se sentir plus vivants.';
+
+const resolveHref = (href: string) =>
+  href.startsWith('#') ? `/${href}` : href;
+
+function groupLinks(links: TreshSiteLink[]): TreshSiteLink[][] {
+  if (links.length === 0) return [];
+
+  const columnCount = Math.min(3, links.length);
+  const result = Array.from(
+    { length: columnCount },
+    () => [] as TreshSiteLink[],
+  );
+
+  links.forEach((link, index) => {
+    result[index % columnCount]?.push(link);
+  });
+
+  return result;
+}
+
+const resolvedFooterNav =
+  footer?.links
+    ? groupLinks(footer.links)
+    : footerNav;
+
+const socialLinks =
+  footer
+    ? footer.socialLinks
+    : [
+        {
+          id: 'instagram',
+          label: 'Instagram',
+          href: site.instagram,
+        },
+        {
+          id: 'facebook',
+          label: 'Facebook',
+          href: site.facebook,
+        },
+      ];
+
+const footerStyle = [
+  `--tresh-footer-bg: ${footer?.backgroundColor ?? '#B94C2C'}`,
+  `--tresh-footer-text: ${footer?.textColor ?? '#FFF8ED'}`,
+  `--tresh-footer-accent: ${footer?.accentColor ?? '#FFB88A'}`,
+  `--tresh-footer-height-desktop: ${footer?.height.desktop ?? 250}px`,
+  `--tresh-footer-height-tablet: ${footer?.height.tablet ?? 270}px`,
+  `--tresh-footer-height-mobile: ${footer?.height.mobile ?? 330}px`,
+].join(';');
+---
+
+{footerVisible && (
+  <footer class="footer" style={footerStyle} role="contentinfo">
+    <div class="footer__paint" aria-hidden="true">
+      <div
+        class="paint-layer paint-layer--l2 footer__wave"
+        data-parallax
+        data-parallax-depth="0.1"
+        data-parallax-axis="y"
+      >
+        <img
+          src="/assets/images/decor/paint-bold-wave.webp"
+          alt=""
+          width="1553"
+          height="767"
+          loading="lazy"
+        />
+      </div>
+      <div
+        class="footer__doodle footer__doodle--butterfly doodle--float"
+        style="animation-duration: 7s;"
+      >
+        <Doodle name="butterfly" color="pink" />
+      </div>
+      <div
+        class="footer__doodle footer__doodle--spiral doodle--rotate"
+        style="animation-duration: 10s;"
+      >
+        <Doodle name="spiral" color="orange" />
+      </div>
+      <div
+        class="footer__doodle footer__doodle--sparkle doodle--pulse"
+        style="animation-duration: 6s;"
+      >
+        <Doodle name="sparkle" color="pink" />
+      </div>
+    </div>
+
+    <div class="footer__top">
+      <div class="container">
+        <div class="footer__grid">
+          <div class="footer__brand">
+            <a href="/" class="footer__logo" aria-label={`${brandText} — Accueil`}>
+              {footer ? (
+                <span class="footer__brand-text">{brandText}</span>
+              ) : (
+                <>
+                  <img
+                    src="/assets/images/brand/atelier-expression-logo-mark.webp"
+                    alt=""
+                    width="48"
+                    height="48"
+                    class="footer__logo-mark"
+                  />
+                  <img
+                    src="/assets/images/brand/atelier-expression-wordmark.webp"
+                    alt="Atelier Expression"
+                    width="160"
+                    height="48"
+                    class="footer__logo-wordmark"
+                  />
+                </>
+              )}
+            </a>
+
+            {!footer && (
+              <p class="footer__tagline">
+                On rit. On joue. On s'exprime.
+              </p>
+            )}
+
+            <p class="footer__sub">{footerBody}</p>
+
+            <div class="footer__social">
+              {socialLinks.map((item) => (
+                <a
+                  href={resolveHref(item.href)}
+                  class="footer__social-link"
+                  aria-label={item.label}
+                  title={item.label}
+                  target={item.href.startsWith('http') ? '_blank' : undefined}
+                  rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {resolvedFooterNav.map((group) => (
+            <nav class="footer__nav-col" aria-label="Navigation secondaire">
+              <ul role="list">
+                {group.map((item) => (
+                  <li>
+                    <a
+                      href={resolveHref(item.href)}
+                      class="footer__nav-link"
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+
+          <div class="footer__newsletter">
+            <p class="footer__newsletter-title">Reste dans la boucle</p>
+            <p class="footer__newsletter-text">
+              Dates d'ateliers, nouvelles, et petites doses de joie dans ta boîte mail.
+            </p>
+            {formConfigured ? (
+              <form
+                class="footer__newsletter-form"
+                data-footer-newsletter-form
+                aria-label="Inscription à l'infolettre"
+              >
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="ton@courriel.ca"
+                  aria-label="Adresse courriel"
+                  class="footer__newsletter-input"
+                  required
+                />
+                <button
+                  type="submit"
+                  class="btn btn--primary footer__newsletter-btn"
+                  aria-label="S'inscrire à l'infolettre"
+                >
+                  →
+                </button>
+              </form>
+            ) : (
+              <p class="footer__newsletter-fallback">
+                Pas encore branché — écris-nous à{' '}
+                <a href={`mailto:${site.email}`}>{site.email}</a>.
+              </p>
+            )}
+            <p
+              class="footer__newsletter-feedback"
+              role="status"
+              aria-live="polite"
+              hidden
+            ></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="container">
+        <div class="footer__bottom-inner">
+          <p class="footer__copyright">
+            &copy; {new Date().getFullYear()} {brandText} &mdash; {site.domain}
+          </p>
+          <p class="footer__motto">
+            Exprimer sans se rapetisser. Vivre plus grand, ensemble.
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+)}
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .footer {
+    position: relative;
+    z-index: 1;
+    overflow: visible;
+    flex-shrink: 0;
+    background-color: $c-orange-deep;
+    color: $c-on-dark;
+    box-shadow: inset 0 12px 24px -12px rgba(32, 10, 4, 0.45);
+  }
+
+  .footer__paint {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: visible;
+  }
+
+  .footer__wave {
+    position: absolute;
+    top: -12%;
+    left: -18%;
+    width: clamp(30rem, 60vw, 56rem);
+    opacity: 0.4;
+    transform: rotate(-6deg);
+  }
+
+  .footer__doodle {
+    position: absolute;
+    filter: drop-shadow(0 0.3rem 0.5rem rgba(32, 10, 4, 0.3));
+  }
+
+  .footer__doodle--butterfly { width: 3rem; top: 8%; right: 12%; }
+  .footer__doodle--spiral    { width: 2.4rem; bottom: 12%; left: 46%; opacity: 0.7; }
+  .footer__doodle--sparkle   { width: 2rem; top: 40%; right: 30%; opacity: 0.6; }
+
+  .footer__top {
+    position: relative;
+    z-index: 1;
+    padding-block: $section-pad;
+    border-bottom: 1px solid rgba($c-on-dark, 0.18);
+  }
+
+  .footer__grid {
+    display: grid;
+    gap: $space-8;
+    grid-template-columns: 1fr;
+
+    @include md { grid-template-columns: repeat(2, 1fr); }
+    @include xl { grid-template-columns: 2fr 1fr 1fr 1fr 2fr; }
+  }
+
+  .footer__brand {
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer__logo {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    text-decoration: none;
+    margin-bottom: $space-4;
+  }
+
+  .footer__logo-mark {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .footer__logo-wordmark {
+    width: auto;
+    height: 34px;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+  }
+
+  .footer__tagline {
+    font-family: $font-serif;
+    font-style: italic;
+    font-size: $text-lg;
+    color: #FFD9A8;
+    margin-bottom: $space-3;
+  }
+
+  .footer__sub {
+    font-size: $text-sm;
+    color: rgba($c-on-dark, 0.85);
+    margin-bottom: $space-5;
+    line-height: $leading-normal;
+  }
+
+  .footer__social {
+    display: flex;
+    gap: $space-3;
+  }
+
+  .footer__social-link {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-full;
+    background-color: rgba($c-on-dark, 0.16);
+    color: $c-on-dark;
+    transition: background-color $transition-base, color $transition-base;
+
+    &:hover {
+      background-color: $c-pink;
+      color: $color-blanc;
+    }
+  }
+
+  .footer__nav-col {
+    position: relative;
+    z-index: 1;
+    ul { display: flex; flex-direction: column; gap: $space-3; }
+  }
+
+  .footer__nav-link {
+    font-size: $text-sm;
+    color: rgba($c-on-dark, 0.88);
+    text-decoration: none;
+    transition: color $transition-base;
+
+    &:hover {
+      color: #FFB88A;
+    }
+  }
+
+  .footer__newsletter-title {
+    font-family: $font-serif;
+    font-weight: $weight-bold;
+    font-size: $text-lg;
+    color: $c-on-dark;
+    margin-bottom: $space-3;
+  }
+
+  .footer__newsletter-text {
+    font-size: $text-sm;
+    color: rgba($c-on-dark, 0.85);
+    margin-bottom: $space-4;
+    line-height: $leading-normal;
+  }
+
+  .footer__newsletter-form {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 0;
+  }
+
+  .footer__newsletter-input {
+    flex: 1;
+    background-color: rgba($c-on-dark, 0.1);
+    border: 1px solid rgba($c-on-dark, 0.3);
+    border-right: none;
+    border-radius: $radius-full 0 0 $radius-full;
+    padding: 0.65em 1em;
+    color: $c-on-dark;
+    font-size: $text-sm;
+    outline: none;
+    transition: border-color $transition-base;
+
+    &::placeholder {
+      color: rgba($c-on-dark, 0.55);
+    }
+
+    &:focus {
+      border-color: $c-pink;
+    }
+  }
+
+  .footer__newsletter-btn {
+    border-radius: 0 $radius-full $radius-full 0;
+    padding: 0.65em 1.2em;
+    font-size: $text-lg;
+  }
+
+  .footer__bottom {
+    position: relative;
+    z-index: 1;
+    padding-block: $space-5;
+  }
+
+  .footer__bottom-inner {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+    align-items: center;
+    text-align: center;
+
+    @include md {
+      flex-direction: row;
+      justify-content: space-between;
+      text-align: left;
+    }
+  }
+
+  .footer__copyright {
+    font-size: $text-xs;
+    color: rgba($c-on-dark, 0.75);
+  }
+
+  .footer__motto {
+    font-family: $font-handwritten;
+    font-size: $text-base;
+    color: #FFD9A8;
+    font-style: italic;
+  }
+
+  .footer__newsletter-fallback {
+    font-size: $text-sm;
+    color: rgba($c-on-dark, 0.9);
+
+    a { color: #FFB88A; }
+  }
+
+  .footer__newsletter-feedback {
+    font-size: $text-xs;
+    margin-top: $space-3;
+    color: $c-on-dark;
+
+    &:not([hidden]) { display: block; }
+  }
+</style>
+
+
+<style>
+  .footer {
+    min-height: var(--tresh-footer-height-mobile);
+    background-color: var(--tresh-footer-bg);
+    color: var(--tresh-footer-text);
+  }
+
+  .footer__brand-text {
+    color: var(--tresh-footer-text);
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  .footer__tagline,
+  .footer__motto,
+  .footer__newsletter-fallback a {
+    color: var(--tresh-footer-accent);
+  }
+
+  .footer__sub,
+  .footer__newsletter-text,
+  .footer__newsletter-fallback,
+  .footer__copyright {
+    color: color-mix(
+      in srgb,
+      var(--tresh-footer-text) 84%,
+      transparent
+    );
+  }
+
+  .footer__newsletter-title,
+  .footer__newsletter-feedback {
+    color: var(--tresh-footer-text);
+  }
+
+  .footer__nav-link {
+    color: color-mix(
+      in srgb,
+      var(--tresh-footer-text) 88%,
+      transparent
+    );
+  }
+
+  .footer__nav-link:hover {
+    color: var(--tresh-footer-accent);
+  }
+
+  .footer__social-link {
+    width: auto;
+    min-width: 40px;
+    padding-inline: 0.8rem;
+    border: 1px solid color-mix(
+      in srgb,
+      var(--tresh-footer-accent) 68%,
+      transparent
+    );
+    border-radius: 999px;
+    color: var(--tresh-footer-text);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .footer__social-link:hover {
+    background-color: var(--tresh-footer-accent);
+    color: var(--tresh-footer-bg);
+  }
+
+  .footer__newsletter-input {
+    color: var(--tresh-footer-text);
+    border-color: color-mix(
+      in srgb,
+      var(--tresh-footer-text) 30%,
+      transparent
+    );
+  }
+
+  .footer__newsletter-input::placeholder {
+    color: color-mix(
+      in srgb,
+      var(--tresh-footer-text) 56%,
+      transparent
+    );
+  }
+
+  .footer__newsletter-btn {
+    background-color: var(--tresh-footer-accent);
+    border-color: var(--tresh-footer-accent);
+    color: var(--tresh-footer-bg);
+  }
+
+  @media (min-width: 48rem) {
+    .footer {
+      min-height: var(--tresh-footer-height-tablet);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .footer {
+      min-height: var(--tresh-footer-height-desktop);
+    }
+  }
+</style>
+
+<script>
+  import { submitForm } from '../lib/formspree';
+
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-footer-newsletter-form]');
+
+  forms.forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const feedback = form.closest('.footer__newsletter')?.querySelector<HTMLElement>('.footer__newsletter-feedback');
+      const input = form.querySelector<HTMLInputElement>('input[type="email"]');
+      const button = form.querySelector<HTMLButtonElement>('button');
+
+      if (button) button.disabled = true;
+      if (feedback) {
+        feedback.hidden = false;
+        feedback.textContent = 'Envoi en cours…';
+      }
+
+      const result = await submitForm('newsletter-footer', { email: input?.value ?? '' });
+
+      if (button) button.disabled = false;
+
+      if (feedback) {
+        feedback.textContent = result.ok
+          ? '✓ Merci! Tu es inscrit·e.'
+          : 'L\'envoi a échoué — réessaie ou écris-nous directement.';
+      }
+
+      if (result.ok) form.reset();
+    });
+  });
+</script>

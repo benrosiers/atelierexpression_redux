@@ -1,0 +1,122 @@
+---
+// /admin/faq/edit?id=<uuid> — same query-param pattern as
+// /admin/workshops/edit and /admin/testimonials/edit.
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Modifier une question" activeNav="faq">
+  <div id="faq-editor-root">
+    <p class="admin-empty-note">Chargement…</p>
+  </div>
+
+  <style>
+    .faq-form {
+      display: grid;
+      gap: 1rem;
+      max-width: 640px;
+    }
+    .faq-toggles {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .faq-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 0.9rem;
+    }
+  </style>
+
+  <script>
+    import { getFaq, updateFaq, updateFaqTranslation, listFaqCategories } from '../../../lib/content/faq';
+    import { isSupabaseConfigured } from '../../../lib/supabase/client';
+
+    const root = document.getElementById('faq-editor-root')!;
+    const id = new URLSearchParams(window.location.search).get('id');
+
+    function notify(message: string, kind: 'success' | 'error') {
+      const container = document.getElementById('admin-notifications');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `admin-notice admin-notice--${kind}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    async function render() {
+      if (!isSupabaseConfigured()) {
+        root.innerHTML = '<p class="admin-empty-note">CMS non configuré.</p>';
+        return;
+      }
+      if (!id) {
+        root.innerHTML = '<p class="admin-empty-note">Aucun id fourni (utiliser ?id=...).</p>';
+        return;
+      }
+
+      const [f, categories] = await Promise.all([getFaq(id), listFaqCategories()]);
+      if (!f) {
+        root.innerHTML = `<p class="admin-empty-note">Question introuvable.</p>`;
+        return;
+      }
+
+      root.innerHTML = `
+        <h1>Modifier une question</h1>
+
+        <div class="faq-form">
+          <div class="admin-form-field">
+            <label for="ff-question">Question</label>
+            <input type="text" id="ff-question" value="${(f.question ?? '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="admin-form-field">
+            <label for="ff-answer">Réponse</label>
+            <textarea id="ff-answer" rows="6">${f.answer ?? ''}</textarea>
+          </div>
+          <div class="admin-form-field">
+            <label for="ff-category">Catégorie</label>
+            <select id="ff-category">
+              ${categories.map((c) => `<option value="${c.id}" ${f.category_id === c.id ? 'selected' : ''}>${c.title ?? c.stable_key}</option>`).join('')}
+            </select>
+          </div>
+          <div class="admin-form-field">
+            <label for="ff-status">Statut</label>
+            <select id="ff-status">
+              <option value="draft" ${f.status === 'draft' ? 'selected' : ''}>Brouillon</option>
+              <option value="published" ${f.status === 'published' ? 'selected' : ''}>Publié</option>
+              <option value="archived" ${f.status === 'archived' ? 'selected' : ''}>Archivé</option>
+            </select>
+          </div>
+          <div class="faq-toggles">
+            <label class="faq-toggle"><input type="checkbox" id="ff-visible" ${f.visible ? 'checked' : ''} /> Visible</label>
+          </div>
+          <div>
+            <button type="button" class="admin-btn admin-btn--primary" id="ff-save-btn">Enregistrer</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('ff-save-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('ff-save-btn') as HTMLButtonElement;
+        btn.disabled = true;
+
+        const fieldsResult = await updateFaq(id, {
+          category_id: (document.getElementById('ff-category') as HTMLSelectElement).value,
+          status: (document.getElementById('ff-status') as HTMLSelectElement).value as any,
+          visible: (document.getElementById('ff-visible') as HTMLInputElement).checked,
+        });
+
+        const translationResult = await updateFaqTranslation(id, {
+          question: (document.getElementById('ff-question') as HTMLInputElement).value,
+          answer: (document.getElementById('ff-answer') as HTMLTextAreaElement).value,
+        });
+
+        btn.disabled = false;
+        const ok = fieldsResult.ok && translationResult.ok;
+        notify(ok ? 'Enregistré.' : `Erreur : ${fieldsResult.error ?? translationResult.error}`, ok ? 'success' : 'error');
+      });
+    }
+
+    render();
+  </script>
+</AdminLayout>

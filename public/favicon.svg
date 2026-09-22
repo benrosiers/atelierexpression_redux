@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Atelier Expression logo</title>
+  <desc id="desc">Minimal vector logo: abstract expressive figure with warm emotion dots.</desc>
+  <defs>
+    <style>
+      .black { fill: #1f1f1f; }
+      .rose { fill: #c75f73; }
+      .coral { fill: #ef6255; }
+      .orange { fill: #f28a3d; }
+      .peach { fill: #f4a65f; }
+    </style>
+  </defs>
+
+  <g shape-rendering="geometricPrecision">
+    <!-- left open arm flowing into the body -->
+    <path class="black" d="
+      M 286 288
+      C 317 401, 398 495, 500 558
+      C 520 570, 536 585, 549 604
+      C 508 595, 459 574, 411 541
+      C 338 490, 291 406, 286 288
+      Z"/>
+
+    <!-- right open arm -->
+    <path class="black" d="
+      M 743 282
+      C 728 392, 661 482, 552 558
+      C 536 569, 523 582, 513 597
+      C 551 586, 596 565, 640 531
+      C 705 481, 740 393, 743 282
+      Z"/>
+
+    <!-- dancing torso / grounded movement -->
+    <path class="black" d="
+      M 494 550
+      C 562 607, 594 673, 584 743
+      C 572 829, 497 893, 389 960
+      C 413 884, 482 823, 506 754
+      C 529 687, 501 625, 442 571
+      C 461 572, 480 565, 494 550
+      Z"/>
+
+    <!-- expression dots -->
+    <circle class="orange" cx="246" cy="224" r="24"/>
+    <circle class="rose"   cx="378" cy="126" r="22"/>
+    <circle class="coral"  cx="626" cy="126" r="24"/>
+    <circle class="peach"  cx="780" cy="224" r="25"/>
+    <circle class="rose"   cx="512" cy="366" r="60"/>
+  </g>
+</svg>

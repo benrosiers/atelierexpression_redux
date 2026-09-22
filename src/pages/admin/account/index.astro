@@ -1,0 +1,89 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Mon compte" activeNav="account">
+  <h1>Mon compte</h1>
+
+  <div class="admin-card">
+    <h2>Identité</h2>
+    <div class="admin-form-field">
+      <label for="account-email">Courriel</label>
+      <input type="email" id="account-email" value="" disabled />
+      <p class="admin-field-hint">Le courriel de connexion ne peut pas être changé ici. Contacte l'équipe technique si besoin.</p>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <h2>Mot de passe</h2>
+    <p class="admin-field-hint">
+      Ton compte utilise le lien magique par courriel par défaut. Définir un
+      mot de passe ici ajoute une deuxième façon de te connecter (onglet
+      « Mot de passe » sur la page de connexion) — les deux méthodes restent
+      disponibles ensuite.
+    </p>
+
+    <div class="admin-form-field">
+      <label for="new-password">Nouveau mot de passe</label>
+      <input type="password" id="new-password" autocomplete="new-password" minlength="8" placeholder="8 caractères minimum" />
+    </div>
+    <div class="admin-form-field">
+      <label for="confirm-password">Confirmer le mot de passe</label>
+      <input type="password" id="confirm-password" autocomplete="new-password" minlength="8" />
+    </div>
+
+    <button type="button" class="admin-btn admin-btn--primary" id="save-password-btn">Enregistrer le mot de passe</button>
+  </div>
+
+  <script>
+    import { isSupabaseConfigured } from '../../../lib/supabase/client';
+    import { getCurrentProfile, updatePassword } from '../../../lib/supabase/auth';
+
+    function notify(message: string, kind: 'success' | 'error') {
+      const container = document.getElementById('admin-notifications');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `admin-notice admin-notice--${kind}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 5000);
+    }
+
+    async function loadEmail() {
+      if (!isSupabaseConfigured()) return;
+      const profile = await getCurrentProfile();
+      const emailInput = document.getElementById('account-email') as HTMLInputElement | null;
+      if (profile && emailInput) emailInput.value = profile.email;
+    }
+
+    document.getElementById('save-password-btn')?.addEventListener('click', async () => {
+      if (!isSupabaseConfigured()) { notify('CMS non configuré.', 'error'); return; }
+
+      const newPasswordInput = document.getElementById('new-password') as HTMLInputElement;
+      const confirmInput = document.getElementById('confirm-password') as HTMLInputElement;
+      const newPassword = newPasswordInput.value;
+      const confirm = confirmInput.value;
+
+      if (newPassword.length < 8) {
+        notify('Le mot de passe doit contenir au moins 8 caractères.', 'error');
+        return;
+      }
+      if (newPassword !== confirm) {
+        notify('Les deux mots de passe ne correspondent pas.', 'error');
+        return;
+      }
+
+      const result = await updatePassword(newPassword);
+      if (!result.ok) {
+        notify(`Erreur : ${result.error ?? 'inconnue'}`, 'error');
+        return;
+      }
+
+      newPasswordInput.value = '';
+      confirmInput.value = '';
+      notify('Mot de passe enregistré. Tu peux maintenant te connecter avec le courriel + ce mot de passe, ou continuer avec le lien magique.', 'success');
+    });
+
+    loadEmail();
+  </script>
+</AdminLayout>

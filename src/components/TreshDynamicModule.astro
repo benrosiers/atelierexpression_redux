@@ -1,0 +1,633 @@
+---
+import WorkshopCard from './WorkshopCard.astro';
+import FAQAccordion from './FAQAccordion.astro';
+import InterestForm from './InterestForm.astro';
+import ReservationForm from './ReservationForm.astro';
+import NewsletterSignup from './NewsletterSignup.astro';
+import { offers as staticOffers } from '../data/offers';
+import { events as staticEvents } from '../data/events';
+import { faqs as staticFaqs } from '../data/faqs';
+import { testimonials as staticTestimonials } from '../data/testimonials';
+import {
+  nextWorkshop as staticNextWorkshop,
+  workshopStatusCopy,
+} from '../data/nextWorkshop';
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+import {
+  getEvents,
+  getFaqs,
+  getNextWorkshop,
+  getPublicSiteSetting,
+  getTestimonials,
+  getWorkshops,
+  type FormMessagesSetting,
+} from '../lib/content/publicContent';
+
+interface Props {
+  pageSlug: string;
+  sectionType: string;
+}
+
+const { pageSlug, sectionType } = Astro.props;
+
+const isWorkshops = sectionType === 'WorkshopCatalogSection';
+const isEvents = sectionType === 'EventsFeedSection';
+const isFaq = sectionType === 'FaqListSection';
+const isContact = sectionType === 'ContactFormSection';
+const isReservation = sectionType === 'ReservationSection';
+const isTestimonials = sectionType === 'TestimonialsSection';
+const isNewsletter = [
+  'CommunitySection',
+  'ResourcesSection',
+  'ProgramPathSection',
+].includes(sectionType);
+
+const cmsWorkshops = isWorkshops ? await getWorkshops() : [];
+const workshops = cmsWorkshops.length > 0 ? cmsWorkshops : staticOffers;
+
+const cmsEvents = isEvents ? await getEvents() : [];
+const events = cmsEvents.length > 0 ? cmsEvents : staticEvents;
+
+const cmsFaqs = isFaq ? await getFaqs() : [];
+const faqs = cmsFaqs.length > 0 ? cmsFaqs : staticFaqs;
+
+const cmsTestimonials = isTestimonials ? await getTestimonials() : [];
+const testimonials =
+  cmsTestimonials.length > 0 ? cmsTestimonials : staticTestimonials;
+
+const nextWorkshop = isReservation
+  ? (await getNextWorkshop()) ?? staticNextWorkshop
+  : staticNextWorkshop;
+const statusCopy = workshopStatusCopy[nextWorkshop.status];
+const isBuilding = nextWorkshop.status === 'building';
+
+const formConfigured = isContact ? isFormConfigured() : false;
+const contactMessages = isContact
+  ? (await getPublicSiteSetting<FormMessagesSetting>('form_messages'))?.contact
+  : null;
+const submitLabel = contactMessages?.submitLabel || 'Envoyer mon message';
+const loadingLabel = contactMessages?.loadingLabel || 'Envoi en cours…';
+const successMessage =
+  contactMessages?.successMessage ||
+  'Message reçu! On te répond dans les 24 à 48 heures.';
+
+function eventDate(event: (typeof events)[number]): string {
+  if (!event.date) return 'Date à annoncer';
+  return event.time ? `${event.date} · ${event.time}` : event.date;
+}
+---
+
+<div
+  class:list={[
+    'tresh-dynamic-module',
+    `tresh-dynamic-module--${pageSlug}`,
+  ]}
+  data-tresh-dynamic-module={sectionType}
+>
+  {isWorkshops && (
+    <div class="container">
+      <div class="tresh-module-heading">
+        <span>Formats actuels</span>
+        <h2>Choisir un atelier</h2>
+      </div>
+      <div class="tresh-workshop-grid">
+        {workshops.map((offer) => (
+          <WorkshopCard offer={offer} />
+        ))}
+      </div>
+    </div>
+  )}
+
+  {isEvents && (
+    <div class="container">
+      <div class="tresh-module-heading">
+        <span>Calendrier vivant</span>
+        <h2>Prochains rendez-vous</h2>
+      </div>
+      <div class="tresh-event-grid">
+        {events.map((event) => (
+          <article class="tresh-event-card">
+            <div class="tresh-event-card__date">{eventDate(event)}</div>
+            <h3>{event.title}</h3>
+            <p>{event.description}</p>
+            <dl>
+              <div>
+                <dt>Lieu</dt>
+                <dd>{event.location}</dd>
+              </div>
+              <div>
+                <dt>Prix</dt>
+                <dd>{event.price}</dd>
+              </div>
+            </dl>
+            <a class="btn btn--primary" href={event.href}>
+              {event.status === 'announced-soon'
+                ? 'Être averti·e'
+                : 'Voir les détails'}
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {isFaq && (
+    <div class="container container--text">
+      <div class="tresh-module-heading">
+        <span>Réponses directes</span>
+        <h2>Questions fréquentes</h2>
+      </div>
+      <FAQAccordion faqs={faqs} />
+    </div>
+  )}
+
+  {isContact && (
+    <div class="container">
+      <div class="tresh-contact-layout">
+        <div>
+          <div class="tresh-module-heading tresh-module-heading--left">
+            <span>Écris-nous</span>
+            <h2>Envoyer un message</h2>
+          </div>
+
+          {formConfigured ? (
+            <form
+              class="tresh-contact-form"
+              data-tresh-contact-form
+              aria-label="Formulaire de contact"
+            >
+              <label>
+                <span>Ton prénom et nom</span>
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  placeholder="Marie Tremblay"
+                  autocomplete="name"
+                />
+              </label>
+              <label>
+                <span>Ton courriel</span>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  placeholder="marie@example.ca"
+                  autocomplete="email"
+                />
+              </label>
+              <label>
+                <span>Sujet</span>
+                <select name="subject">
+                  <option value="">Choisir un sujet</option>
+                  <option value="info">Question sur les ateliers</option>
+                  <option value="reservation">Réservation</option>
+                  <option value="prive">Atelier privé ou groupe</option>
+                  <option value="corporatif">Atelier corporatif</option>
+                  <option value="media">Médias / collaboration</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </label>
+              <label>
+                <span>Ton message</span>
+                <textarea
+                  name="message"
+                  rows="6"
+                  required
+                  placeholder="Bonjour, je voudrais savoir…"
+                ></textarea>
+              </label>
+              <div class="tresh-contact-form__actions">
+                <button type="submit" class="btn btn--primary btn--lg">
+                  <span data-contact-label>{submitLabel}</span>
+                  <span data-contact-loading hidden>{loadingLabel}</span>
+                </button>
+              </div>
+              <div
+                class="tresh-form-message tresh-form-message--success"
+                data-contact-success
+                hidden
+                role="status"
+                aria-live="polite"
+              >
+                ✓ {successMessage}
+              </div>
+              <div
+                class="tresh-form-message tresh-form-message--error"
+                data-contact-error
+                hidden
+                role="alert"
+              >
+                L'envoi a échoué. Écris-nous à{' '}
+                <a href={`mailto:${site.email}`}>{site.email}</a>.
+              </div>
+            </form>
+          ) : (
+            <div class="tresh-contact-fallback">
+              <p>
+                Le formulaire n'est pas encore branché. Écris-nous directement
+                à <a href={`mailto:${site.email}`}>{site.email}</a>.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <aside class="tresh-contact-card">
+          <h3>Atelier Expression</h3>
+          <p>{site.location}</p>
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+          <a href={site.instagram}>Instagram</a>
+          <a href={site.facebook}>Facebook</a>
+        </aside>
+      </div>
+    </div>
+  )}
+
+  {isReservation && (
+    <div class="container">
+      <div class="tresh-reservation-layout">
+        <aside class="tresh-reservation-summary">
+          <span class="tresh-reservation-status">{statusCopy.badge}</span>
+          <h2>Atelier découverte</h2>
+          <p>{nextWorkshop.shortDescription}</p>
+          <dl>
+            <div>
+              <dt>Durée</dt>
+              <dd>2 heures</dd>
+            </div>
+            <div>
+              <dt>Groupe</dt>
+              <dd>{nextWorkshop.capacity}</dd>
+            </div>
+            <div>
+              <dt>Lieu</dt>
+              <dd>{nextWorkshop.location}</dd>
+            </div>
+            <div>
+              <dt>Prix</dt>
+              <dd>{nextWorkshop.price}</dd>
+            </div>
+          </dl>
+          <p class="tresh-reservation-note">{statusCopy.note}</p>
+        </aside>
+        <div class="tresh-reservation-form">
+          {isBuilding ? (
+            <InterestForm />
+          ) : (
+            <ReservationForm />
+          )}
+        </div>
+      </div>
+    </div>
+  )}
+
+  {isTestimonials && (
+    <div class="container">
+      <div class="tresh-module-heading">
+        <span>Paroles reçues</span>
+        <h2>Ce que les participant·es racontent</h2>
+      </div>
+      <div class="tresh-testimonial-grid">
+        {testimonials.map((testimonial) => (
+          <figure class="tresh-testimonial-card">
+            <blockquote>“{testimonial.quote}”</blockquote>
+            <figcaption>
+              <strong>{testimonial.name}</strong>
+              {testimonial.detail && <span>{testimonial.detail}</span>}
+              {testimonial.isPlaceholder && <small>Exemple fictif</small>}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {isNewsletter && (
+    <div class="container container--text">
+      <div class="tresh-module-heading">
+        <span>Rester dans le mouvement</span>
+        <h2>Recevoir les prochaines nouvelles</h2>
+      </div>
+      <NewsletterSignup />
+    </div>
+  )}
+</div>
+
+<script>
+    import { submitForm } from '../lib/formspree';
+
+    document
+      .querySelectorAll<HTMLFormElement>('[data-tresh-contact-form]')
+      .forEach((form) => {
+        if (form.dataset.treshContactBound === 'true') return;
+        form.dataset.treshContactBound = 'true';
+
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+
+          const submitButton = form.querySelector<HTMLButtonElement>(
+            'button[type="submit"]',
+          );
+          const label = form.querySelector<HTMLElement>('[data-contact-label]');
+          const loading = form.querySelector<HTMLElement>(
+            '[data-contact-loading]',
+          );
+          const success = form.querySelector<HTMLElement>(
+            '[data-contact-success]',
+          );
+          const errorBox = form.querySelector<HTMLElement>(
+            '[data-contact-error]',
+          );
+
+          if (submitButton) submitButton.disabled = true;
+          label?.setAttribute('hidden', 'true');
+          loading?.removeAttribute('hidden');
+          success?.setAttribute('hidden', 'true');
+          errorBox?.setAttribute('hidden', 'true');
+
+          const data: Record<string, string> = {};
+          new FormData(form).forEach((value, key) => {
+            data[key] = String(value);
+          });
+
+          const result = await submitForm('contact', data);
+
+          if (submitButton) submitButton.disabled = false;
+          loading?.setAttribute('hidden', 'true');
+          label?.removeAttribute('hidden');
+
+          if (result.ok) {
+            form.reset();
+            success?.removeAttribute('hidden');
+          } else {
+            errorBox?.removeAttribute('hidden');
+          }
+        });
+      });
+</script>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .tresh-dynamic-module {
+    position: relative;
+    z-index: 2;
+    padding: clamp(3rem, 7vw, 6rem) 0;
+    background: rgba(255, 255, 255, 0.78);
+    border-top: 1px solid rgba(43, 38, 32, 0.09);
+  }
+
+  .tresh-module-heading {
+    max-width: 720px;
+    margin: 0 auto clamp(2rem, 5vw, 3.5rem);
+    text-align: center;
+  }
+
+  .tresh-module-heading--left {
+    margin-inline: 0;
+    text-align: left;
+  }
+
+  .tresh-module-heading span {
+    color: $color-fuchsia;
+    font-family: $font-sans;
+    font-size: $text-sm;
+    font-weight: $weight-bold;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .tresh-module-heading h2 {
+    margin-top: 0.55rem;
+    color: $color-encre;
+    font-family: $font-serif;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+  }
+
+  .tresh-workshop-grid,
+  .tresh-event-grid,
+  .tresh-testimonial-grid {
+    display: grid;
+    gap: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .tresh-workshop-grid {
+    @include md {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .tresh-event-grid,
+  .tresh-testimonial-grid {
+    @include lg {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .tresh-event-card,
+  .tresh-testimonial-card,
+  .tresh-contact-card,
+  .tresh-reservation-summary {
+    border: 1px solid rgba(43, 38, 32, 0.12);
+    border-radius: 24px;
+    background: $color-blanc;
+    box-shadow: 6px 8px 0 rgba(233, 139, 95, 0.2);
+  }
+
+  .tresh-event-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: clamp(1.4rem, 3vw, 2.2rem);
+  }
+
+  .tresh-event-card__date,
+  .tresh-reservation-status {
+    display: inline-flex;
+    padding: 0.38rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(240, 46, 138, 0.1);
+    color: $color-fuchsia;
+    font-size: $text-sm;
+    font-weight: $weight-bold;
+  }
+
+  .tresh-event-card h3,
+  .tresh-contact-card h3,
+  .tresh-reservation-summary h2 {
+    margin-top: 1rem;
+    color: $color-encre;
+    font-family: $font-serif;
+    font-size: $text-2xl;
+  }
+
+  .tresh-event-card p {
+    flex: 1;
+    margin-block: 1rem;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+  }
+
+  .tresh-event-card dl,
+  .tresh-reservation-summary dl {
+    display: grid;
+    width: 100%;
+    gap: 0.7rem;
+    margin-bottom: 1.4rem;
+  }
+
+  .tresh-event-card dl div,
+  .tresh-reservation-summary dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid rgba(43, 38, 32, 0.08);
+  }
+
+  .tresh-event-card dt,
+  .tresh-reservation-summary dt {
+    color: $color-gris-moyen;
+  }
+
+  .tresh-event-card dd,
+  .tresh-reservation-summary dd {
+    margin: 0;
+    color: $color-encre;
+    font-weight: $weight-bold;
+    text-align: right;
+  }
+
+  .tresh-contact-layout,
+  .tresh-reservation-layout {
+    display: grid;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+
+    @include lg {
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+    }
+  }
+
+  .tresh-reservation-layout {
+    @include lg {
+      grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+    }
+  }
+
+  .tresh-contact-form {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .tresh-contact-form label {
+    display: grid;
+    gap: 0.45rem;
+    color: $color-encre;
+    font-size: $text-sm;
+    font-weight: $weight-medium;
+  }
+
+  .tresh-contact-form input,
+  .tresh-contact-form select,
+  .tresh-contact-form textarea {
+    width: 100%;
+    padding: 0.82rem 0.95rem;
+    border: 1.5px solid $color-gris-doux;
+    border-radius: 12px;
+    outline: 0;
+    background: $color-blanc;
+    color: $color-encre;
+    font: inherit;
+  }
+
+  .tresh-contact-form input:focus,
+  .tresh-contact-form select:focus,
+  .tresh-contact-form textarea:focus {
+    border-color: $color-fuchsia;
+    box-shadow: 0 0 0 3px rgba(240, 46, 138, 0.12);
+  }
+
+  .tresh-contact-form textarea {
+    resize: vertical;
+  }
+
+  .tresh-contact-card,
+  .tresh-reservation-summary {
+    padding: clamp(1.5rem, 4vw, 2.4rem);
+  }
+
+  .tresh-contact-card {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .tresh-contact-card a {
+    color: $color-fuchsia;
+    font-weight: $weight-bold;
+  }
+
+  .tresh-contact-fallback,
+  .tresh-form-message,
+  .tresh-reservation-note {
+    padding: 1rem 1.15rem;
+    border-radius: 12px;
+    line-height: 1.55;
+  }
+
+  .tresh-contact-fallback,
+  .tresh-reservation-note {
+    background: rgba(255, 198, 168, 0.22);
+  }
+
+  .tresh-form-message--success {
+    background: rgba(35, 162, 115, 0.12);
+    color: #146b4c;
+  }
+
+  .tresh-form-message--error {
+    background: rgba(183, 48, 56, 0.1);
+    color: #8f2029;
+  }
+
+  .tresh-reservation-summary > p {
+    margin-block: 1rem 1.4rem;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+  }
+
+  .tresh-testimonial-card {
+    display: flex;
+    min-height: 250px;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0;
+    padding: clamp(1.4rem, 3vw, 2.2rem);
+  }
+
+  .tresh-testimonial-card blockquote {
+    margin: 0;
+    color: $color-encre;
+    font-family: $font-serif;
+    font-size: clamp(1.2rem, 2.3vw, 1.55rem);
+    line-height: 1.45;
+  }
+
+  .tresh-testimonial-card figcaption {
+    display: grid;
+    gap: 0.2rem;
+    margin-top: 1.5rem;
+    color: $color-gris-moyen;
+  }
+
+  .tresh-testimonial-card strong {
+    color: $color-encre;
+  }
+
+  .tresh-testimonial-card small {
+    color: $color-fuchsia;
+    font-weight: $weight-bold;
+  }
+</style>

@@ -1,0 +1,384 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+
+const formConfigured = isFormConfigured();
+---
+
+<BaseLayout
+  title="La communauté"
+  description="Rejoins la communauté Atelier Expression — infolettre, Instagram, Facebook. Des ateliers joyeux, une tribu bienveillante."
+  pageSlug="communaute"
+>
+  <PageHero
+    accent="viens rire avec nous"
+    title="La communauté"
+    subtitle="Pas un culte. Pas du développement personnel bizarre. Des humains qui ont décidé de s'exprimer un peu plus."
+    bg="orange"
+  />
+
+  <!-- ─── INTRO ──────────────────────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="community-heading">
+    <div class="container">
+      <div class="community-layout">
+        <div class="community-intro" data-reveal>
+          <span class="accent-handwritten">ici, on est ensemble</span>
+          <h2 id="community-heading">Des gens qui ose. Qui rient. Qui vivent plus pleinement.</h2>
+          <div class="divider"></div>
+          <p class="community-body">
+            Atelier Expression n'est pas seulement les deux heures que tu passes dans une salle.
+            C'est aussi ce qui se crée entre les séances : des gens qui se saluent, qui reviennent,
+            qui osent un peu plus à chaque fois.
+          </p>
+          <p class="community-body">
+            Pas une performance. Pas une transformation en 30 jours. Pas un groupe de soutien
+            avec des règles compliquées. Juste des humains qui ont choisi de s'exprimer
+            davantage — et qui ont trouvé que c'était bon.
+          </p>
+          <p class="community-body">
+            La communauté se construit lentement, avec intention. On n'est pas pressé·es.
+          </p>
+        </div>
+
+        <div class="community-channels" data-reveal="right">
+          <!-- Newsletter channel -->
+          <div class="channel-card channel-card--featured">
+            <span class="channel-card__icon" aria-hidden="true">✉️</span>
+            <h3 class="channel-card__title">L'infolettre</h3>
+            <p class="channel-card__desc">
+              Dates d'ateliers, nouvelles, petites réflexions sur l'expression, l'authenticité,
+              et le droit de prendre sa place. Pas de spam. Une fois ou deux par mois.
+            </p>
+            {formConfigured ? (
+              <form class="channel-form" data-channel-form aria-label="Inscription infolettre">
+                <input type="email" name="email" placeholder="ton@courriel.ca" class="channel-input" required aria-label="Ton courriel" />
+                <button type="submit" class="btn btn--primary">
+                  <span class="channel-submit-label">Je m'inscris</span>
+                  <span class="channel-submit-loading" hidden>…</span>
+                </button>
+                <div class="channel-success" hidden role="status" aria-live="polite">✓ Bienvenue dans la tribu!</div>
+                <div class="channel-error" hidden role="alert" aria-live="assertive">
+                  L'envoi a échoué. Écris-nous à <a href={`mailto:${site.email}`}>{site.email}</a>.
+                </div>
+              </form>
+            ) : (
+              <p class="channel-fallback">
+                Pas encore branché — écris-nous à <a href={`mailto:${site.email}`}>{site.email}</a>.
+              </p>
+            )}
+          </div>
+
+          <!-- Instagram -->
+          <a href={site.instagram} class="channel-card channel-card--social" target="_blank" rel="noopener noreferrer" aria-label="Suivre Atelier Expression sur Instagram">
+            <span class="channel-card__icon" aria-hidden="true">📸</span>
+            <h3 class="channel-card__title">Instagram</h3>
+            <p class="channel-card__desc">
+              Coulisses d'ateliers, moments de rire, réflexions courtes. Le quotidien joyeux d'Atelier Expression.
+            </p>
+            <span class="channel-card__link">Nous suivre →</span>
+          </a>
+
+          <!-- Facebook -->
+          <a href={site.facebook} class="channel-card channel-card--social" target="_blank" rel="noopener noreferrer" aria-label="Rejoindre Atelier Expression sur Facebook">
+            <span class="channel-card__icon" aria-hidden="true">👋</span>
+            <h3 class="channel-card__title">Facebook</h3>
+            <p class="channel-card__desc">
+              Annonces d'événements, partages de la communauté, espace de dialogue. Pour ceux et celles qui préfèrent Facebook.
+            </p>
+            <span class="channel-card__link">Nous rejoindre →</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PHOTO STRIP ─────────────────────────────────────────────────────── -->
+  <div class="community-photo-strip" aria-hidden="true">
+    <div class="community-photo-strip__img">
+      <img src="/assets/images/cindy_group_01.png" alt="" width="800" height="500" loading="lazy" />
+    </div>
+    <div class="community-photo-strip__overlay">
+      <p class="community-photo-strip__quote">Des humains qui ont décidé de s'exprimer un peu plus.</p>
+    </div>
+  </div>
+
+  <!-- ─── MANIFESTO ─────────────────────────────────────────────────────────── -->
+  <section class="section band band--encre" aria-labelledby="manifesto-heading">
+    <div class="container text-center" style="max-width: 740px; margin-inline: auto;">
+      <span class="accent-handwritten" style="color: #FF5A1F;">ce qu'on croit</span>
+      <h2 id="manifesto-heading" style="color: #FFF7EF; margin-top: 0.5rem;">Le manifeste de la communauté</h2>
+
+      <ul class="manifesto-list" role="list">
+        {[
+          'On croit que chaque adulte mérite un espace pour exister sans se rétrécir.',
+          'On croit que le rire est un acte de courage, pas de légèreté.',
+          'On croit que la gêne n\'est pas une limite — c\'est un point de départ.',
+          'On croit que s\'exprimer, ce n\'est pas seulement parler. C\'est bouger, créer, chanter, dire non, dire oui, exister.',
+          'On croit que le groupe peut être une ressource, pas seulement une source d\'anxiété.',
+          'On croit qu\'on peut grandir en jouant — et qu\'on n\'a pas besoin de souffrir pour changer.',
+          'On croit que prendre sa place ne devrait pas être héroïque. Juste possible.',
+          'On croit que ta vie mérite ta voix.',
+        ].map((item) => (
+          <li class="manifesto-item">{item}</li>
+        ))}
+      </ul>
+
+      <p class="manifesto-signature">
+        — Atelier Expression
+      </p>
+    </div>
+  </section>
+
+  <!-- ─── FULL NEWSLETTER ────────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="container">
+      <NewsletterSignup
+        title="Reste dans la tribu"
+        subtitle="Des nouvelles, des dates, des réflexions. Dans ta boîte mail, avec soin."
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .community-layout {
+    display: grid;
+    gap: $space-10;
+
+    @include lg { grid-template-columns: 1fr 1fr; }
+  }
+
+  .community-body {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+    margin-bottom: $space-4;
+  }
+
+  .community-channels {
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+  }
+
+  .channel-card {
+    background-color: $color-blanc;
+    border-radius: 12px;
+    padding: $space-6;
+    box-shadow: $shadow-card;
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    text-decoration: none;
+    color: inherit;
+    transition: transform $transition-base, box-shadow $transition-base;
+
+    &--featured {
+      border: 2px solid $color-fuchsia;
+    }
+
+    &--social {
+      border: 1px solid $color-gris-doux;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: $shadow-md;
+        border-color: $color-fuchsia;
+
+        @include reduced-motion { transform: none; }
+      }
+    }
+  }
+
+  .channel-card__icon {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+
+  .channel-card__title {
+    font-family: $font-serif;
+    font-size: $text-xl;
+    color: $color-encre;
+  }
+
+  .channel-card__desc {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+  }
+
+  .channel-card__link {
+    font-size: $text-sm;
+    font-weight: $weight-bold;
+    color: $color-fuchsia;
+    margin-top: auto;
+  }
+
+  .channel-form {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    margin-top: $space-2;
+  }
+
+  .channel-input {
+    font-family: $font-sans;
+    font-size: $text-base;
+    color: $color-encre;
+    background-color: $color-blanc;
+    border: 1.5px solid $color-gris-doux;
+    border-radius: $radius-md;
+    padding: 0.7em 1em;
+    outline: none;
+    transition: border-color $transition-base;
+    width: 100%;
+
+    &:focus { border-color: $color-fuchsia; }
+    &::placeholder { color: $color-gris-moyen; }
+  }
+
+  .channel-success,
+  .channel-error {
+    padding: $space-3;
+    border-radius: $radius-md;
+    font-weight: $weight-medium;
+    font-size: $text-sm;
+    text-align: center;
+
+    &:not([hidden]) { display: block; }
+  }
+
+  .channel-success {
+    background-color: rgba($c-orange, 0.1);
+    color: $c-plum;
+  }
+
+  .channel-error {
+    background-color: rgba($color-corail, 0.1);
+    color: $color-encre;
+
+    a { color: $color-fuchsia; }
+  }
+
+  .channel-fallback {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+
+    a { color: $color-fuchsia; }
+  }
+
+  // Photo strip
+  .community-photo-strip {
+    position: relative;
+    height: 300px;
+    overflow: hidden;
+
+    @include lg { height: 380px; }
+  }
+
+  .community-photo-strip__img {
+    width: 100%;
+    height: 100%;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 40%;
+      display: block;
+    }
+  }
+
+  .community-photo-strip__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba($c-pink-deep, 0.75) 0%, transparent 60%);
+    display: flex;
+    align-items: flex-end;
+    padding: $space-8 $space-10;
+  }
+
+  .community-photo-strip__quote {
+    font-family: $font-serif;
+    font-style: italic;
+    font-size: $text-2xl;
+    color: $color-creme;
+    max-width: 560px;
+    line-height: $leading-snug;
+  }
+
+  // Manifesto
+  .manifesto-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+    margin-top: $space-8;
+    text-align: left;
+  }
+
+  .manifesto-item {
+    font-family: $font-serif;
+    font-size: $text-lg;
+    color: rgba($color-creme, 0.9);
+    line-height: $leading-snug;
+    padding-left: $space-6;
+    position: relative;
+
+    &::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: $color-fuchsia;
+      font-weight: $weight-bold;
+    }
+  }
+
+  .manifesto-signature {
+    margin-top: $space-8;
+    font-family: $font-handwritten;
+    font-size: $text-xl;
+    color: rgba($color-creme, 0.5);
+  }
+</style>
+
+<script>
+  import { submitForm } from '../lib/formspree';
+
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-channel-form]');
+
+  forms.forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = form.querySelector<HTMLInputElement>('.channel-input');
+      const btn = form.querySelector<HTMLButtonElement>('button');
+      const label = form.querySelector<HTMLElement>('.channel-submit-label');
+      const loading = form.querySelector<HTMLElement>('.channel-submit-loading');
+      const success = form.querySelector<HTMLElement>('.channel-success');
+      const errorBox = form.querySelector<HTMLElement>('.channel-error');
+
+      if (btn) btn.disabled = true;
+      label?.setAttribute('hidden', 'true');
+      loading?.removeAttribute('hidden');
+      errorBox?.setAttribute('hidden', 'true');
+
+      const result = await submitForm('newsletter-communaute', { email: input?.value ?? '' });
+
+      if (btn) btn.disabled = false;
+      loading?.setAttribute('hidden', 'true');
+      label?.removeAttribute('hidden');
+
+      if (result.ok) {
+        if (input) input.style.display = 'none';
+        if (btn) btn.style.display = 'none';
+        if (success) success.hidden = false;
+      } else if (errorBox) {
+        errorBox.hidden = false;
+      }
+    });
+  });
+</script>

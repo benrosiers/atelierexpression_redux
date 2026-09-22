@@ -1,0 +1,306 @@
+---
+// Short interest-capture form for the next workshop (no date yet).
+// Real submission via Formspree when PUBLIC_FORM_ENDPOINT is configured (see
+// src/lib/formspree.ts + docs/EMAIL_SERVICE_PLAN.md). Never simulates success.
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+import { getPublicSiteSetting, type FormMessagesSetting } from '../lib/content/publicContent';
+
+interface Props {
+  id?: string;
+}
+
+const { id = 'interet-prochain-atelier' } = Astro.props;
+const configured = isFormConfigured();
+
+const cmsMessages = (await getPublicSiteSetting<FormMessagesSetting>('form_messages'))?.interest;
+const submitLabel = cmsMessages?.submitLabel || 'Être averti·e du prochain atelier';
+const loadingLabel = cmsMessages?.loadingLabel || 'Envoi en cours…';
+const successMessage = cmsMessages?.successMessage || 'C\'est noté! Tu seras parmi les premières personnes averties de la date.';
+---
+
+<div class="interest-form" id={id}>
+  {configured ? (
+    <form class="if-form" data-interest-form aria-label="Manifester mon intérêt pour le prochain atelier">
+      <div class="if-row">
+        <div class="if-field">
+          <label for="if-prenom" class="if-label">Prénom</label>
+          <input type="text" id="if-prenom" name="prenom" class="if-input" required autocomplete="given-name" placeholder="Marie" />
+        </div>
+        <div class="if-field">
+          <label for="if-email" class="if-label">Courriel</label>
+          <input type="email" id="if-email" name="email" class="if-input" required autocomplete="email" placeholder="marie@example.ca" />
+        </div>
+      </div>
+      <div class="if-row">
+        <div class="if-field">
+          <label for="if-secteur" class="if-label">Ville ou secteur <span class="if-optional">(facultatif)</span></label>
+          <input type="text" id="if-secteur" name="secteur" class="if-input" autocomplete="address-level2" placeholder="Longueuil" />
+        </div>
+        <div class="if-field">
+          <label for="if-preference" class="if-label">Préférence <span class="if-optional">(facultatif)</span></label>
+          <select id="if-preference" name="preference" class="if-input">
+            <option value="">Aucune préférence</option>
+            <option value="soir">En soirée</option>
+            <option value="weekend">En fin de semaine</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="if-field if-field--check">
+        <input type="checkbox" id="if-consent" name="consent" class="if-checkbox" required />
+        <label for="if-consent" class="if-check-label">
+          J'accepte de recevoir l'annonce du prochain atelier par courriel.
+        </label>
+      </div>
+
+      <p class="if-notice">
+        Aucun engagement. Aucun pourriel. Ton courriel sert uniquement à t'annoncer la prochaine
+        date — tu peux te désabonner en un clic à tout moment.
+      </p>
+
+      <div class="if-actions">
+        <button type="submit" class="btn btn--primary if-submit">
+          <span class="if-submit-label">{submitLabel}</span>
+          <span class="if-submit-loading" hidden>{loadingLabel}</span>
+        </button>
+      </div>
+
+      <div class="if-success" role="status" aria-live="polite" hidden>
+        <span aria-hidden="true">✓</span>
+        <p>{successMessage}</p>
+      </div>
+
+      <div class="if-error" role="alert" aria-live="assertive" hidden>
+        <span aria-hidden="true">⚠</span>
+        <p class="if-error-text">
+          L'envoi a échoué. Réessaie, ou écris-nous directement à
+          <a href={`mailto:${site.email}`}>{site.email}</a>.
+        </p>
+      </div>
+    </form>
+  ) : (
+    <div class="if-not-configured">
+      <p class="if-not-configured__title">Le formulaire n'est pas encore activé.</p>
+      <p class="if-not-configured__body">
+        La collecte d'intérêt en ligne n'est pas encore branchée à un service d'envoi
+        (voir <code>docs/EMAIL_SERVICE_PLAN.md</code>). En attendant, écris-nous directement
+        pour être averti·e du prochain atelier :
+      </p>
+      <a href={`mailto:${site.email}?subject=${encodeURIComponent('Être averti·e du prochain atelier')}`} class="btn btn--primary if-not-configured__cta">
+        Écrire à {site.email}
+      </a>
+    </div>
+  )}
+</div>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .interest-form {
+    position: relative;
+    background-color: $c-cream;
+    border: 2px solid rgba($c-orange-deep, 0.35);
+    border-radius: $radius-lg;
+    padding: $space-6;
+    // Detaches the panel from the section's own light background instead of
+    // reading as a flat rectangle dropped on top of it.
+    box-shadow: $paint-shadow-ellipse-dense;
+  }
+
+  .if-row {
+    display: grid;
+    gap: $space-4;
+    grid-template-columns: 1fr;
+    margin-bottom: $space-4;
+
+    @include sm { grid-template-columns: 1fr 1fr; }
+  }
+
+  .if-field {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+
+    &--check {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: $space-3;
+      margin-bottom: $space-4;
+    }
+  }
+
+  .if-label {
+    font-size: $text-sm;
+    font-weight: $weight-medium;
+    color: $color-encre;
+  }
+
+  .if-optional {
+    color: $color-gris-moyen;
+    font-weight: $weight-regular;
+  }
+
+  .if-input {
+    font-family: $font-sans;
+    font-size: $text-base;
+    color: $color-encre;
+    background-color: $color-blanc;
+    border: 1.5px solid $color-gris-doux;
+    border-radius: $radius-md;
+    padding: 0.7em 1em;
+    outline: none;
+    width: 100%;
+    transition: border-color $transition-base, box-shadow $transition-base;
+
+    &:focus {
+      border-color: $color-fuchsia;
+      box-shadow: 0 0 0 3px rgba($color-fuchsia, 0.12);
+    }
+
+    &::placeholder { color: $color-gris-moyen; }
+  }
+
+  .if-checkbox {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    accent-color: $color-fuchsia;
+    cursor: pointer;
+    margin-top: 2px;
+  }
+
+  .if-check-label {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+  }
+
+  .if-notice {
+    font-size: $text-xs;
+    color: $color-gris-moyen;
+    margin-bottom: $space-5;
+    line-height: $leading-normal;
+  }
+
+  // Denser orange + warm shadow + a more affirmed hover than the generic
+  // .btn--primary, scoped to this form only (site-wide button left as-is).
+  .if-submit,
+  .if-not-configured__cta {
+    min-width: 260px;
+    background-color: $c-orange-deep;
+    border-color: $c-orange-deep;
+    color: $c-cream;
+    box-shadow: 0 10px 22px rgba(96, 24, 38, 0.28);
+
+    &:hover {
+      background-color: #af391e;
+      border-color: #af391e;
+      box-shadow: 0 14px 28px rgba(96, 24, 38, 0.36);
+    }
+
+    &[disabled] {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+
+  .if-success,
+  .if-error {
+    display: none;
+    gap: $space-3;
+    align-items: flex-start;
+    margin-top: $space-5;
+    padding: $space-4 $space-5;
+    border-radius: $radius-md;
+    font-weight: $weight-medium;
+
+    &:not([hidden]) { display: flex; }
+
+    span:first-child { font-size: $text-xl; flex-shrink: 0; line-height: 1.2; }
+  }
+
+  .if-success {
+    background-color: rgba($c-orange, 0.1);
+    border: 2px solid $c-orange;
+    color: $c-plum;
+  }
+
+  .if-error {
+    background-color: rgba($color-corail, 0.08);
+    border: 2px solid rgba($color-corail, 0.35);
+    color: $color-encre;
+
+    a { color: $color-fuchsia; }
+  }
+
+  .if-not-configured {
+    &__title {
+      font-family: $font-serif;
+      font-size: $text-lg;
+      color: $color-encre;
+      margin-bottom: $space-3;
+    }
+
+    &__body {
+      font-size: $text-sm;
+      color: $color-gris-moyen;
+      line-height: $leading-normal;
+      margin-bottom: $space-5;
+
+      code {
+        background-color: $color-gris-doux;
+        padding: 0.1em 0.4em;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+    }
+  }
+</style>
+
+<script>
+  import { submitForm } from '../lib/formspree';
+  import { track, AnalyticsEvent } from '../lib/analytics';
+
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-interest-form]');
+
+  forms.forEach((form) => {
+    track(AnalyticsEvent.InterestFormOpen);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const submitBtn = form.querySelector<HTMLButtonElement>('.if-submit');
+      const label = form.querySelector<HTMLElement>('.if-submit-label');
+      const loading = form.querySelector<HTMLElement>('.if-submit-loading');
+      const success = form.querySelector<HTMLElement>('.if-success');
+      const errorBox = form.querySelector<HTMLElement>('.if-error');
+
+      if (submitBtn) submitBtn.disabled = true;
+      label?.setAttribute('hidden', 'true');
+      loading?.removeAttribute('hidden');
+      errorBox?.setAttribute('hidden', 'true');
+
+      const formData = new FormData(form);
+      const data: Record<string, string> = {};
+      formData.forEach((value, key) => { data[key] = String(value); });
+
+      const result = await submitForm('interet-prochain-atelier', data);
+
+      if (submitBtn) submitBtn.disabled = false;
+      loading?.setAttribute('hidden', 'true');
+      label?.removeAttribute('hidden');
+
+      if (result.ok) {
+        form.reset();
+        const fieldsAndActions = form.querySelectorAll('.if-row, .if-field--check, .if-notice, .if-actions');
+        fieldsAndActions.forEach((el) => el.setAttribute('hidden', 'true'));
+        success?.removeAttribute('hidden');
+        track(AnalyticsEvent.InterestFormSubmitSuccess);
+      } else {
+        errorBox?.removeAttribute('hidden');
+        track(AnalyticsEvent.InterestFormSubmitError, { reason: result.reason });
+      }
+    });
+  });
+</script>

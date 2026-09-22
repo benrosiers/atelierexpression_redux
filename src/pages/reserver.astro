@@ -1,0 +1,266 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import ReservationForm from '../components/ReservationForm.astro';
+import InterestForm from '../components/InterestForm.astro';
+import { nextWorkshop as staticNextWorkshop, workshopStatusCopy } from '../data/nextWorkshop';
+import { getNextWorkshop } from '../lib/content/publicContent';
+
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+const isBuilding = nextWorkshop.status === 'building';
+const statusCopy = workshopStatusCopy[nextWorkshop.status];
+---
+
+<BaseLayout
+  title={isBuilding ? 'Prochain atelier' : 'Réserver ma place'}
+  description={isBuilding
+    ? 'Le prochain atelier découverte d\'Atelier Expression se prépare. Manifeste ton intérêt pour être averti·e dès que la date sera fixée.'
+    : `Réserver une place à l'atelier découverte d'Atelier Expression. Petit groupe, 2 heures, ${nextWorkshop.price}, à Longueuil.`}
+>
+  <PageHero
+    accent={isBuilding ? 'ça se prépare' : 'on t\'attend'}
+    title={isBuilding ? 'Le prochain atelier se prépare' : 'Réserver ma place'}
+    subtitle={isBuilding
+      ? 'Aucune date officielle pour l\'instant — et c\'est très bien comme ça. Sois parmi les premières personnes averties.'
+      : 'Tu as choisi de venir. C\'est déjà un acte courageux.'}
+    bg="plum"
+  />
+
+  <section class="section" aria-labelledby="reservation-heading">
+    <div class="container">
+      <div class="reservation-layout">
+        <!-- Summary sidebar -->
+        <aside class="reservation-summary" data-reveal="left">
+          <div class="summary-card">
+            <h2 id="reservation-heading" class="summary-card__title">Atelier découverte</h2>
+            <p class="summary-card__sub">On rit. On joue. On s'exprime.</p>
+
+            <span class="summary-card__status-badge">{statusCopy.badge}</span>
+
+            <div class="summary-details">
+              {[
+                { icon: '⏱', label: 'Durée', value: '2 heures' },
+                { icon: '👥', label: 'Groupe', value: nextWorkshop.capacity },
+                { icon: '📍', label: 'Lieu', value: nextWorkshop.location },
+                { icon: '💰', label: 'Tarif', value: nextWorkshop.price },
+                { icon: '✓',  label: 'Niveau', value: 'Débutant·es bienvenu·es — aucun prérequis' },
+              ].map((item) => (
+                <div class="summary-detail">
+                  <span class="summary-detail__icon" aria-hidden="true">{item.icon}</span>
+                  <div>
+                    <span class="summary-detail__label">{item.label}</span>
+                    <span class="summary-detail__value">{item.value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p class="summary-card__note">{statusCopy.note}</p>
+          </div>
+
+          <div class="reassurance-box">
+            <h3>Quelques rappels</h3>
+            <ul class="reassurance-list" role="list">
+              <li>Tu n'as besoin d'aucun talent ni d'aucune expérience.</li>
+              <li>Tu peux venir seul·e — c'est souvent comme ça que ça se passe.</li>
+              <li>Tu peux participer à ton rythme.</li>
+              <li>Manifester ton intérêt ne t'engage à rien.</li>
+              <li>Si tu as une question, on est là: <a href="/contact">nous contacter</a>.</li>
+            </ul>
+          </div>
+
+          <div class="summary-photo" aria-hidden="true">
+            <picture>
+              <source srcset="/assets/images/cindy-invitation-portrait.webp" type="image/webp" />
+              <img
+                src="/assets/images/cindy-invitation-portrait.jpg"
+                alt=""
+                width="400"
+                height="712"
+                loading="lazy"
+                class="summary-photo__img"
+              />
+            </picture>
+          </div>
+        </aside>
+
+        <!-- Form -->
+        <div class="reservation-form-col" data-reveal>
+          {isBuilding ? (
+            <InterestForm />
+          ) : (
+            <ReservationForm workshopId="atelier-decouverte" />
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FAQ MINI ──────────────────────────────────────────────────────────── -->
+  <section class="section band band--gris" aria-labelledby="reservation-faq-heading">
+    <div class="container text-center">
+      <h2 id="reservation-faq-heading">Tu hésites encore?</h2>
+      <p style="color: #7A7468; margin-top: 1rem; font-size: 1.125rem;">
+        C'est normal. La plupart des gens hésitent avant de s'inscrire.
+      </p>
+      <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/faq" class="btn btn--secondary">Lire la FAQ</a>
+        <a href="/contact" class="btn btn--secondary">Nous poser une question</a>
+        <a href="/ateliers" class="btn btn--secondary">Tout savoir sur l'atelier</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .reservation-layout {
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 340px 1fr; }
+  }
+
+  .summary-card {
+    background-color: $c-orange-deep;
+    color: $color-creme;
+    border-radius: $radius-xl;
+    padding: $space-6;
+    margin-bottom: $space-5;
+  }
+
+  .summary-card__title {
+    font-family: $font-serif;
+    font-size: $text-2xl;
+    color: $color-creme;
+    margin-bottom: $space-2;
+  }
+
+  .summary-card__sub {
+    font-family: $font-handwritten;
+    font-size: $text-lg;
+    color: $color-fuchsia;
+    margin-bottom: $space-4;
+  }
+
+  .summary-card__status-badge {
+    display: inline-block;
+    background-color: rgba($c-orange, 0.2);
+    color: $c-orange;
+    font-size: $text-xs;
+    font-weight: $weight-bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.3em 0.8em;
+    border-radius: $radius-full;
+    margin-bottom: $space-5;
+  }
+
+  .summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
+
+  .summary-detail {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-3;
+  }
+
+  .summary-detail__icon {
+    font-size: $text-lg;
+    width: 1.8em;
+    flex-shrink: 0;
+    line-height: 1.3;
+  }
+
+  .summary-detail__label {
+    display: block;
+    font-size: $text-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: rgba($color-creme, 0.55);
+    font-weight: $weight-bold;
+    margin-bottom: $space-1;
+  }
+
+  .summary-detail__value {
+    display: block;
+    font-size: $text-sm;
+    color: rgba($color-creme, 0.9);
+  }
+
+  .summary-card__note {
+    margin-top: $space-5;
+    padding-top: $space-5;
+    border-top: 1px solid rgba($color-creme, 0.15);
+    font-size: $text-sm;
+    color: rgba($color-creme, 0.75);
+    line-height: $leading-normal;
+  }
+
+  .reassurance-box {
+    background-color: rgba($c-peach-deep, 0.5);
+    border: 2px solid $c-border;
+    border-radius: 12px;
+    padding: $space-5;
+
+    h3 {
+      font-family: $font-serif;
+      font-size: $text-base;
+      color: $color-encre;
+      margin-bottom: $space-3;
+    }
+  }
+
+  .reassurance-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+
+    li {
+      font-size: $text-sm;
+      color: $color-gris-moyen;
+      line-height: $leading-normal;
+      padding-left: $space-4;
+      position: relative;
+
+      &::before {
+        content: '✓';
+        position: absolute;
+        left: 0;
+        color: $c-orange;
+        font-weight: $weight-bold;
+      }
+    }
+
+    a {
+      color: $color-fuchsia;
+      text-decoration: none;
+
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  .summary-photo {
+    margin-top: $space-5;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    display: none;
+
+    @include lg { display: block; }
+  }
+
+  .summary-photo__img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    border-radius: $radius-lg;
+    box-shadow: 4px 4px 0 $c-orange;
+  }
+</style>

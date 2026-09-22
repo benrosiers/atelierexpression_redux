@@ -1,0 +1,173 @@
+---
+// Honest proof-of-personality section. No group demo workshop has taken place yet —
+// see docs/DEMO_WORKSHOP_RECAP_NOTES.md. What exists instead is real footage Cindy
+// recorded herself: a personal invitation, filmed and edited before any date is set.
+// This section is framed as exactly that — never as a recap of a past group session.
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getNextWorkshop } from '../lib/content/publicContent';
+
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+---
+
+<section class="cindy-invitation" aria-labelledby="cindy-invitation-heading">
+  <div class="container">
+    <div class="ci-layout">
+      <div class="ci-video-col" data-reveal="left">
+        <div class="ci-video-frame">
+          <video
+            class="ci-video"
+            poster="/assets/video/invitation-cindy-poster.jpg"
+            controls
+            preload="none"
+            playsinline
+            width="720"
+            height="1280"
+            data-track-play
+          >
+            <source src="/assets/video/invitation-cindy.mp4" type="video/mp4" />
+            Ton navigateur ne supporte pas la lecture vidéo intégrée.
+          </video>
+        </div>
+        <p class="ci-video-caption">
+          Cindy, filmée avant même d'avoir une date — le message qu'elle voulait te partager en premier.
+        </p>
+      </div>
+
+      <div class="ci-content" data-reveal>
+        <span class="accent-handwritten">avant la première date officielle</span>
+        <h2 id="cindy-invitation-heading" class="ci-heading">
+          Cindy t'invite, directement.
+        </h2>
+        <p class="ci-body">
+          Avant même d'annoncer une date, Cindy a voulu te parler en personne. Ce que tu vois ici,
+          c'est elle, seule devant la caméra, expliquant dans ses mots pourquoi ce projet existe et
+          pourquoi elle a besoin de toi pour le faire vivre.
+        </p>
+
+        <blockquote class="ci-quote">
+          "Sortir de sa zone de confort, prendre la parole, être vu et entendu, traverser ça."
+        </blockquote>
+        <blockquote class="ci-quote">
+          "L'art de prendre la parole, l'expression, le jeu, la connexion avec les autres."
+        </blockquote>
+
+        <div class="ci-photos">
+          <picture>
+            <source srcset="/assets/images/cindy-invitation-micro.webp" type="image/webp" />
+            <img
+              src="/assets/images/cindy-invitation-micro.jpg"
+              alt="Cindy, micro en main, en train de tourner son message d'invitation"
+              width="700"
+              height="394"
+              loading="lazy"
+              class="ci-photo ci-photo--wide"
+            />
+          </picture>
+        </div>
+
+        <a
+          href={nextWorkshop.status === 'building' ? '#interet-prochain-atelier' : '/reserver'}
+          class="btn btn--primary ci-cta"
+        >
+          {nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .cindy-invitation {
+    padding-block: $section-pad;
+    background-color: $c-cream;
+  }
+
+  .ci-layout {
+    display: grid;
+    gap: $space-10;
+    align-items: center;
+
+    @include lg { grid-template-columns: 320px 1fr; }
+  }
+
+  .ci-video-frame {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: $shadow-lg;
+    border: 3px solid $color-blanc;
+    max-width: 320px;
+    margin-inline: auto;
+  }
+
+  .ci-video {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 9/16;
+    display: block;
+    background-color: $c-orange-deep;
+  }
+
+  .ci-video-caption {
+    text-align: center;
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    font-style: italic;
+    margin-top: $space-3;
+    max-width: 320px;
+    margin-inline: auto;
+  }
+
+  .ci-heading {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    color: $color-encre;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+    margin-bottom: $space-5;
+  }
+
+  .ci-body {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+    margin-bottom: $space-6;
+  }
+
+  .ci-quote {
+    font-family: $font-serif;
+    font-style: italic;
+    font-size: $text-lg;
+    color: $c-plum;
+    border-left: 4px solid $c-pink;
+    padding-left: $space-5;
+    margin-bottom: $space-5;
+    line-height: $leading-snug;
+  }
+
+  .ci-photos {
+    margin-block: $space-6;
+  }
+
+  .ci-photo--wide {
+    width: 100%;
+    max-width: 460px;
+    border-radius: 16px;
+    object-fit: cover;
+    aspect-ratio: 16/9;
+    box-shadow: 5px 5px 0 $c-orange;
+  }
+
+  .ci-cta {
+    margin-top: $space-2;
+  }
+</style>
+
+<script>
+  import { track, AnalyticsEvent } from '../lib/analytics';
+
+  document.querySelectorAll<HTMLVideoElement>('[data-track-play]').forEach((video) => {
+    video.addEventListener('play', () => track(AnalyticsEvent.VideoPlay), { once: true });
+  });
+</script>

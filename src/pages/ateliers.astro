@@ -1,0 +1,588 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionIntro from '../components/SectionIntro.astro';
+import WorkshopCard from '../components/WorkshopCard.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
+import { offers as staticOffers } from '../data/offers';
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getWorkshops, getNextWorkshop, getSectionItems } from '../lib/content/publicContent';
+
+// CMS-first, static-fallback (same pattern as Hero.astro/ValuePillars.astro
+// — see docs/CMS_MIGRATION_PLAN.md). staticOffers stays as the fallback,
+// never deleted.
+const cmsWorkshops = await getWorkshops();
+const offers = cmsWorkshops.length > 0 ? cmsWorkshops : staticOffers;
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+
+const staticBreakdownSteps = [
+  { num: '01', title: 'Accueil et sécurité', desc: 'On pose le cadre ensemble. Un seul accord : ici, on ne juge pas. Ni les autres, ni soi-même.' },
+  { num: '02', title: 'Jeux simples pour briser la glace', desc: 'Des jeux légers, accessibles, parfois absurdes. Le but n\'est pas d\'être bon·ne — c\'est de commencer à bouger.' },
+  { num: '03', title: 'Rire et mouvement guidé', desc: 'Du rire provoqué, du mouvement libre. Le corps se réveille. La gêne commence à se dissoudre.' },
+  { num: '04', title: 'Voix, présence, mini-expressions', desc: 'On utilise la voix. On occupe l\'espace. On essaie de petites choses sans pression et sans public qui évalue.' },
+  { num: '05', title: 'Cercle de partage léger', desc: 'Un moment pour déposer ce qu\'on a vécu. Court, libre, sans obligation. Tu peux juste écouter.' },
+  { num: '06', title: 'Retour au calme et prochaine invitation', desc: 'On revient ensemble. Et on parle de ce qui s\'en vient.' },
+];
+const cmsBreakdownSteps = await getSectionItems('ateliers', 'breakdown');
+const breakdownSteps = cmsBreakdownSteps.length > 0
+  ? cmsBreakdownSteps.map((i) => ({ num: i.label ?? '', title: i.title ?? '', desc: i.body ?? '' }))
+  : staticBreakdownSteps;
+
+const staticWhoItems = [
+  'Tu te sens coupé·e de toi-même et tu veux retrouver quelque chose de vivant.',
+  'Tu n\'as jamais osé essayer quelque chose comme ça — et tu en as envie depuis longtemps.',
+  'Tu veux t\'exprimer plus librement : ta voix, ton corps, tes émotions.',
+  'Tu as l\'impression d\'avoir perdu ta légèreté, ton élan, ta spontanéité.',
+  'Tu as besoin d\'un espace sécurisé pour essayer sans te juger ni être jugé·e.',
+  'Tu veux du jeu, de la chaleur, et des gens vrais — pas une autre méthode sérieuse.',
+];
+const cmsWhoItems = await getSectionItems('ateliers', 'who-items');
+const whoItems = cmsWhoItems.length > 0 ? cmsWhoItems.map((i) => i.body ?? '') : staticWhoItems;
+
+const staticExpectYes = [
+  'Un accueil chaleureux, même si tu viens seul·e',
+  'Des jeux simples qui ne nécessitent aucun talent',
+  'Des rires — sincères, parfois maladroits, toujours vrais',
+  'Du mouvement, léger et guidé',
+  'Un cercle de partage court et sans obligation',
+  'Un espace pour exister sans te retenir',
+  'Des participant·es qui, toi aussi, ont hésité avant de venir',
+  'L\'envie de revenir',
+];
+const cmsExpectYes = await getSectionItems('ateliers', 'expect-yes');
+const expectYes = cmsExpectYes.length > 0 ? cmsExpectYes.map((i) => i.body ?? '') : staticExpectYes;
+
+const staticExpectNo = [
+  'Un cours de comédie ou d\'improvisation',
+  'Un cours de danse ou de mouvement artistique',
+  'Une thérapie ou un groupe de soutien psychologique',
+  'Une performance devant un public',
+  'Un espace compétitif ou évaluatif',
+  'Un atelier avec un résultat attendu',
+  'Un groupe de développement personnel avec grande promesse',
+];
+const cmsExpectNo = await getSectionItems('ateliers', 'expect-no');
+const expectNo = cmsExpectNo.length > 0 ? cmsExpectNo.map((i) => i.body ?? '') : staticExpectNo;
+
+const staticBringList = [
+  'Des vêtements confortables dans lesquels tu peux bouger',
+  'De l\'eau',
+  'Ta curiosité — c\'est le seul bagage requis',
+  'Ta gêne, si tu l\'as — elle est bienvenue ici',
+];
+const cmsBringList = await getSectionItems('ateliers', 'bring-list');
+const bringList = cmsBringList.length > 0 ? cmsBringList.map((i) => i.body ?? '') : staticBringList;
+---
+
+<BaseLayout
+  title="Les ateliers"
+  description="Atelier découverte — 2 heures de jeu, de rire, de mouvement et d'expression. Pour adultes. Aucun talent requis. Aucune performance attendue. À Longueuil, Rive-Sud de Montréal."
+  pageSlug="ateliers"
+>
+  <PageHero
+    accent="ce qu'on fait ensemble"
+    title="Les ateliers"
+    subtitle="Un espace pour s'exprimer, rire, bouger, et se retrouver. Pas performer. Pas survivre."
+  />
+
+  <!-- ─── INVITATION INTRO ───────────────────────────────────────────────────── -->
+  <section class="section atelier-invite" aria-labelledby="invite-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div class="paint-totem atelier-invite__totem" style="--paint-totem-color:#F02E8A; --paint-totem-tilt:4deg;"></div>
+    </div>
+    <div class="container">
+      <div class="atelier-invite__layout">
+        <div class="atelier-invite__text" data-reveal>
+          <span class="accent-handwritten">avant de réserver</span>
+          <h2 id="invite-heading" class="atelier-invite__heading">
+            Tu n'as besoin d'être bon·ne en rien pour venir ici.
+          </h2>
+          <p class="atelier-invite__body">
+            Pas en théâtre. Pas en danse. Pas en improvisation. Pas même à l'aise en groupe.
+          </p>
+          <p class="atelier-invite__body">
+            L'atelier découverte est fait pour les personnes qui <em>veulent</em> essayer —
+            pas pour celles qui <em>savent déjà</em>. La gêne n'est pas un obstacle.
+            Elle est bienvenue. C'est souvent elle qui est la porte d'entrée.
+          </p>
+          <p class="atelier-invite__body">
+            Ce qu'on cherche : que tu ressentes quelque chose de vivant au bout de deux heures.
+            Voix, corps, rire, présence. À ton rythme, dans un espace protégé.
+          </p>
+        </div>
+        <div class="atelier-invite__photo" data-reveal="right">
+          <img
+            src="/assets/images/cindy_group_04.png"
+            alt="Participants en atelier — joie et expression collective"
+            class="atelier-invite__img"
+            width="420"
+            height="500"
+            loading="lazy"
+          />
+          <div class="atelier-invite__photo-caption">
+            <span class="accent-handwritten" style="font-size: 0.95rem; color: #FF5A1F;">ici, on ose</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ATELIER DÉCOUVERTE FEATURE ────────────────────────────────────────── -->
+  <section class="section atelier-feature" aria-labelledby="decouverte-heading">
+    <div class="container">
+      <div class="atelier-feature__layout">
+        <div class="atelier-feature__content" data-reveal>
+          <span class="atelier-badge">Notre atelier phare</span>
+          <span class="accent-handwritten">commencer ici</span>
+          <h2 id="decouverte-heading">
+            Atelier découverte —<br/>On rit. On joue. On s'exprime.
+          </h2>
+
+          <div class="atelier-meta">
+            <span class="paint-pastille paint-pastille--orange atelier-meta__pastille" style="--pastille-tilt:-1deg;">
+              <span class="atelier-meta__icon" aria-hidden="true">⏱</span> 2 heures
+            </span>
+            <span class="paint-pastille paint-pastille--pink atelier-meta__pastille" style="--pastille-tilt:1.2deg;">
+              <span class="atelier-meta__icon" aria-hidden="true">👥</span> {nextWorkshop.capacity}
+            </span>
+            <span class="paint-pastille paint-pastille--peach atelier-meta__pastille" style="--pastille-tilt:-1.4deg;">
+              <span class="atelier-meta__icon" aria-hidden="true">📍</span> {nextWorkshop.location}
+            </span>
+            <span class="paint-pastille paint-pastille--orange atelier-meta__pastille" style="--pastille-tilt:1deg;">
+              <span class="atelier-meta__icon" aria-hidden="true">💰</span> {nextWorkshop.price}
+            </span>
+            <span class="paint-pastille paint-pastille--pink atelier-meta__pastille atelier-meta__pastille--wide" style="--pastille-tilt:-0.6deg;">
+              <span class="atelier-meta__icon" aria-hidden="true">✓</span> Débutant·es bienvenu·es — aucun prérequis
+            </span>
+          </div>
+
+          <div class="atelier-ctas">
+            <a href="/reserver" class="btn btn--primary btn--lg">{nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}</a>
+          </div>
+        </div>
+
+        <div class="atelier-feature__breakdown" data-reveal="right">
+          <h3>Ce qui se passe pendant 2 heures</h3>
+          <ol class="breakdown-list">
+            {breakdownSteps.map((step) => (
+              <li class="breakdown-step">
+                <span class="breakdown-step__num" aria-hidden="true">{step.num}</span>
+                <div class="breakdown-step__content">
+                  <strong class="breakdown-step__title">{step.title}</strong>
+                  <p class="breakdown-step__desc">{step.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── WHO IT'S FOR ──────────────────────────────────────────────────────── -->
+  <section class="section band band--pink-soft" aria-labelledby="who-heading">
+    <div class="container">
+      <SectionIntro
+        accent="pour qui?"
+        title="Tu n'as pas besoin d'être prêt·e. Tu as juste besoin de vouloir essayer."
+        centered
+      />
+      <div class="who-grid" data-reveal>
+        {whoItems.map((item, i) => (
+          <div
+            class:list={['who-card', i % 2 === 1 ? 'who-card--pink' : '']}
+            style={`--panel-tilt:${[-1.5, 1.2, -0.8, 1.4, -1, 1.1][i % 6]}deg;`}
+            data-reveal
+          >
+            <span class="who-card__check" aria-hidden="true">✦</span>
+            <p class="who-card__text">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── WHAT TO EXPECT / NOT ──────────────────────────────────────────────── -->
+  <section class="section band band--gris" aria-labelledby="expect-heading">
+    <div class="container">
+      <SectionIntro
+        accent="sois bien préparé·e"
+        title="Ce à quoi tu peux t'attendre."
+        centered
+      />
+      <div class="expect-grid">
+        <div class="expect-col expect-col--yes" data-reveal="left">
+          <h3 class="expect-col__title">Tu peux t'attendre à…</h3>
+          <ul class="expect-list expect-list--yes" role="list">
+            {expectYes.map((item) => (
+              <li>
+                <span aria-hidden="true">✓</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="expect-col expect-col--no" data-reveal="right">
+          <h3 class="expect-col__title">Ce n'est pas…</h3>
+          <ul class="expect-list expect-list--no" role="list">
+            {expectNo.map((item) => (
+              <li>
+                <span aria-hidden="true">✕</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <!-- What to bring -->
+      <div class="bring-box" data-reveal>
+        <h3 class="bring-box__title">Quoi apporter?</h3>
+        <ul class="bring-list" role="list">
+          {bringList.map((item) => (
+            <li>
+              <span aria-hidden="true">✦</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── ALL OFFERS ────────────────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="all-offers-heading">
+    <div class="container">
+      <SectionIntro
+        accent="toute la gamme"
+        title="Tous les ateliers"
+        subtitle="L'atelier découverte est le premier format qu'on prépare. Les autres arrivent après."
+      />
+      <div class="card-grid">
+        {offers.map((offer) => (
+          <div data-reveal>
+            <WorkshopCard offer={offer} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── NEWSLETTER ─────────────────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="container">
+      <NewsletterSignup
+        title="Sois la première personne informée"
+        subtitle="Quand un nouvel atelier s'ouvre, tu veux le savoir avant que les places partent. Inscris-toi maintenant."
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  // ─── INVITATION INTRO ────────────────────────────────────────────────────────
+  .atelier-invite__layout {
+    display: grid;
+    gap: $space-10;
+    align-items: center;
+
+    @include lg { grid-template-columns: 1fr 400px; }
+  }
+
+  .atelier-invite__heading {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    color: $color-encre;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+    margin-bottom: $space-5;
+  }
+
+  .atelier-invite__body {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+    margin-bottom: $space-4;
+
+    em { color: $color-encre; font-style: italic; }
+  }
+
+  .atelier-invite__photo {
+    display: none;
+
+    @include lg { display: block; }
+  }
+
+  .atelier-invite__img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 6px 6px 0 $c-pink;
+    object-fit: cover;
+    object-position: center top;
+    aspect-ratio: 3/4;
+  }
+
+  .atelier-invite__photo-caption {
+    text-align: center;
+    margin-top: $space-3;
+  }
+
+  .atelier-invite {
+    position: relative;
+    overflow: visible;
+  }
+
+  .atelier-invite__totem {
+    top: 8%;
+    right: -2%;
+    height: clamp(300px, 40vw, 560px);
+    opacity: 0.35;
+
+    @media (max-width: 900px) { display: none; }
+  }
+
+  // ─── WHO GRID ─────────────────────────────────────────────────────────────────
+  .who-grid {
+    display: grid;
+    gap: $space-5;
+    grid-template-columns: 1fr;
+    margin-top: $space-8;
+
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+    @include lg { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .who-card {
+    display: flex;
+    gap: $space-3;
+    padding: $space-5;
+    background-color: $c-cream;
+    border-radius: 46% 54% 40% 60% / 50% 44% 56% 50%;
+    box-shadow: $paint-shadow-ellipse;
+    transform: rotate(var(--panel-tilt, -1deg));
+    transition: transform $transition-base, box-shadow $transition-base;
+
+    &:hover {
+      transform: rotate(0deg) translateY(-3px);
+      box-shadow: $paint-shadow-ellipse-dense;
+      @include reduced-motion { transform: rotate(0deg); }
+    }
+
+    &--pink { background-color: rgba($c-pink, 0.16); }
+  }
+
+  .who-card__check {
+    color: $c-orange;
+    font-size: $text-lg;
+    flex-shrink: 0;
+    line-height: 1.2;
+  }
+
+  .who-card__text {
+    font-size: $text-sm;
+    color: $color-encre;
+    line-height: $leading-normal;
+  }
+
+  // ─── MAIN FEATURE ─────────────────────────────────────────────────────────────
+  .atelier-badge {
+    display: inline-block;
+    background-color: $color-fuchsia;
+    color: $color-blanc;
+    font-size: $text-xs;
+    font-weight: $weight-bold;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.3em 0.8em;
+    border-radius: $radius-full;
+    margin-bottom: $space-3;
+  }
+
+  .atelier-feature__layout {
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 1fr 1fr; }
+  }
+
+  .atelier-feature__content {
+    h2 {
+      font-family: $font-serif;
+      font-size: $text-3xl;
+      line-height: $leading-tight;
+      color: $color-encre;
+      margin-top: $space-3;
+      margin-bottom: $space-6;
+    }
+  }
+
+  .atelier-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+    margin-bottom: $space-8;
+  }
+
+  .atelier-meta__pastille {
+    font-size: $text-sm;
+
+    &--wide { white-space: normal; }
+  }
+
+  .atelier-meta__icon {
+    font-size: $text-base;
+  }
+
+  .atelier-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+  }
+
+  .atelier-feature__breakdown {
+    h3 {
+      font-family: $font-serif;
+      font-size: $text-2xl;
+      color: $color-encre;
+      margin-bottom: $space-6;
+    }
+  }
+
+  .breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+  }
+
+  .breakdown-step {
+    display: flex;
+    gap: $space-4;
+    align-items: flex-start;
+  }
+
+  .breakdown-step__num {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    font-weight: $weight-bold;
+    color: $color-fuchsia;
+    opacity: 0.35;
+    flex-shrink: 0;
+    line-height: 1;
+    width: 2.5ch;
+  }
+
+  .breakdown-step__title {
+    display: block;
+    font-size: $text-base;
+    font-weight: $weight-bold;
+    color: $color-encre;
+    margin-bottom: $space-1;
+  }
+
+  .breakdown-step__desc {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+  }
+
+  // ─── EXPECT ─────────────────────────────────────────────────────────────────
+  .expect-grid {
+    display: grid;
+    gap: $space-6;
+    grid-template-columns: 1fr;
+
+    @include md { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .expect-col {
+    padding: $space-6 $space-6 $space-8;
+    border-radius: 28px;
+    box-shadow: $paint-shadow-ellipse;
+    transition: box-shadow $transition-base;
+
+    &:hover {
+      box-shadow: $paint-shadow-ellipse-dense;
+    }
+  }
+
+  .expect-col--yes {
+    background-color: rgba($c-orange, 0.14);
+    transform: rotate(-1.4deg);
+  }
+
+  .expect-col--no {
+    background-color: $c-peach-deep;
+    transform: rotate(1.2deg);
+  }
+
+  .expect-col__title {
+    font-family: $font-serif;
+    font-size: $text-xl;
+    color: $color-encre;
+    margin-bottom: $space-5;
+  }
+
+  .expect-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+
+    li {
+      display: flex;
+      gap: $space-3;
+      font-size: $text-sm;
+      line-height: $leading-snug;
+      align-items: flex-start;
+
+      span:first-child {
+        font-weight: $weight-bold;
+        flex-shrink: 0;
+        width: 1.2em;
+      }
+    }
+
+    &--yes li span:first-child { color: $c-orange; }
+    &--no  li span:first-child { color: rgba($color-gris-moyen, 0.5); }
+    &--yes li span:last-child { color: $color-encre; }
+    &--no  li span:last-child { color: $color-gris-moyen; }
+  }
+
+  .bring-box {
+    position: relative;
+    background-color: rgba($c-pink, 0.16);
+    border-radius: 28px;
+    padding: $space-6;
+    margin-top: $space-8;
+    box-shadow: $paint-shadow-ellipse;
+    transform: rotate(0.8deg);
+  }
+
+  .bring-box__title {
+    font-family: $font-serif;
+    font-size: $text-xl;
+    color: $color-encre;
+    margin-bottom: $space-4;
+  }
+
+  .bring-list {
+    display: grid;
+    gap: $space-3;
+    grid-template-columns: 1fr;
+
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+
+    li {
+      display: flex;
+      gap: $space-3;
+      font-size: $text-sm;
+      color: $color-encre;
+      align-items: flex-start;
+
+      span:first-child { color: $color-fuchsia; flex-shrink: 0; }
+    }
+  }
+</style>

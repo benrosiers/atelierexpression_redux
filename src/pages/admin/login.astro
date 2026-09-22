@@ -1,0 +1,185 @@
+---
+import '../../styles/admin.scss';
+---
+
+<!doctype html>
+<html lang="fr-CA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Connexion — Admin Atelier Expression</title>
+  </head>
+  <body>
+    <div id="admin-not-configured" class="admin-banner admin-banner--warning" hidden>
+      <p>
+        <strong>CMS non configuré.</strong>
+        Les variables <code>PUBLIC_SUPABASE_URL</code> et
+        <code>PUBLIC_SUPABASE_ANON_KEY</code> ne sont pas définies
+        (voir <code>docs/CMS_MIGRATION_PLAN.md</code>). La connexion est
+        désactivée tant qu'un projet Supabase n'est pas branché.
+      </p>
+    </div>
+
+    <div class="login-page">
+      <div class="admin-card login-card">
+        <h1>Atelier Expression — Admin</h1>
+        <p class="login-sub">Connexion réservée à l'équipe.</p>
+
+        <div class="login-tabs">
+          <button type="button" class="login-tab is-active" data-tab="magic">Lien magique</button>
+          <button type="button" class="login-tab" data-tab="password">Mot de passe</button>
+        </div>
+
+        <form id="magic-link-form" class="login-form">
+          <div class="admin-form-field">
+            <label for="magic-email">Courriel</label>
+            <input type="email" id="magic-email" name="email" required autocomplete="email" placeholder="cindy@atelierexpression.ca" />
+          </div>
+          <button type="submit" class="admin-btn admin-btn--primary" id="magic-submit">Recevoir un lien de connexion</button>
+        </form>
+
+        <form id="password-form" class="login-form" hidden>
+          <div class="admin-form-field">
+            <label for="password-email">Courriel</label>
+            <input type="email" id="password-email" name="email" required autocomplete="email" />
+          </div>
+          <div class="admin-form-field">
+            <label for="password-password">Mot de passe</label>
+            <input type="password" id="password-password" name="password" required autocomplete="current-password" />
+          </div>
+          <button type="submit" class="admin-btn admin-btn--primary" id="password-submit">Se connecter</button>
+        </form>
+
+        <div id="login-notice" class="admin-notice" hidden></div>
+      </div>
+    </div>
+
+    <style>
+      .login-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .login-card {
+        width: 100%;
+        max-width: 380px;
+      }
+      .login-sub {
+        color: var(--login-sub-color, #6B6255);
+        font-size: 0.9rem;
+        margin: 0 0 1.25rem;
+      }
+      .login-tabs {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.25rem;
+        border-bottom: 1px solid #E5E2DA;
+      }
+      .login-tab {
+        background: none;
+        border: none;
+        padding: 0.5em 0.2em;
+        margin-bottom: -1px;
+        border-bottom: 2px solid transparent;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #6B6255;
+        cursor: pointer;
+      }
+      .login-tab.is-active {
+        color: #32111F;
+        border-bottom-color: #C94222;
+      }
+      .login-form button[type='submit'] {
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      import { isSupabaseConfigured } from '../../lib/supabase/client';
+      import { signInWithMagicLink, signInWithPassword, requireAdminSession } from '../../lib/supabase/auth';
+
+      const notConfigured = document.getElementById('admin-not-configured');
+      const notice = document.getElementById('login-notice') as HTMLElement;
+      const tabs = document.querySelectorAll<HTMLButtonElement>('.login-tab');
+      const magicForm = document.getElementById('magic-link-form') as HTMLFormElement;
+      const passwordForm = document.getElementById('password-form') as HTMLFormElement;
+
+      function showNotice(message: string, kind: 'success' | 'error' | 'info') {
+        notice.hidden = false;
+        notice.textContent = message;
+        notice.className = `admin-notice admin-notice--${kind}`;
+      }
+
+      const NOTICE_MESSAGES: Record<string, [string, 'success' | 'error' | 'info']> = {
+        'access-denied': ["Accès refusé — aucun profil administratif n'est associé à ce compte.", 'error'],
+        'login-required': ['Connecte-toi pour accéder à l’administration.', 'info'],
+        'session-expired': ['Ta session a expiré — reconnecte-toi.', 'info'],
+        'logged-out': ['Déconnexion réussie.', 'success'],
+      };
+
+      const noticeParam = new URLSearchParams(window.location.search).get('notice');
+      if (noticeParam && NOTICE_MESSAGES[noticeParam]) {
+        const [message, kind] = NOTICE_MESSAGES[noticeParam];
+        showNotice(message, kind);
+      }
+
+      if (!isSupabaseConfigured()) {
+        notConfigured?.removeAttribute('hidden');
+        magicForm.querySelectorAll('input, button').forEach((el) => ((el as HTMLInputElement | HTMLButtonElement).disabled = true));
+        passwordForm.querySelectorAll('input, button').forEach((el) => ((el as HTMLInputElement | HTMLButtonElement).disabled = true));
+      } else {
+        // Uses the same full guard (session + profile) as AdminLayout, not a
+        // plain session check — a session without a profile must NOT bounce
+        // to /admin here, or it just bounces straight back (extra redirect
+        // hop, not a loop, but avoidable).
+        requireAdminSession().then((result) => {
+          if (result.ok) window.location.href = '/admin';
+        });
+      }
+
+      tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          tabs.forEach((t) => t.classList.remove('is-active'));
+          tab.classList.add('is-active');
+          const which = tab.dataset.tab;
+          magicForm.hidden = which !== 'magic';
+          passwordForm.hidden = which !== 'password';
+        });
+      });
+
+      magicForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = (document.getElementById('magic-email') as HTMLInputElement).value;
+        const submitBtn = document.getElementById('magic-submit') as HTMLButtonElement;
+        submitBtn.disabled = true;
+        const result = await signInWithMagicLink(email);
+        submitBtn.disabled = false;
+        if (result.ok) {
+          showNotice('Lien envoyé — vérifie ta boîte courriel.', 'success');
+        } else {
+          showNotice(`Échec de l'envoi : ${result.error ?? 'erreur inconnue'}`, 'error');
+        }
+      });
+
+      passwordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = (document.getElementById('password-email') as HTMLInputElement).value;
+        const password = (document.getElementById('password-password') as HTMLInputElement).value;
+        const submitBtn = document.getElementById('password-submit') as HTMLButtonElement;
+        submitBtn.disabled = true;
+        const result = await signInWithPassword(email, password);
+        submitBtn.disabled = false;
+        if (result.ok) {
+          showNotice('Connexion réussie — redirection…', 'success');
+          setTimeout(() => { window.location.href = '/admin'; }, 400);
+        } else {
+          showNotice(`Connexion refusée : ${result.error ?? 'erreur inconnue'}`, 'error');
+        }
+      });
+    </script>
+  </body>
+</html>

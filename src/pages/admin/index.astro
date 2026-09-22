@@ -1,0 +1,107 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Tableau de bord" activeNav="dashboard">
+  <h1>Tableau de bord</h1>
+
+  <section class="admin-grid" aria-label="Statistiques">
+    <div class="admin-stat">
+      <span class="admin-stat__label">Prochain événement</span>
+      <span class="admin-stat__value" data-stat="next-event">—</span>
+    </div>
+    <div class="admin-stat">
+      <span class="admin-stat__label">Ateliers publiés</span>
+      <span class="admin-stat__value" data-stat="published-workshops">—</span>
+    </div>
+    <div class="admin-stat">
+      <span class="admin-stat__label">Brouillons</span>
+      <span class="admin-stat__value" data-stat="drafts">—</span>
+    </div>
+    <div class="admin-stat">
+      <span class="admin-stat__label">Traductions manquantes</span>
+      <span class="admin-stat__value" data-stat="missing-translations">—</span>
+    </div>
+  </section>
+
+  <div class="admin-card">
+    <h2>Raccourcis</h2>
+    <div class="dashboard-shortcuts">
+      <a class="admin-btn admin-btn--ghost" href="/admin/workshops/new">Ajouter un atelier</a>
+      <a class="admin-btn admin-btn--ghost" href="/admin/events/new">Ajouter un événement</a>
+      <a class="admin-btn admin-btn--ghost" href="/admin/faq">Ajouter une FAQ</a>
+      <a class="admin-btn admin-btn--ghost" href="/admin/pages/edit?slug=home">Modifier l'accueil</a>
+      <a class="admin-btn admin-btn--ghost" href="/admin/testimonials">Ajouter un témoignage</a>
+      <a class="admin-btn admin-btn--ghost" href="/admin/preview" target="_blank" rel="noopener">Ouvrir l'aperçu</a>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <h2>Dernières modifications</h2>
+    <p id="recent-changes-empty" class="admin-empty-note">Aucune donnée pour l'instant.</p>
+    <ul id="recent-changes-list" role="list" hidden></ul>
+  </div>
+
+  <div class="admin-card">
+    <h2>Contenus masqués</h2>
+    <p id="hidden-content-empty" class="admin-empty-note">Aucune donnée pour l'instant.</p>
+  </div>
+
+  <style>
+    .dashboard-shortcuts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .admin-empty-note {
+      color: #6B6255;
+      font-size: 0.9rem;
+    }
+  </style>
+
+  <script>
+    import { getSupabaseClient, isSupabaseConfigured } from '../../lib/supabase/client';
+
+    async function loadStats() {
+      if (!isSupabaseConfigured()) return;
+      const client = getSupabaseClient();
+      if (!client) return;
+
+      // Each query is wrapped independently — if a table doesn't exist yet
+      // (schema not applied), the dashboard shows "—" for that stat rather
+      // than breaking the whole page.
+      try {
+        const { count } = await client
+          .from('workshops')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'published');
+        setStat('published-workshops', count ?? '—');
+      } catch { /* table not created yet */ }
+
+      try {
+        const { count } = await client
+          .from('workshops')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'draft');
+        setStat('drafts', count ?? '—');
+      } catch { /* table not created yet */ }
+
+      try {
+        const { data } = await client
+          .from('events')
+          .select('title:slug, starts_at')
+          .gt('starts_at', new Date().toISOString())
+          .order('starts_at', { ascending: true })
+          .limit(1);
+        if (data && data.length > 0) setStat('next-event', data[0].starts_at);
+      } catch { /* table not created yet */ }
+    }
+
+    function setStat(key: string, value: string | number) {
+      const el = document.querySelector(`[data-stat="${key}"]`);
+      if (el) el.textContent = String(value);
+    }
+
+    loadStats();
+  </script>
+</AdminLayout>

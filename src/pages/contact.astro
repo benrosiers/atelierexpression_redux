@@ -1,0 +1,410 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+import { getPublicSiteSetting, type FormMessagesSetting } from '../lib/content/publicContent';
+
+const formConfigured = isFormConfigured();
+
+const cmsMessages = (await getPublicSiteSetting<FormMessagesSetting>('form_messages'))?.contact;
+const submitLabel = cmsMessages?.submitLabel || 'Envoyer mon message';
+const loadingLabel = cmsMessages?.loadingLabel || 'Envoi en cours…';
+const successMessage = cmsMessages?.successMessage || 'Message reçu! On te répond dans les 24 à 48 heures.';
+---
+
+<BaseLayout
+  title="Contact"
+  description="Contacte Atelier Expression — questions, réservations groupes, ateliers privés ou corporatifs, et collaborations. On répond sous 24 à 48h."
+  pageSlug="contact"
+>
+  <PageHero
+    accent="écris-nous"
+    title="Contact"
+    subtitle="Une question? Une idée? Un projet? On répond dans les 24 à 48 heures."
+  />
+
+  <section class="section" aria-labelledby="contact-heading">
+    <div class="container">
+      <div class="contact-layout">
+        <!-- Form -->
+        <div class="contact-form-col" data-reveal>
+          <h2 id="contact-heading">Envoie-nous un message</h2>
+          <div class="divider"></div>
+
+          {formConfigured ? (
+            <form class="contact-form" data-contact-form aria-label="Formulaire de contact">
+              <div class="cf-field">
+                <label for="cf-name" class="cf-label">Ton prénom et nom</label>
+                <input type="text" id="cf-name" name="name" class="cf-input" required placeholder="Marie Tremblay" autocomplete="name" />
+              </div>
+              <div class="cf-field">
+                <label for="cf-email" class="cf-label">Ton courriel</label>
+                <input type="email" id="cf-email" name="email" class="cf-input" required placeholder="marie@example.ca" autocomplete="email" />
+              </div>
+              <div class="cf-field">
+                <label for="cf-subject" class="cf-label">Sujet</label>
+                <select id="cf-subject" name="subject" class="cf-input">
+                  <option value="">Choisir un sujet</option>
+                  <option value="info">Question sur les ateliers</option>
+                  <option value="reservation">Réservation</option>
+                  <option value="prive">Atelier privé ou groupe</option>
+                  <option value="corporatif">Atelier corporatif</option>
+                  <option value="media">Médias / collaboration</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+              <div class="cf-field">
+                <label for="cf-message" class="cf-label">Ton message</label>
+                <textarea id="cf-message" name="message" class="cf-input cf-textarea" rows="5" required placeholder="Bonjour, je voudrais savoir..."></textarea>
+              </div>
+              <div class="cf-actions">
+                <button type="submit" class="btn btn--primary btn--lg">
+                  <span class="cf-submit-label">{submitLabel}</span>
+                  <span class="cf-submit-loading" hidden>{loadingLabel}</span>
+                </button>
+              </div>
+              <div class="cf-success" hidden role="status" aria-live="polite">
+                <span aria-hidden="true">✓</span>
+                <p>{successMessage}</p>
+              </div>
+              <div class="cf-error" hidden role="alert" aria-live="assertive">
+                <span aria-hidden="true">⚠</span>
+                <p>L'envoi a échoué. Écris-nous directement à <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+              </div>
+            </form>
+          ) : (
+            <div class="cf-not-configured">
+              <p>
+                Ce formulaire n'est pas encore branché à un service d'envoi. Écris-nous
+                directement à <a href={`mailto:${site.email}`}>{site.email}</a> — on te répond
+                dans les 24 à 48 heures.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="contact-sidebar" data-reveal="right">
+          <div class="contact-info">
+            <h3>Autres façons de nous joindre</h3>
+
+            <div class="contact-info__item">
+              <span class="contact-info__icon" aria-hidden="true">✉️</span>
+              <div>
+                <strong>Courriel</strong>
+                <a href={`mailto:${site.email}`}>{site.email}</a>
+              </div>
+            </div>
+
+            <div class="contact-info__item">
+              <span class="contact-info__icon" aria-hidden="true">📍</span>
+              <div>
+                <strong>Zone de service</strong>
+                <p>{site.location}</p>
+              </div>
+            </div>
+
+            <div class="contact-info__item">
+              <span class="contact-info__icon" aria-hidden="true">📸</span>
+              <div>
+                <strong>Instagram</strong>
+                <a href={site.instagram} target="_blank" rel="noopener noreferrer">@atelierexpression</a>
+              </div>
+            </div>
+
+            <div class="contact-info__item">
+              <span class="contact-info__icon" aria-hidden="true">👋</span>
+              <div>
+                <strong>Facebook</strong>
+                <a href={site.facebook} target="_blank" rel="noopener noreferrer">Atelier Expression</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="contact-quicklinks">
+            <h3>Liens rapides</h3>
+            <ul role="list">
+              {[
+                { href: '/reserver', label: 'Prochain atelier →' },
+                { href: '/ateliers', label: 'Voir les ateliers →' },
+                { href: '/faq', label: 'Lire la FAQ →' },
+                { href: '/communaute', label: 'Rejoindre la communauté →' },
+              ].map((link) => (
+                <li>
+                  <a href={link.href} class="contact-quicklink">{link.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="contact-private-note">
+            <span aria-hidden="true">💼</span>
+            <div>
+              <strong>Atelier privé ou corporatif?</strong>
+              <p>On adore les projets sur mesure. Écris-nous avec ton idée et on revient vers toi avec des options.</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .contact-layout {
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 1fr 380px; }
+  }
+
+  .contact-form-col {
+    h2 {
+      font-family: $font-serif;
+      font-size: $text-3xl;
+      color: $color-encre;
+    }
+  }
+
+  .contact-form {
+    margin-top: $space-6;
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+  }
+
+  .cf-field {
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
+
+  .cf-label {
+    font-size: $text-sm;
+    font-weight: $weight-medium;
+    color: $color-encre;
+  }
+
+  .cf-input {
+    font-family: $font-sans;
+    font-size: $text-base;
+    color: $color-encre;
+    background-color: $color-blanc;
+    border: 1.5px solid $color-gris-doux;
+    border-radius: $radius-md;
+    padding: 0.7em 1em;
+    outline: none;
+    width: 100%;
+    transition: border-color $transition-base, box-shadow $transition-base;
+
+    &:focus {
+      border-color: $color-fuchsia;
+      box-shadow: 0 0 0 3px rgba($color-fuchsia, 0.12);
+    }
+
+    &::placeholder { color: $color-gris-moyen; }
+  }
+
+  .cf-textarea {
+    resize: vertical;
+    min-height: 140px;
+  }
+
+  .cf-actions { margin-top: $space-2; }
+
+  .cf-success,
+  .cf-error {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-3;
+    padding: $space-4 $space-5;
+    border-radius: $radius-md;
+    font-weight: $weight-medium;
+
+    &:not([hidden]) { display: flex; }
+
+    span:first-child { font-size: $text-xl; flex-shrink: 0; }
+
+    em { font-weight: $weight-regular; color: $color-gris-moyen; }
+  }
+
+  .cf-success {
+    background-color: rgba($c-orange, 0.1);
+    border: 2px solid $c-orange;
+    color: $c-plum;
+  }
+
+  .cf-error {
+    background-color: rgba($color-corail, 0.08);
+    border: 2px solid rgba($color-corail, 0.35);
+    color: $color-encre;
+
+    a { color: $color-fuchsia; }
+  }
+
+  .cf-not-configured {
+    background-color: $color-gris-doux;
+    border-radius: $radius-md;
+    padding: $space-5;
+    font-size: $text-sm;
+    color: $color-encre;
+
+    a { color: $color-fuchsia; }
+  }
+
+  // Sidebar
+  .contact-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: $space-6;
+  }
+
+  .contact-info {
+    background-color: $color-blanc;
+    border-radius: $radius-lg;
+    padding: $space-6;
+    box-shadow: $shadow-card;
+
+    h3 {
+      font-family: $font-serif;
+      font-size: $text-xl;
+      color: $color-encre;
+      margin-bottom: $space-5;
+    }
+  }
+
+  .contact-info__item {
+    display: flex;
+    gap: $space-3;
+    align-items: flex-start;
+    margin-bottom: $space-4;
+
+    &:last-child { margin-bottom: 0; }
+
+    strong {
+      display: block;
+      font-size: $text-sm;
+      font-weight: $weight-bold;
+      color: $color-encre;
+      margin-bottom: $space-1;
+    }
+
+    a, p {
+      font-size: $text-sm;
+      color: $color-gris-moyen;
+    }
+
+    a {
+      color: $color-fuchsia;
+      text-decoration: none;
+
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  .contact-info__icon {
+    font-size: 1.4rem;
+    width: 2em;
+    flex-shrink: 0;
+    line-height: 1.4;
+  }
+
+  .contact-quicklinks {
+    background-color: $color-gris-doux;
+    border-radius: $radius-lg;
+    padding: $space-5;
+
+    h3 {
+      font-family: $font-serif;
+      font-size: $text-base;
+      color: $color-gris-moyen;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: $weight-bold;
+      margin-bottom: $space-4;
+    }
+
+    ul { display: flex; flex-direction: column; gap: $space-2; }
+  }
+
+  .contact-quicklink {
+    font-size: $text-sm;
+    font-weight: $weight-medium;
+    color: $color-fuchsia;
+    text-decoration: none;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  .contact-private-note {
+    background-color: rgba($color-corail, 0.08);
+    border: 2px solid rgba($color-corail, 0.2);
+    border-radius: $radius-lg;
+    padding: $space-5;
+    display: flex;
+    gap: $space-3;
+    align-items: flex-start;
+    font-size: 1.5rem;
+
+    strong {
+      display: block;
+      font-size: $text-sm;
+      font-weight: $weight-bold;
+      color: $color-encre;
+      margin-bottom: $space-2;
+    }
+
+    p {
+      font-size: $text-sm;
+      color: $color-gris-moyen;
+      line-height: $leading-normal;
+    }
+  }
+</style>
+
+<script>
+  import { submitForm } from '../lib/formspree';
+
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-contact-form]');
+
+  forms.forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fields = form.querySelectorAll<HTMLElement>('.cf-field');
+      const actions = form.querySelector<HTMLElement>('.cf-actions');
+      const success = form.querySelector<HTMLElement>('.cf-success');
+      const errorBox = form.querySelector<HTMLElement>('.cf-error');
+      const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      const label = form.querySelector<HTMLElement>('.cf-submit-label');
+      const loading = form.querySelector<HTMLElement>('.cf-submit-loading');
+
+      if (submitBtn) submitBtn.disabled = true;
+      label?.setAttribute('hidden', 'true');
+      loading?.removeAttribute('hidden');
+      errorBox?.setAttribute('hidden', 'true');
+
+      const formData = new FormData(form);
+      const data: Record<string, string> = {};
+      formData.forEach((value, key) => { data[key] = String(value); });
+
+      const result = await submitForm('contact', data);
+
+      if (submitBtn) submitBtn.disabled = false;
+      loading?.setAttribute('hidden', 'true');
+      label?.removeAttribute('hidden');
+
+      if (result.ok) {
+        fields.forEach((el) => { el.style.display = 'none'; });
+        if (actions) actions.style.display = 'none';
+        if (success) success.hidden = false;
+      } else if (errorBox) {
+        errorBox.hidden = false;
+      }
+    });
+  });
+</script>

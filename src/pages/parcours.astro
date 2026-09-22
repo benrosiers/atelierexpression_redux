@@ -1,0 +1,462 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getNextWorkshop, getSectionItems } from '../lib/content/publicContent';
+
+const formConfigured = isFormConfigured();
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+
+const staticModules = [
+  { week: 'Semaine 1', title: 'Rire et lâcher-prise', desc: 'Briser la glace — vraiment. Le rire comme point d\'entrée, pas comme objectif. Le corps commence à se rappeler qu\'il peut bouger librement.', variant: 'orange' },
+  { week: 'Semaine 2', title: 'Expression corporelle', desc: 'Retrouver son corps comme outil d\'expression, pas comme source d\'embarras ou d\'auto-surveillance.', variant: 'pink' },
+  { week: 'Semaine 3', title: 'Voix et présence', desc: 'La voix, le regard, le souffle. Occuper l\'espace sans s\'excuser d\'être là. Parler sans rétrécir.', variant: 'peach' },
+  { week: 'Semaine 4', title: 'Permission et confiance', desc: 'Oser parler, oser écouter, oser demander. Dire non. Dire oui. La confiance comme résultat — pas comme prérequis.', variant: 'orange' },
+  { week: 'Semaine 5', title: 'Connexion et cercle', desc: 'Le groupe comme ressource. Comment créer du lien pour de vrai, sans superficialité et sans fusion.', variant: 'pink' },
+  { week: 'Semaine 6', title: 'Intégration et suite', desc: 'Qu\'est-ce que tu gardes? Qu\'est-ce qui change dans ta vie de tous les jours? Et maintenant, quoi?', variant: 'peach' },
+];
+const cmsModules = await getSectionItems('parcours', 'modules');
+const modules = cmsModules.length > 0
+  ? cmsModules.map((i) => ({ week: i.label ?? '', title: i.title ?? '', desc: i.body ?? '', variant: i.visualVariant ?? 'orange' }))
+  : staticModules;
+
+const staticReconnectItems = [
+  { before: 'Se retenir', after: 'Respirer, ressentir, bouger' },
+  { before: 'Se taire', after: 'Retrouver sa voix' },
+  { before: 'Figer', after: 'Rejoindre l\'élan' },
+  { before: 'Survivre', after: 'S\'exprimer pleinement' },
+  { before: 'Rester petit·e', after: 'Prendre sa place, avec droit' },
+];
+const cmsReconnectItems = await getSectionItems('parcours', 'reconnect-list');
+const reconnectItems = cmsReconnectItems.length > 0
+  ? cmsReconnectItems.map((i) => ({ before: i.title ?? '', after: i.body ?? '' }))
+  : staticReconnectItems;
+---
+
+<BaseLayout
+  title="Parcours"
+  description="Parcours de transformation en 4 à 6 semaines — expression, voix, mouvement, confiance, et sécurité de groupe. Bientôt disponible à Atelier Expression."
+  pageSlug="parcours"
+>
+  <PageHero
+    accent="bientôt disponible"
+    title="Parcours"
+    subtitle="Un chemin de 4 à 6 semaines pour retrouver sa voix, son corps, sa place."
+    bg="encre"
+  />
+
+  <!-- ─── COMING SOON ────────────────────────────────────────────────────────── -->
+  <section class="section parcours-intro-scene" aria-labelledby="parcours-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div class="paint-totem parcours-totem" style="--paint-totem-color:#F02E8A; --paint-totem-tilt:-3deg;"></div>
+    </div>
+    <div class="container">
+      <div class="parcours-layout">
+        <div class="parcours-intro" data-reveal>
+          <span class="accent-handwritten">en développement</span>
+          <h2 id="parcours-heading">Une reconnexion progressive. Pas une transformation miraculeuse.</h2>
+          <div class="divider"></div>
+          <p class="parcours-body">
+            Si un atelier découverte est une porte, le parcours est ce qu'il y a derrière.
+            Un chemin sur 4 à 6 semaines, en groupe fixe, où chaque séance construit sur la
+            précédente — pour que la reconnexion s'installe en profondeur, pas juste le temps
+            d'une soirée.
+          </p>
+          <p class="parcours-body">
+            Voix. Corps. Permission. Confiance. Sécurité de groupe. Expression — pas performance.
+            C'est ce que le parcours explore, semaine après semaine, avec les mêmes personnes.
+          </p>
+          <p class="parcours-body">
+            Ce format est en développement. On veut le construire avec soin, pas à la va-vite.
+            Inscris-toi pour faire partie des premières personnes informées.
+          </p>
+
+          <div class="paint-panel paint-panel--pink parcours-badge" style="--panel-tilt:-1.2deg;">
+            <span aria-hidden="true">🗓</span>
+            <div>
+              <strong>En préparation</strong>
+              <p>Lancement prévu pour l'automne 2026</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="parcours-modules" data-reveal="right">
+          <h3>Ce que le parcours explore :</h3>
+          <ol class="module-list">
+            {modules.map((module, i) => (
+              <li class:list={['paint-panel', `paint-panel--${module.variant}`, 'module-item']} style={`--panel-tilt:${[-1, 1.1, -0.8, 1.2, -1.1, 0.9][i % 6]}deg;`}>
+                <span class="paint-pastille paint-pastille--dark module-item__week">{module.week}</span>
+                <div>
+                  <strong class="module-item__title">{module.title}</strong>
+                  <p class="module-item__desc">{module.desc}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── RECONNECTION PROMISE ──────────────────────────────────────────────── -->
+  <section class="section band band--pink-soft reconnect-scene" aria-labelledby="reconnect-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div class="paint-totem paint-totem--capsule paint-totem--soft reconnect-totem" style="--paint-totem-color:#FF5A1F; --paint-totem-tilt:5deg;"></div>
+    </div>
+    <div class="container">
+      <div class="reconnect-layout">
+        <div class="reconnect-photo" data-reveal="left">
+          <img
+            src="/assets/images/cindy_06.png"
+            alt="Présence et écoute — intériorité et reconnexion"
+            class="reconnect-img"
+            width="340"
+            height="380"
+            loading="lazy"
+          />
+        </div>
+        <div class="reconnect-content" data-reveal>
+          <span class="accent-handwritten">ce que tu peux retrouver</span>
+          <h2 id="reconnect-heading" class="reconnect-heading">
+            Une reconnexion progressive à ce qui était bloqué.
+          </h2>
+          <ul class="reconnect-list" role="list">
+            {reconnectItems.map((item, i) => (
+              <li class="reconnect-item">
+                <span class="paint-pastille paint-pastille--cream reconnect-item__before" style={`--pastille-tilt:${i % 2 === 0 ? -1 : 1}deg;`}>{item.before}</span>
+                <span class="reconnect-item__arrow" aria-hidden="true">→</span>
+                <span class="paint-pastille paint-pastille--orange reconnect-item__after" style={`--pastille-tilt:${i % 2 === 0 ? 1 : -1}deg;`}>{item.after}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── INTEREST CAPTURE ──────────────────────────────────────────────────── -->
+  <section class="section band band--gris" aria-labelledby="interest-heading">
+    <div class="container" style="max-width: 640px; margin-inline: auto; text-align: center;">
+      <span class="accent-handwritten">je suis intéressé·e</span>
+      <h2 id="interest-heading">Dis-nous que tu veux faire partie des premiers.</h2>
+      <p style="margin-top: 1rem; color: var(--c-gris-moyen, #7A7468); margin-bottom: 2.5rem;">
+        En t'inscrivant, tu reçois les informations en primeur sur le lancement du parcours.
+        Aucune obligation. Juste la priorité.
+      </p>
+
+      {formConfigured ? (
+        <form class="interest-form" data-parcours-interest-form aria-label="Inscription d'intérêt pour le parcours">
+          <div class="interest-form__fields">
+            <input type="text" name="name" placeholder="Ton prénom" class="interest-input" required aria-label="Ton prénom" />
+            <input type="email" name="email" placeholder="ton@courriel.ca" class="interest-input" required aria-label="Ton courriel" />
+            <button type="submit" class="btn btn--primary">
+              <span class="interest-submit-label">Je veux être parmi les premiers·ères</span>
+              <span class="interest-submit-loading" hidden>Envoi…</span>
+            </button>
+          </div>
+          <div class="interest-success" hidden role="status" aria-live="polite">
+            <p>✓ Merci! On te contacte en priorité dès que le parcours est prêt.</p>
+          </div>
+          <div class="interest-error" hidden role="alert" aria-live="assertive">
+            <p>L'envoi a échoué. Écris-nous à <a href={`mailto:${site.email}`}>{site.email}</a>.</p>
+          </div>
+        </form>
+      ) : (
+        <p class="interest-fallback">
+          Pas encore branché — écris-nous à <a href={`mailto:${site.email}`}>{site.email}</a> pour être averti·e en priorité.
+        </p>
+      )}
+    </div>
+  </section>
+
+  <!-- ─── MEANWHILE ─────────────────────────────────────────────────────────── -->
+  <section class="section" aria-labelledby="meanwhile-heading">
+    <div class="container text-center">
+      <h2 id="meanwhile-heading">En attendant, il y a l'atelier découverte.</h2>
+      <p style="margin-top: 1rem; color: #6D3A55; font-size: 1.125rem; max-width: 520px; margin-inline: auto; line-height: 1.6;">
+        C'est là que tout commence. Un premier pas — joyeux, léger, concret.
+        La reconnexion commence souvent dans ce premier rire.
+      </p>
+      <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/ateliers" class="btn btn--primary btn--lg">Voir l'atelier découverte</a>
+        <a href="/reserver" class="btn btn--secondary">{nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .parcours-layout {
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 1fr 1fr; }
+  }
+
+  .parcours-body {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+    margin-bottom: $space-4;
+  }
+
+  .parcours-intro-scene {
+    position: relative;
+    overflow: visible;
+  }
+
+  .parcours-totem {
+    top: 4%;
+    left: -3%;
+    height: clamp(280px, 36vw, 520px);
+    opacity: 0.3;
+
+    @media (max-width: 900px) { display: none; }
+  }
+
+  .parcours-badge {
+    display: flex;
+    align-items: center;
+    gap: $space-4;
+    padding: $space-5 $space-6;
+    margin-top: $space-6;
+
+    span:first-child { font-size: 2rem; }
+
+    strong {
+      display: block;
+      font-size: $text-base;
+      color: $c-ink;
+      font-weight: $weight-bold;
+    }
+
+    p {
+      font-size: $text-sm;
+      color: $c-ink-soft;
+      margin-top: $space-1;
+    }
+  }
+
+  .parcours-modules h3 {
+    font-family: $font-serif;
+    font-size: $text-2xl;
+    color: $color-encre;
+    margin-bottom: $space-6;
+  }
+
+  .module-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+  }
+
+  .module-item {
+    display: flex;
+    gap: $space-4;
+    align-items: flex-start;
+    padding: $space-5;
+  }
+
+  .module-item__week {
+    font-size: $text-xs;
+    flex-shrink: 0;
+  }
+
+  .module-item__title {
+    display: block;
+    font-size: $text-base;
+    font-weight: $weight-bold;
+    color: $color-encre;
+    margin-bottom: $space-1;
+  }
+
+  .module-item__desc {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+  }
+
+  .interest-form {
+    text-align: left;
+  }
+
+  .interest-form__fields {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+
+    @include md { flex-direction: row; align-items: stretch; }
+  }
+
+  .interest-input {
+    flex: 1;
+    font-family: $font-sans;
+    font-size: $text-base;
+    color: $color-encre;
+    background-color: $color-blanc;
+    border: 1.5px solid $color-gris-doux;
+    border-radius: $radius-md;
+    padding: 0.7em 1em;
+    outline: none;
+    transition: border-color $transition-base;
+
+    &:focus { border-color: $color-fuchsia; }
+    &::placeholder { color: $color-gris-moyen; }
+  }
+
+  .interest-success,
+  .interest-error {
+    margin-top: $space-4;
+    padding: $space-3 $space-4;
+    border-radius: $radius-md;
+    font-weight: $weight-medium;
+    text-align: center;
+
+    &:not([hidden]) { display: block; }
+  }
+
+  .interest-success {
+    background-color: rgba($c-orange, 0.1);
+    color: $c-plum;
+  }
+
+  .interest-error {
+    background-color: rgba($color-corail, 0.1);
+    color: $color-encre;
+
+    a { color: $color-fuchsia; }
+  }
+
+  .interest-fallback {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+
+    a { color: $color-fuchsia; }
+  }
+
+  // ─── RECONNECTION ───────────────────────────────────────────────────────────
+  .reconnect-scene {
+    position: relative;
+    overflow: visible;
+  }
+
+  .reconnect-totem {
+    bottom: -8%;
+    right: -2%;
+    width: clamp(70px, 8vw, 120px);
+    height: clamp(200px, 26vw, 360px);
+
+    @media (max-width: 700px) { display: none; }
+  }
+
+  .reconnect-layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: $space-10;
+    align-items: center;
+
+    @include lg { grid-template-columns: 320px 1fr; }
+  }
+
+  .reconnect-photo {
+    display: none;
+
+    @include lg { display: block; }
+  }
+
+  .reconnect-img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 5px 5px 0 $c-orange;
+    object-fit: cover;
+    object-position: center top;
+    aspect-ratio: 3/4;
+  }
+
+  .reconnect-heading {
+    font-family: $font-serif;
+    font-size: $text-2xl;
+    color: $color-encre;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+    margin-bottom: $space-6;
+  }
+
+  .reconnect-list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
+
+  .reconnect-item {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    flex-wrap: wrap;
+  }
+
+  .reconnect-item__before {
+    font-size: $text-sm;
+    font-weight: $weight-medium;
+    text-decoration: line-through;
+    text-decoration-color: rgba($c-ink, 0.4);
+  }
+
+  .reconnect-item__arrow {
+    color: $c-orange-deep;
+    font-weight: $weight-bold;
+    flex-shrink: 0;
+  }
+
+  .reconnect-item__after {
+    font-size: $text-sm;
+    font-weight: $weight-bold;
+  }
+</style>
+
+<script>
+  import { submitForm } from '../lib/formspree';
+
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-parcours-interest-form]');
+
+  forms.forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fields = form.querySelector<HTMLElement>('.interest-form__fields');
+      const success = form.querySelector<HTMLElement>('.interest-success');
+      const errorBox = form.querySelector<HTMLElement>('.interest-error');
+      const submitBtn = form.querySelector<HTMLButtonElement>('button');
+      const label = form.querySelector<HTMLElement>('.interest-submit-label');
+      const loading = form.querySelector<HTMLElement>('.interest-submit-loading');
+
+      if (submitBtn) submitBtn.disabled = true;
+      label?.setAttribute('hidden', 'true');
+      loading?.removeAttribute('hidden');
+      errorBox?.setAttribute('hidden', 'true');
+
+      const formData = new FormData(form);
+      const data: Record<string, string> = {};
+      formData.forEach((value, key) => { data[key] = String(value); });
+
+      const result = await submitForm('interet-parcours', data);
+
+      if (submitBtn) submitBtn.disabled = false;
+      loading?.setAttribute('hidden', 'true');
+      label?.removeAttribute('hidden');
+
+      if (result.ok) {
+        if (fields) fields.style.display = 'none';
+        if (success) success.hidden = false;
+      } else if (errorBox) {
+        errorBox.hidden = false;
+      }
+    });
+  });
+</script>

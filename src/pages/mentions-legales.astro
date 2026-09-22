@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+
+const formConfigured = isFormConfigured();
+---
+
+<BaseLayout
+  title="Mentions légales"
+  description="Mentions légales et politique de confidentialité d'Atelier Expression."
+  noindex={true}
+  pageSlug="mentions-legales"
+>
+  <PageHero
+    accent="transparent par principe"
+    title="Mentions légales"
+    subtitle="Informations légales et politique de confidentialité."
+  />
+
+  <section class="section">
+    <div class="container container--text" style="margin-inline: auto; max-width: 760px;">
+      <div class="legal-content prose" data-reveal>
+        <h2>Responsable du site</h2>
+        <p>Atelier Expression<br />atelierexpression.ca<br />Longueuil, Québec, Canada</p>
+
+        <h2>Collecte de données</h2>
+        <p>
+          Les formulaires sur ce site (intérêt pour le prochain atelier, réservation, contact,
+          infolettre) collectent uniquement les informations que tu fournis volontairement. Ces
+          données sont utilisées exclusivement pour répondre à tes demandes ou t'informer du
+          prochain atelier.
+        </p>
+        <p>
+          Aucune donnée n'est vendue à des tiers. Aucun suivi publicitaire n'est actuellement actif
+          sur ce site.
+        </p>
+
+        <h2>Infolettre</h2>
+        <p>
+          Si tu t'es inscrit·e à l'infolettre, tu peux te désabonner à tout moment en cliquant sur
+          le lien de désabonnement présent dans chaque courriel, ou en nous écrivant directement.
+        </p>
+
+        <h2>État réel des formulaires</h2>
+        {formConfigured ? (
+          <p>
+            Les formulaires de ce site transmettent réellement les données saisies à notre service
+            de traitement de formulaires (Formspree). Aucune confirmation de réception n'est
+            affichée sans que l'envoi ait réellement réussi.
+          </p>
+        ) : (
+          <p>
+            La collecte en ligne n'est pas encore activée sur ce site (aucun service d'envoi n'est
+            configuré). Les formulaires l'indiquent clairement et proposent d'écrire directement à{' '}
+            <a href={`mailto:${site.email}`}>{site.email}</a> en attendant. Aucune donnée n'est
+            transmise ni stockée tant que ce n'est pas activé.
+          </p>
+        )}
+
+        <h2>Propriété intellectuelle</h2>
+        <p>
+          Le contenu de ce site — textes, images, identité visuelle — est la propriété exclusive
+          d'Atelier Expression. Toute reproduction partielle ou totale est interdite sans
+          autorisation écrite.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          Pour toute question relative à tes données personnelles ou à l'utilisation de ce site,
+          écris-nous à <a href="mailto:info@atelierexpression.ca">info@atelierexpression.ca</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .legal-content {
+    h2 {
+      font-family: $font-serif;
+      font-size: $text-xl;
+      color: $color-encre;
+      margin-top: $space-8;
+      margin-bottom: $space-3;
+
+      &:first-child { margin-top: 0; }
+    }
+
+    p {
+      color: $color-gris-moyen;
+      line-height: $leading-loose;
+    }
+
+    a {
+      color: $color-fuchsia;
+      text-decoration: underline;
+    }
+
+    p + p { margin-top: $space-4; }
+  }
+</style>

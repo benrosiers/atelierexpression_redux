@@ -1,0 +1,315 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import FAQAccordion from '../components/FAQAccordion.astro';
+import Doodle from '../components/Doodle.astro';
+import { faqs as staticFaqs } from '../data/faqs';
+import { site } from '../data/site';
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getFaqs, getNextWorkshop } from '../lib/content/publicContent';
+
+const cmsFaqs = await getFaqs();
+const faqs = cmsFaqs.length > 0 ? cmsFaqs : staticFaqs;
+
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+
+const categories = [
+  { id: 'accessibilite', label: 'Accessibilité', emoji: '🤍', items: faqs.filter(f => f.category === 'accessibilité'), tilt: -1.5, variant: 'peach' },
+  { id: 'contenu',       label: 'Contenu',       emoji: '🎭', items: faqs.filter(f => f.category === 'contenu'), tilt: 1.2, variant: 'pink' },
+  { id: 'format',        label: 'Format',        emoji: '👥', items: faqs.filter(f => f.category === 'format'), tilt: -1, variant: 'orange' },
+  { id: 'pratique',      label: 'Pratique',      emoji: '📋', items: faqs.filter(f => f.category === 'pratique'), tilt: 1.5, variant: 'peach' },
+  { id: 'securite',      label: 'Sécurité',      emoji: '🛡️', items: faqs.filter(f => f.category === 'sécurité'), tilt: -1.2, variant: 'pink' },
+  { id: 'futur',         label: 'À venir',       emoji: '✦',  items: faqs.filter(f => f.category === 'futur'), tilt: 1, variant: 'orange' },
+].filter(c => c.items.length > 0);
+---
+
+<BaseLayout
+  title="Foire aux questions"
+  description="Toutes les réponses à tes questions sur les ateliers Atelier Expression. Gêne, performance, lieu, prix, format — on répond honnêtement."
+  pageSlug="faq"
+>
+  <!-- Structured data: FAQPage (inline in body — valid per JSON-LD spec) -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  })} />
+
+  <PageHero
+    accent="tes questions"
+    title="Foire aux questions"
+    subtitle="On répond honnêtement. Aucun jargon. Aucune promesse floue."
+  />
+
+  <section class="section faq-scene" aria-labelledby="faq-main-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div class="paint-totem faq-scene__totem" style="--paint-totem-color:#FFC6A8; --paint-totem-tilt:-4deg;"></div>
+      <div class="paint-totem paint-totem--capsule paint-totem--soft faq-scene__totem2" style="--paint-totem-color:#F02E8A; --paint-totem-tilt:5deg;"></div>
+      <div
+        class="paint-layer paint-layer--l1 faq-scene__wave"
+        data-parallax data-parallax-depth="0.1" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-wave.webp" alt="" width="1553" height="767" loading="lazy" />
+      </div>
+      <div class="faq-scene__doodle faq-scene__doodle--sparkle doodle--pulse" style="animation-duration: 6s;">
+        <Doodle name="sparkle" color="orange" />
+      </div>
+      <div class="faq-scene__doodle faq-scene__doodle--star doodle--rotate" style="animation-duration: 8s;">
+        <Doodle name="star" color="pink" />
+      </div>
+      <div class="faq-scene__doodle faq-scene__doodle--dots doodle--float" style="animation-duration: 7s;">
+        <Doodle name="dots" color="ink" />
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="faq-layout">
+        <div class="faq-intro" data-reveal>
+          <h2 id="faq-main-heading" class="faq-intro__heading">
+            Tu te poses des questions. C'est normal — et c'est bon signe.
+          </h2>
+          <p class="faq-intro__body">
+            La plupart des personnes qui arrivent à l'atelier ont eu exactement les mêmes
+            interrogations. Voici les réponses directes.
+          </p>
+          <div class="faq-quick-nav">
+            <p class="faq-quick-nav__label">Sauter à une catégorie :</p>
+            <div class="faq-quick-nav__links">
+              {categories.map((cat) => (
+                <a
+                  href={`#section-${cat.id}`}
+                  class:list={['paint-pastille', `paint-pastille--${cat.variant}`, 'faq-quick-nav__pastille']}
+                  style={`--pastille-tilt:${cat.tilt * 0.6}deg;`}
+                >
+                  <span aria-hidden="true">{cat.emoji}</span> {cat.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-body">
+          {categories.map((cat, i) => (
+            <div
+              class:list={['paint-panel', `paint-panel--${cat.variant}`, 'faq-panel', i % 2 === 1 && 'faq-panel--overlap']}
+              id={`section-${cat.id}`}
+              style={`--panel-tilt:${cat.tilt}deg;`}
+            >
+              <h3 class="faq-panel__heading">
+                <span class="faq-panel__icon" aria-hidden="true">{cat.emoji}</span>
+                {cat.label}
+              </h3>
+              <FAQAccordion faqs={cat.items} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── STILL HAVE QUESTIONS ─────────────────────────────────────────────── -->
+  <section class="section faq-cta" aria-labelledby="contact-faq-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div
+        class="paint-layer paint-layer--l2 faq-cta__mass"
+        data-parallax data-parallax-depth="0.15" data-parallax-axis="y"
+      >
+        <img src="/assets/images/decor/paint-bold-crescent.webp" alt="" width="1322" height="1037" loading="lazy" />
+      </div>
+      <div class="faq-cta__doodle faq-cta__doodle--spiral doodle--rotate" style="animation-duration: 9s;">
+        <Doodle name="spiral" color="pink" />
+      </div>
+    </div>
+    <div class="container text-center">
+      <div class="faq-cta__panel">
+        <h2 id="contact-faq-heading" class="faq-cta__heading">Tu as une autre question?</h2>
+        <p class="contact-faq-body">On est là. Envoie-nous un message — on répond dans les 24–48 heures.</p>
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <a href="/contact" class="btn btn--primary">Nous écrire</a>
+          <a href="/reserver" class="btn btn--secondary">{nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  // ─── SCENE (main FAQ section) ────────────────────────────────────────────
+  .faq-scene {
+    position: relative;
+    overflow: visible;
+    background-color: $c-peach;
+  }
+
+  .faq-scene__totem {
+    top: -4%;
+    right: 4%;
+    height: clamp(320px, 40vw, 620px);
+    opacity: 0.7;
+
+    @media (max-width: 900px) { display: none; }
+  }
+
+  .faq-scene__totem2 {
+    bottom: -6%;
+    left: -2%;
+    width: clamp(90px, 9vw, 140px);
+    height: clamp(240px, 30vw, 440px);
+
+    @media (max-width: 700px) { display: none; }
+  }
+
+  .faq-scene__wave {
+    width: clamp(20rem, 36vw, 34rem);
+    bottom: -10%;
+    right: -14%;
+    opacity: 0.5;
+  }
+
+  .faq-scene__doodle {
+    position: absolute;
+    filter: drop-shadow(0 0.25rem 0.5rem rgba($c-plum, 0.14));
+  }
+
+  .faq-scene__doodle--sparkle { width: 1.8rem; top: 8%; left: 30%; }
+  .faq-scene__doodle--star    { width: 2rem; top: 60%; right: 8%; }
+  .faq-scene__doodle--dots    { width: 2.4rem; bottom: 6%; left: 40%; opacity: 0.7; }
+
+  // ─── LAYOUT ───────────────────────────────────────────────────────────────
+  .faq-layout {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: $space-10;
+    align-items: start;
+
+    @include lg { grid-template-columns: 300px 1fr; }
+  }
+
+  .faq-intro {
+    @include lg { position: sticky; top: 100px; }
+  }
+
+  .faq-intro__heading {
+    font-family: $font-serif;
+    font-size: $text-2xl;
+    color: $c-ink;
+    line-height: $leading-snug;
+    margin-bottom: $space-4;
+  }
+
+  .faq-intro__body {
+    font-size: $text-sm;
+    color: $c-ink-soft;
+    line-height: $leading-loose;
+    margin-bottom: $space-6;
+  }
+
+  .faq-quick-nav__label {
+    font-size: $text-xs;
+    font-weight: $weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $c-ink-soft;
+    margin-bottom: $space-3;
+  }
+
+  .faq-quick-nav__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+  }
+
+  .faq-quick-nav__pastille {
+    text-decoration: none;
+    transition: transform $transition-base, box-shadow $transition-base;
+
+    &:hover {
+      transform: rotate(0deg) translateY(-2px);
+      box-shadow: $paint-shadow-ellipse-dense;
+    }
+  }
+
+  // ─── CATEGORY PANELS ────────────────────────────────────────────────────
+  .faq-panel {
+    padding: $space-6 $space-6 $space-8;
+    margin-bottom: $space-10;
+    scroll-margin-top: 100px;
+
+    &:last-child { margin-bottom: 0; }
+
+    &--overlap {
+      @include lg { margin-left: $space-6; }
+    }
+  }
+
+  .faq-panel__heading {
+    font-family: $font-sans;
+    font-size: $text-sm;
+    font-weight: $weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $c-ink;
+    margin-bottom: $space-5;
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+  }
+
+  .faq-panel__icon {
+    display: inline-flex;
+    font-size: $text-lg;
+  }
+
+  // ─── STILL HAVE QUESTIONS ─────────────────────────────────────────────────
+  .faq-cta {
+    position: relative;
+    overflow: visible;
+    background-color: $c-peach-deep;
+  }
+
+  .faq-cta__mass {
+    width: clamp(18rem, 30vw, 28rem);
+    top: -16%;
+    left: -8%;
+    opacity: 0.45;
+  }
+
+  .faq-cta__doodle {
+    position: absolute;
+    filter: drop-shadow(0 0.25rem 0.5rem rgba($c-plum, 0.16));
+  }
+
+  .faq-cta__doodle--spiral { width: 2.4rem; top: 16%; right: 12%; opacity: 0.65; }
+
+  .faq-cta__panel {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    margin-inline: auto;
+    background-color: $c-cream;
+    border-radius: 32px;
+    padding: $space-10 $space-8;
+    box-shadow: $paint-shadow-ellipse-dense;
+    transform: rotate(-0.6deg);
+  }
+
+  .faq-cta__heading {
+    color: $c-ink;
+  }
+
+  .contact-faq-body {
+    font-size: $text-lg;
+    color: $c-ink-soft;
+    margin-top: $space-3;
+  }
+</style>

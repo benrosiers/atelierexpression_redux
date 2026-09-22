@@ -1,0 +1,548 @@
+---
+import BaseLayout from '../components/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import NewsletterSignup from '../components/NewsletterSignup.astro';
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getNextWorkshop, getSectionItems } from '../lib/content/publicContent';
+
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+
+const staticWhyItems = [
+  { icon: '🌬️', text: 'Un espace où il est permis de prendre de la place — pas de se retenir.' },
+  { icon: '😄', text: 'Un rire vrai, pas le rire poli qu\'on fait pour mettre les autres à l\'aise.' },
+  { icon: '🤸', text: 'Un corps qui bouge sans être jugé — pas parfaitement, mais librement.' },
+  { icon: '💬', text: 'Une voix qu\'on entend — même si elle tremble au début.' },
+  { icon: '🤝', text: 'Un groupe qui devient ressource plutôt que source d\'anxiété.' },
+  { icon: '✨', text: 'La permission d\'exister pleinement — sans performer, sans minimiser.' },
+];
+const cmsWhyItems = await getSectionItems('a-propos', 'why-items');
+const whyItems = cmsWhyItems.length > 0
+  ? cmsWhyItems.map((i) => ({ icon: i.iconKey ?? '✦', text: i.body ?? '' }))
+  : staticWhyItems;
+
+const staticValues = [
+  { icon: '🛡️', title: 'La sécurité avant tout', body: 'Chaque atelier commence par la création d\'un cadre bienveillant. On ne juge pas. On ne compare pas. On protège l\'espace.', accent: 'orange' },
+  { icon: '🎭', title: 'Le jeu, jamais la performance', body: 'On joue. On essaie. On rate. On recommence. Il n\'y a pas de bonne réponse, pas de mauvaise façon d\'être là.', accent: 'pink' },
+  { icon: '🤝', title: 'Le groupe comme ressource', body: 'Ce n\'est pas un cours magistral. C\'est un cercle. Tout le monde apporte quelque chose. Tout le monde repart avec quelque chose.', accent: 'orange' },
+  { icon: '🌱', title: 'Le rythme de chacun·e', body: 'Tu participes à ton rythme. Tu peux observer. Tu peux faire la moitié. Tu peux choisir d\'aller moins loin. C\'est ton espace.', accent: 'pink' },
+  { icon: '😄', title: 'Le rire comme premier outil', body: 'Pas le rire poli. Le vrai. Celui qui sort quand on s\'y attend pas. C\'est souvent lui qui ouvre la première porte.', accent: 'orange' },
+  { icon: '🔄', title: 'Honnêteté sur ce qu\'on est', body: 'Atelier Expression n\'est pas une thérapie, ni un culte, ni du développement personnel sérieux. C\'est un espace joyeux, humain, et concret.', accent: 'pink' },
+];
+const cmsValues = await getSectionItems('a-propos', 'values');
+const values = cmsValues.length > 0
+  ? cmsValues.map((i) => ({ icon: i.iconKey ?? '✦', title: i.title ?? '', body: i.body ?? '', accent: i.visualVariant ?? 'orange' }))
+  : staticValues;
+---
+
+<BaseLayout
+  title="À propos"
+  description="Cindy — facilitatrice, animatrice, et transmettrice d'Atelier Expression. Sa conviction : l'humain n'a jamais été créé pour se contenir en permanence."
+  pageSlug="a-propos"
+>
+  <PageHero
+    accent="qui sommes-nous"
+    title="À propos"
+    subtitle="Une facilitatrice. Une conviction. Un espace pour que les adultes reprennent leur place."
+    accentColor="pink"
+  />
+
+  <!-- ─── CINDY AS FACILITATOR ─────────────────────────────────────────────── -->
+  <section class="section section--cindy" aria-labelledby="cindy-apropos-heading">
+    <div class="paint-scene" aria-hidden="true">
+      <div class="paint-totem cindy-totem" style="--paint-totem-color:#FF5A1F; --paint-totem-tilt:-4deg;"></div>
+      <div class="paint-totem paint-totem--capsule paint-totem--soft cindy-totem2" style="--paint-totem-color:#F02E8A; --paint-totem-tilt:6deg;"></div>
+      <div class="paint-ellipse paint-ellipse--long cindy-mass" style="top:38%; --paint-ellipse-color:#FFC6A8; --paint-ellipse-tilt:-2deg; --paint-ellipse-bias:-50%;"></div>
+    </div>
+
+    <div class="container cindy-container">
+      <div class="cindy-layout">
+        <div class="cindy-images" data-reveal="left">
+          <div class="cindy-img-primary">
+            <img
+              src="/assets/images/cindy_04.png"
+              alt="Cindy — facilitatrice d'Atelier Expression"
+              width="380"
+              height="460"
+              loading="lazy"
+            />
+          </div>
+          <div class="cindy-img-secondary">
+            <picture>
+              <source srcset="/assets/images/cindy-invitation-portrait.webp" type="image/webp" />
+              <img
+                src="/assets/images/cindy-invitation-portrait.jpg"
+                alt="Cindy, souriante, lors du tournage de son message d'invitation"
+                width="200"
+                height="356"
+                loading="lazy"
+              />
+            </picture>
+          </div>
+          <div class="cindy-star" aria-hidden="true">
+            <svg viewBox="0 0 80 80" width="72" height="72" fill="none">
+              <path d="M40 8 L44 30 L66 28 L50 44 L60 66 L40 54 L20 66 L30 44 L14 28 L36 30 Z" fill="#FFF7EF" opacity="0.9"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="cindy-content" data-reveal>
+          <span class="accent-handwritten accent-handwritten--pink">facilitatrice · transmettrice · animatrice</span>
+          <h2 id="cindy-apropos-heading">Cindy</h2>
+          <div class="cindy-pink-bar" aria-hidden="true"></div>
+
+          <div class="cindy-bio prose">
+            <p>
+              Cindy n'enseigne pas. Elle transmet. Elle n'impose pas de technique.
+              Elle ouvre des espaces — des espaces où les adultes peuvent se permettre
+              d'exister autrement qu'en mode survie.
+            </p>
+            <p>
+              Elle croit profondément que l'expression appartient à tout le monde.
+              Pas seulement aux artistes, aux extravertis, aux "à l'aise".
+              Et surtout pas seulement à ceux qui pensent en être capables.
+            </p>
+            <p>
+              Sa posture dans la salle : accueillir sans juger, inviter sans forcer,
+              et créer les conditions pour que quelque chose s'ouvre — doucement,
+              joyeusement, sans jamais exiger.
+            </p>
+            <p>
+              Cindy n'est pas thérapeute. Elle n'a pas toutes les réponses. Elle est
+              elle-même en chemin — et c'est précisément ça qui lui permet de comprendre
+              ce que ça coûte d'oser.
+            </p>
+          </div>
+
+          <a href="/reserver" class="btn btn--primary" style="margin-top: 2rem; display: inline-flex;">{nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CONVICTION ────────────────────────────────────────────────────────── -->
+  <section class="section section--conviction band band--plum" aria-labelledby="conviction-heading">
+    <div class="container">
+      <div class="conviction-layout">
+        <div class="conviction-statement" data-reveal>
+          <span class="accent-handwritten" style="color: rgba(255,231,207,0.7)">la conviction centrale</span>
+          <h2 id="conviction-heading" class="conviction-heading">
+            L'humain n'a jamais été créé pour se contenir en permanence.
+          </h2>
+          <p class="conviction-body">
+            Il a été créé pour ressentir, créer, aimer, bouger, vibrer, chanter, parler,
+            pleurer, rire, danser, transmettre.
+          </p>
+          <p class="conviction-body">
+            L'énergie vivante a besoin de mouvement. Quand on la retient trop longtemps —
+            parce qu'on a appris que c'était plus sûr, plus sage, plus acceptable —
+            quelque chose se bloque. Quelque chose se tait.
+          </p>
+          <p class="conviction-body">
+            Atelier Expression part de cette vérité simple.
+            Et de la conviction que l'expression — sous toutes ses formes — peut remettre
+            du mouvement là où les choses étaient figées.
+          </p>
+        </div>
+
+        <div class="conviction-photo" data-reveal="right">
+          <img
+            src="/assets/images/cindy_01.png"
+            alt="Cindy — légèreté et joie authentique"
+            class="conviction-img"
+            width="360"
+            height="420"
+            loading="lazy"
+          />
+          <div class="conviction-caption">
+            <span class="accent-handwritten" style="color: $c-orange; font-size: 1rem;">ici, on ose</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── WHY ATELIER EXPRESSION EXISTS ────────────────────────────────────── -->
+  <section class="section section--why" aria-labelledby="why-heading">
+    <div class="container container--text" style="margin-inline: auto;">
+      <div data-reveal class="why-intro">
+        <span class="accent-handwritten">pourquoi ça existe</span>
+        <h2 id="why-heading">Ce qu'Atelier Expression crée dans une salle.</h2>
+        <div class="divider"></div>
+      </div>
+
+      <div class="why-grid">
+        {whyItems.map((item, i) => (
+          <div class:list={['why-item', i % 2 === 1 ? 'why-item--pink' : '']} data-reveal>
+            <span class="why-item__icon" aria-hidden="true">{item.icon}</span>
+            <p class="why-item__text">{item.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── VALUES ────────────────────────────────────────────────────────────── -->
+  <section class="section band band--peach-deep" aria-labelledby="values-heading">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 3.5rem;" data-reveal>
+        <span class="accent-handwritten">engagements</span>
+        <h2 id="values-heading">Ce à quoi Atelier Expression s'engage.</h2>
+        <div class="divider divider--center divider--pink"></div>
+      </div>
+
+      <div class="values-grid">
+        {values.map((val) => (
+          <div class:list={['value-item', `value-item--${val.accent}`]} data-reveal>
+            <span class="value-item__icon" aria-hidden="true">{val.icon}</span>
+            <h3 class="value-item__title">{val.title}</h3>
+            <p class="value-item__body">{val.body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── VISION ────────────────────────────────────────────────────────────── -->
+  <section class="section band band--plum" aria-labelledby="vision-heading">
+    <div class="container container--text" style="margin-inline: auto;">
+      <div data-reveal class="text-center">
+        <span class="accent-handwritten">la vision</span>
+        <h2 id="vision-heading" style="color: #FFF7EF;">Retrouver l'espace où tu n'as plus besoin de te rétrécir.</h2>
+        <div class="divider divider--center divider--pink"></div>
+      </div>
+      <div class="vision-quote" data-reveal>
+        <blockquote>
+          <p>
+            "S'exprimer, ce n'est pas seulement parler.<br/>
+            C'est aussi écrire ce que tu n'as jamais osé dire.<br/>
+            Peindre ton monde intérieur.<br/>
+            Bouger ton corps librement.<br/>
+            Dire non. Dire oui.<br/>
+            Exister sans te rétrécir.
+          </p>
+          <p>
+            Pas faire semblant. Pas performer. Pas survivre.<br/>
+            S'exprimer."
+          </p>
+        </blockquote>
+      </div>
+
+      <div class="text-center" style="margin-top: 3rem;" data-reveal>
+        <a href="/reserver" class="btn btn--primary btn--lg">{nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}</a>
+        <a href="/ateliers" class="btn btn--outline-white btn--lg" style="margin-left: 1rem;">Voir les ateliers</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── NEWSLETTER ─────────────────────────────────────────────────────────── -->
+  <section class="section band band--peach">
+    <div class="container">
+      <NewsletterSignup variant="light" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  // ─── CINDY SECTION ──────────────────────────────────────────────────────────
+  // Was: a flat opaque orange rectangle (border-radius on one side only) plus
+  // a low-opacity pink rectangle — literally the two defects named in the
+  // brief ("aplat rouge latéral trop simple", "carré rose pauvre"). Replaced
+  // with an invented vertical anchor: a tall organic totem behind the
+  // photos, a soft capsule totem crossing behind it, and a long low mass
+  // supporting the pair from below.
+  .section--cindy {
+    position: relative;
+    overflow: visible;
+    background-color: $c-peach;
+  }
+
+  .cindy-totem {
+    top: -6%;
+    left: 2%;
+    height: clamp(380px, 52vw, 640px);
+
+    @media (max-width: 900px) { display: none; }
+  }
+
+  .cindy-totem2 {
+    bottom: -10%;
+    left: 22%;
+    width: clamp(80px, 8vw, 130px);
+    height: clamp(220px, 28vw, 380px);
+
+    @media (max-width: 700px) { display: none; }
+  }
+
+  .cindy-mass {
+    opacity: 0.5;
+  }
+
+  .cindy-container {
+    position: relative;
+    z-index: 2;
+  }
+
+  .cindy-layout {
+    display: grid;
+    gap: $space-10;
+    align-items: center;
+
+    @include lg { grid-template-columns: 420px 1fr; }
+  }
+
+  .cindy-images {
+    position: relative;
+    min-height: 420px;
+  }
+
+  .cindy-img-primary {
+    position: relative;
+    z-index: 1;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: $paint-shadow-ellipse-dense;
+    max-width: 360px;
+    border: 4px solid $c-cream;
+    transform: rotate(-2deg);
+
+    img { width: 100%; height: auto; object-fit: cover; object-position: center top; }
+  }
+
+  .cindy-img-secondary {
+    position: absolute;
+    z-index: 2;
+    bottom: -28px;
+    right: -12px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: $paint-shadow-ellipse;
+    border: 4px solid $c-cream;
+    max-width: 160px;
+    transform: rotate(3deg);
+
+    img { width: 100%; height: auto; object-fit: cover; object-position: center top; }
+  }
+
+  .cindy-star {
+    position: absolute;
+    top: -24px;
+    right: 28%;
+    z-index: 3;
+    animation: spin-slow 18s linear infinite;
+
+    @include reduced-motion { animation: none; }
+  }
+
+  .cindy-content {
+    h2 {
+      font-family: $font-serif;
+      font-size: $text-4xl;
+      color: $c-plum;
+      margin-top: $space-2;
+    }
+  }
+
+  .cindy-pink-bar {
+    width: 56px;
+    height: 4px;
+    background-color: $c-pink;
+    border-radius: 2px;
+    margin-block: $space-3 $space-5;
+  }
+
+  .cindy-bio {
+    color: $c-plum;
+
+    p { color: $c-plum-soft; }
+  }
+
+  // ─── CONVICTION ─────────────────────────────────────────────────────────────
+  .section--conviction {
+    overflow: hidden;
+  }
+
+  .conviction-layout {
+    display: grid;
+    gap: $space-10;
+    align-items: center;
+
+    @include lg { grid-template-columns: 1fr 380px; }
+  }
+
+  .conviction-heading {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    color: $color-creme;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+    margin-bottom: $space-6;
+  }
+
+  .conviction-body {
+    font-size: $text-base;
+    color: rgba($color-creme, 0.75);
+    line-height: $leading-loose;
+    margin-bottom: $space-4;
+  }
+
+  .conviction-photo {
+    position: relative;
+    display: none;
+
+    @include lg { display: block; }
+  }
+
+  .conviction-img {
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 6px 6px 0 rgba($c-orange, 0.4);
+    object-fit: cover;
+    object-position: center top;
+    aspect-ratio: 3/4;
+  }
+
+  .conviction-caption {
+    text-align: center;
+    margin-top: $space-3;
+  }
+
+  // ─── WHY ────────────────────────────────────────────────────────────────────
+  .why-intro {
+    margin-bottom: $space-10;
+  }
+
+  .why-intro h2 {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    color: $color-encre;
+    margin-top: $space-3;
+  }
+
+  .why-grid {
+    display: grid;
+    gap: $space-5;
+    grid-template-columns: 1fr;
+
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+    @include lg { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .why-item {
+    display: flex;
+    gap: $space-4;
+    align-items: flex-start;
+    padding: $space-5;
+    background-color: $c-peach-deep;
+    border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%;
+    box-shadow: $paint-shadow-ellipse;
+    transform: rotate(-1deg);
+    transition: transform $transition-base, box-shadow $transition-base;
+
+    &:nth-child(3n+2) { transform: rotate(1.3deg); }
+    &:nth-child(3n)   { transform: rotate(-0.6deg); border-radius: 55% 45% 42% 58% / 42% 58% 45% 55%; }
+
+    &:hover {
+      transform: rotate(0deg) translateY(-3px);
+      box-shadow: $paint-shadow-ellipse-dense;
+      @include reduced-motion { transform: rotate(0deg); }
+    }
+
+    &--pink { background-color: rgba($c-pink, 0.18); }
+  }
+
+  .why-item__icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .why-item__text {
+    font-size: $text-sm;
+    color: $c-plum;
+    line-height: $leading-normal;
+    font-weight: $weight-medium;
+  }
+
+  // ─── VALUES ─────────────────────────────────────────────────────────────────
+  .values-grid {
+    display: grid;
+    gap: $space-5;
+    grid-template-columns: 1fr;
+
+    @include sm { grid-template-columns: repeat(2, 1fr); }
+    @include lg { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .value-item {
+    position: relative;
+    background-color: $c-cream;
+    border-radius: 24px;
+    padding: $space-6;
+    box-shadow: $paint-shadow-ellipse;
+    transform: rotate(-1.4deg);
+    transition: transform $transition-base, box-shadow $transition-base;
+
+    &:nth-child(3n+2) { transform: rotate(1.2deg); }
+    &:nth-child(3n)   { transform: rotate(-0.8deg); }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -0.9rem;
+      left: $space-6;
+      width: 2.6rem;
+      height: 1.8rem;
+      background: var(--value-accent, #{$c-orange});
+      border-radius: 50%;
+      opacity: 0.85;
+    }
+
+    &--pink { --value-accent: #{$c-pink}; }
+
+    &:hover {
+      transform: rotate(0deg) translateY(-3px);
+      box-shadow: $paint-shadow-ellipse-dense;
+
+      @include reduced-motion { transform: rotate(0deg); }
+    }
+  }
+
+  .value-item__icon {
+    font-size: 2rem;
+    line-height: 1;
+    display: block;
+    margin-bottom: $space-4;
+  }
+
+  .value-item__title {
+    font-family: $font-serif;
+    font-size: $text-xl;
+    color: $c-plum;
+    margin-bottom: $space-3;
+  }
+
+  .value-item__body {
+    font-size: $text-sm;
+    color: $c-plum-soft;
+    line-height: $leading-normal;
+  }
+
+  // ─── VISION ─────────────────────────────────────────────────────────────────
+  .vision-quote {
+    margin-top: $space-8;
+
+    blockquote {
+      font-family: $font-serif;
+      font-style: italic;
+      font-size: $text-xl;
+      color: rgba($c-on-dark, 0.9);
+      line-height: $leading-snug;
+      border-left: 4px solid $c-pink;
+      padding-left: $space-6;
+
+      p + p { margin-top: $space-4; }
+    }
+  }
+</style>

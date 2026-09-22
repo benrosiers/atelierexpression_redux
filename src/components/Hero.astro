@@ -1,0 +1,540 @@
+---
+// Homepage hero — workshop energy, expressive presence
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import Doodle from './Doodle.astro';
+import { getSectionContent, getNextWorkshop } from '../lib/content/publicContent';
+
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+const primaryHref = nextWorkshop.status === 'building' ? '#interet-prochain-atelier' : '/reserver';
+
+// CMS-first, static-fallback: read from Supabase at build time (published +
+// visible only); if unavailable for any reason (not configured, network
+// error, not yet migrated), fall back to the literal strings below, which
+// stay in the component and are never deleted — see
+// docs/CMS_MIGRATION_PLAN.md's "fallback temporaire" requirement.
+const cms = await getSectionContent('home', 'hero');
+
+const heroEyebrow = cms?.eyebrow ?? 'pour adultes vivants';
+const heroTitleLines = (cms?.title ?? "Pas performer.\nPas survivre.\nS'exprimer.").split('\n');
+const heroThought = cms?.subtitle
+  ?? "Le contraire de la dépression, ce n'est peut-être pas la performance. C'est peut-être l'expression.";
+const heroDetail = cms?.body
+  ?? "Des ateliers pour adultes qui veulent retrouver leur voix, leur corps, leur joie. Aucun talent requis. Aucune performance attendue.";
+const heroSecondaryCtaLabel = cms?.ctaLabel ?? "Découvrir l'atelier";
+const heroSecondaryCtaUrl = cms?.ctaUrl ?? '/ateliers';
+---
+
+<section class="hero" aria-labelledby="hero-headline">
+  <!-- Paint in Motion — painted watercolor layers replace the old solid-color shapes and doodles -->
+  <div class="paint-scene" aria-hidden="true">
+    <div
+      class="paint-layer paint-layer--l1 hero__paint-soft"
+      data-parallax
+      data-parallax-depth="0.07"
+      data-parallax-axis="both"
+    >
+      <img src="/assets/images/decor/paint-soft-peach.webp" alt="" width="1344" height="939" loading="lazy" />
+    </div>
+    <div
+      class="paint-layer paint-layer--l2 hero__paint-disc"
+      data-parallax
+      data-parallax-depth="0.13"
+      data-parallax-axis="both"
+    >
+      <img src="/assets/images/decor/paint-disc-coral.webp" alt="" width="1112" height="1067" loading="lazy" />
+    </div>
+    <div
+      class="paint-layer paint-layer--l2 hero__paint-vertical"
+      data-parallax
+      data-parallax-depth="0.15"
+      data-parallax-axis="both"
+    >
+      <img src="/assets/images/decor/paint-vertical-flow.webp" alt="" width="702" height="1406" loading="lazy" />
+    </div>
+    <div
+      class="logo-patch logo-patch--ambient hero__logo-ambient"
+      data-parallax
+      data-parallax-depth="0.18"
+      data-parallax-axis="both"
+      data-parallax-pointer="false"
+    >
+      <div class="logo-patch__frame">
+        <img src="/assets/images/brand/atelier-expression-logo-mark.webp" alt="" width="1245" height="1245" loading="lazy" />
+      </div>
+    </div>
+    <div
+      class="paint-layer paint-layer--l1 hero__paint-pink"
+      data-parallax
+      data-parallax-depth="0.1"
+      data-parallax-axis="y"
+    >
+      <img src="/assets/images/decor/paint-pink-orb.webp" alt="" width="1169" height="1115" loading="lazy" />
+    </div>
+    <div
+      class="hero__doodle hero__doodle--star doodle--rotate"
+      data-parallax data-parallax-depth="0.24" data-parallax-axis="y"
+      style="animation-duration: 6.5s;"
+    ><Doodle name="star" color="orange" /></div>
+    <div
+      class="hero__doodle hero__doodle--sparkle doodle--pulse"
+      data-parallax data-parallax-depth="0.16" data-parallax-axis="y"
+      style="animation-duration: 5.5s;"
+    ><Doodle name="sparkle" color="pink" /></div>
+    <div
+      class="hero__doodle hero__doodle--sparkle2 doodle--float"
+      data-parallax data-parallax-depth="0.28" data-parallax-axis="y"
+      style="animation-duration: 8s;"
+    ><Doodle name="sparkle" color="orange" /></div>
+    <div
+      class="hero__doodle hero__doodle--flower doodle--drift"
+      data-parallax data-parallax-depth="0.19" data-parallax-axis="y"
+      style="animation-duration: 9s;"
+    ><Doodle name="flower" color="pink" /></div>
+    <div
+      class="hero__doodle hero__doodle--spiral doodle--rotate"
+      data-parallax data-parallax-depth="0.13" data-parallax-axis="y"
+      style="animation-duration: 11s;"
+    ><Doodle name="spiral" color="ink" /></div>
+  </div>
+
+  <div class="hero__inner container">
+    <div class="hero__content">
+      <span class="accent-handwritten hero__accent">{heroEyebrow}</span>
+
+      <h1 class="hero__headline" id="hero-headline">
+        {heroTitleLines.map((line, i) => (
+          <span class:list={['hero__line', `hero__line--${Math.min(i + 1, 3)}`]}>{line}</span>
+        ))}
+      </h1>
+
+      <p class="hero__thought">
+        {heroThought.split('\n').map((line, i) => <>{i > 0 && <br/>}{line}</>)}
+      </p>
+
+      <p class="hero__detail">
+        {heroDetail}
+      </p>
+
+      <div class="hero__cta-bar" aria-hidden="true"></div>
+      <div class="hero__ctas">
+        <a href={primaryHref} class="btn btn--primary btn--lg">
+          {nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}
+        </a>
+        <a href={heroSecondaryCtaUrl} class="btn btn--secondary btn--lg">
+          {heroSecondaryCtaLabel}
+        </a>
+      </div>
+
+      <div class="hero__trust-signals">
+        <div class="hero__trust-item">
+          <span class="hero__trust-icon"><Doodle name="group" color="orange" /></span>
+          <span>Petit groupe de {nextWorkshop.capacity}</span>
+        </div>
+        <div class="hero__trust-item">
+          <span class="hero__trust-icon"><Doodle name="pin" color="orange" /></span>
+          <span>Longueuil, Rive-Sud</span>
+        </div>
+        <div class="hero__trust-item">
+          <span class="hero__trust-icon"><Doodle name="oui" color="orange" /></span>
+          <span>Débutant·es bienvenu·es</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero__visual">
+      <div class="hero__collage" aria-label="Cindy — énergie, joie, expression">
+        <div
+          class="logo-patch logo-patch--primary hero__logo-patch"
+          data-parallax
+          data-parallax-depth="0.2"
+          data-parallax-axis="both"
+          data-parallax-pointer="true"
+        >
+          <div class="logo-patch__frame">
+            <img src="/assets/images/brand/atelier-expression-logo-full.webp" alt="" width="1245" height="1240" loading="lazy" />
+          </div>
+        </div>
+        <div class="hero__img-wrap hero__img-wrap--primary">
+          <picture>
+            <source srcset="/assets/images/cindy-invitation-energie.webp" type="image/webp" />
+            <img
+              src="/assets/images/cindy-invitation-energie.jpg"
+              alt="Cindy, riant et pleine d'énergie, pendant le tournage de son invitation"
+              class="hero__img"
+              width="320"
+              height="380"
+              loading="eager"
+            />
+          </picture>
+        </div>
+        <div class="hero__img-wrap hero__img-wrap--secondary">
+          <picture>
+            <source srcset="/assets/images/cindy-invitation-portrait.webp" type="image/webp" />
+            <img
+              src="/assets/images/cindy-invitation-portrait.jpg"
+              alt="Cindy, souriante"
+              class="hero__img hero__img--playful"
+              width="220"
+              height="260"
+              loading="eager"
+            />
+          </picture>
+        </div>
+        <div class="hero__collage-badge">
+          <div class="hero__badge">
+            <span class="hero__badge-icon"><Doodle name="sparkle" color="pink" /></span>
+            <span class="hero__badge-text">{nextWorkshop.price}</span>
+            <span class="hero__badge-sub">2 heures</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="hero__scroll" aria-hidden="true">
+    <span class="hero__scroll-dot"></span>
+    <span class="hero__scroll-line"></span>
+  </div>
+</section>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .hero {
+    position: relative;
+    background-color: $color-creme;
+    overflow: visible;
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  // ─── PAINT IN MOTION — painted layers (replace the old solid shapes + doodles) ─
+  .hero__paint-soft {
+    width: clamp(24rem, 42vw, 42rem);
+    top: -12%;
+    left: -14%;
+  }
+
+  .hero__paint-disc {
+    width: clamp(16rem, 26vw, 28rem);
+    top: 6%;
+    right: -10%;
+
+    @include lg { right: 2%; }
+  }
+
+  .hero__paint-vertical {
+    display: none;
+    width: clamp(9rem, 13vw, 14rem);
+    top: 4%;
+    right: 18%;
+
+    @include lg { display: block; }
+  }
+
+  .hero__logo-ambient {
+    width: clamp(18rem, 30vw, 32rem);
+    bottom: -20%;
+    left: -10%;
+  }
+
+  .hero__paint-pink {
+    width: clamp(11rem, 16vw, 16rem);
+    bottom: 4%;
+    left: 2%;
+
+    @media (max-width: 860px) {
+      display: none;
+    }
+  }
+
+  .hero__doodle {
+    position: absolute;
+    filter: drop-shadow(0 0.2rem 0.4rem rgba($c-plum, 0.12));
+  }
+
+  .hero__doodle--star {
+    width: clamp(1.6rem, 2.6vw, 2.4rem);
+    top: 8%;
+    left: 38%;
+
+    @include lg { top: 6%; left: 44%; }
+  }
+
+  .hero__doodle--sparkle {
+    width: clamp(1.3rem, 2vw, 1.8rem);
+    top: 22%;
+    right: 6%;
+
+    @include lg { top: 16%; right: 14%; }
+  }
+
+  .hero__doodle--sparkle2 {
+    width: clamp(1.1rem, 1.6vw, 1.5rem);
+    top: 46%;
+    left: 4%;
+
+    @media (max-width: 860px) { display: none; }
+  }
+
+  .hero__doodle--flower {
+    width: clamp(1.6rem, 2.4vw, 2.2rem);
+    bottom: 10%;
+    right: 24%;
+
+    @include lg { bottom: 8%; right: 30%; }
+  }
+
+  .hero__doodle--spiral {
+    width: clamp(1.3rem, 1.8vw, 1.7rem);
+    top: 4%;
+    right: 40%;
+
+    @media (max-width: 860px) { display: none; }
+  }
+
+  // ─── INNER ──────────────────────────────────────────────────────────────────
+  .hero__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $space-10;
+    align-items: center;
+    padding-block: clamp(5rem, 10vw, 8rem);
+    position: relative;
+    z-index: 2;
+
+    @include lg {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  // ─── CONTENT ────────────────────────────────────────────────────────────────
+  .hero__content {
+    order: 2;
+
+    @include lg { order: 1; }
+  }
+
+  .hero__accent {
+    margin-bottom: $space-3;
+    font-size: clamp(1rem, 1.8vw, 1.4rem);
+  }
+
+  .hero__headline {
+    font-family: $font-serif;
+    font-weight: $weight-black;
+    line-height: $leading-tight;
+    letter-spacing: -0.02em;
+    margin-bottom: $space-5;
+  }
+
+  .hero__line {
+    display: block;
+  }
+
+  .hero__line--1 {
+    font-size: $text-hero;
+    color: $color-encre;
+  }
+
+  .hero__line--2 {
+    font-size: $text-hero;
+    color: $color-encre;
+  }
+
+  .hero__line--3 {
+    font-size: $text-hero;
+    color: $color-fuchsia;
+  }
+
+  .hero__thought {
+    font-family: $font-serif;
+    font-style: italic;
+    font-size: $text-base;
+    color: $c-plum-soft;
+    line-height: $leading-snug;
+    margin-bottom: $space-5;
+    border-left: 3px solid $c-pink;
+    padding-left: $space-4;
+  }
+
+  .hero__detail {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    margin-bottom: $space-8;
+  }
+
+  .hero__cta-bar {
+    width: 48px;
+    height: 4px;
+    background-color: $c-orange;
+    border-radius: 2px;
+    margin-bottom: $space-4;
+  }
+
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-3;
+    margin-bottom: $space-8;
+  }
+
+  .hero__trust-signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-4;
+  }
+
+  .hero__trust-item {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    font-size: $text-sm;
+    color: $color-encre;
+    font-weight: $weight-medium;
+  }
+
+  .hero__trust-icon {
+    display: inline-flex;
+    width: 1.3rem;
+    height: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  // ─── VISUAL / COLLAGE ───────────────────────────────────────────────────────
+  .hero__visual {
+    order: 1;
+    position: relative;
+    z-index: 2;
+
+    @include lg { order: 2; }
+  }
+
+  .hero__collage {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    aspect-ratio: 4/5;
+    margin-inline: auto;
+
+    @include lg { margin-inline: 0 auto; }
+  }
+
+  .hero__logo-patch {
+    width: clamp(130px, 16vw, 180px);
+    top: -1rem;
+    left: -2rem;
+    z-index: 1;
+    transform: rotate(-4deg);
+  }
+
+  .hero__img-wrap {
+    position: absolute;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-lg;
+
+    &--primary {
+      width: 62%;
+      top: 0;
+      right: 0;
+      z-index: 2;
+      border-radius: 50% 50% $radius-lg $radius-lg / 40% 40% $radius-lg $radius-lg;
+    }
+
+    &--secondary {
+      width: 44%;
+      bottom: 4%;
+      left: 0;
+      z-index: 3;
+      border-radius: $radius-lg;
+      border: 4px solid $color-creme;
+    }
+  }
+
+  .hero__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+
+    &--playful {
+      object-position: center 20%;
+    }
+  }
+
+  .hero__collage-badge {
+    position: absolute;
+    bottom: 22%;
+    right: -4%;
+    z-index: 4;
+
+    @include lg { right: -8%; }
+  }
+
+  .hero__badge {
+    background-color: $c-pink-deep;
+    color: $color-creme;
+    border-radius: $radius-lg;
+    padding: $space-3 $space-4;
+    text-align: center;
+    box-shadow: $shadow-lg;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-1;
+    min-width: 90px;
+  }
+
+  .hero__badge-icon {
+    display: inline-flex;
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  .hero__badge-text {
+    font-family: $font-serif;
+    font-weight: $weight-bold;
+    font-size: $text-lg;
+    color: $c-pink;
+  }
+
+  .hero__badge-sub {
+    font-size: $text-xs;
+    color: rgba($color-creme, 0.7);
+  }
+
+  // ─── SCROLL HINT ────────────────────────────────────────────────────────────
+  .hero__scroll {
+    position: absolute;
+    bottom: $space-6;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $space-2;
+    z-index: 2;
+    animation: float 2.5s ease-in-out infinite;
+
+    @include reduced-motion { animation: none; }
+  }
+
+  .hero__scroll-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: $radius-full;
+    background-color: $c-pink;
+  }
+
+  .hero__scroll-line {
+    width: 2px;
+    height: 32px;
+    background: linear-gradient($c-pink, transparent);
+    border-radius: $radius-full;
+  }
+</style>

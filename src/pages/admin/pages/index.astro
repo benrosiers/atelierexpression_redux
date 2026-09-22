@@ -1,0 +1,73 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Pages" activeNav="pages">
+  <h1>Pages</h1>
+  <p class="admin-page-sub">Une page par route publique. Chaque page contient des sections, et chaque section contient des éléments.</p>
+
+  <div class="admin-card">
+    <table class="admin-table" id="pages-table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Slug</th>
+          <th>Statut</th>
+          <th>Visible</th>
+          <th>Sections</th>
+          <th>Dernière modification</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="pages-tbody">
+        <tr><td colspan="7" class="admin-empty-note">Chargement…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    .admin-page-sub { color: #6B6255; font-size: 0.9rem; margin: -0.5rem 0 1.5rem; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .admin-table th { text-align: left; padding: 0.6em 0.8em; border-bottom: 2px solid #E5E2DA; color: #6B6255; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .admin-table td { padding: 0.7em 0.8em; border-bottom: 1px solid #EFEDE7; }
+    .status-pill { display: inline-block; padding: 0.2em 0.7em; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .status-pill--published { background: #E4F5E9; color: #1E5C33; }
+    .status-pill--draft { background: #FFF4E0; color: #6B4A00; }
+    .status-pill--archived { background: #EDEBE6; color: #6B6255; }
+  </style>
+
+  <script>
+    import { listPages } from '../../../lib/content/pages';
+    import { isSupabaseConfigured } from '../../../lib/supabase/client';
+
+    async function render() {
+      const tbody = document.getElementById('pages-tbody');
+      if (!tbody) return;
+
+      if (!isSupabaseConfigured()) {
+        tbody.innerHTML = '<tr><td colspan="7" class="admin-empty-note">CMS non configuré.</td></tr>';
+        return;
+      }
+
+      const pages = await listPages();
+      if (pages.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="admin-empty-note">Aucune page pour l\'instant. Voir scripts/seed-home-pillars.mjs pour un exemple de départ.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = pages.map((p) => `
+        <tr>
+          <td>${p.title ?? '(sans titre)'}</td>
+          <td><code>${p.slug}</code></td>
+          <td><span class="status-pill status-pill--${p.status}">${p.status}</span></td>
+          <td>${p.visible ? '✓' : '—'}</td>
+          <td>${p.section_count}</td>
+          <td>${new Date(p.updated_at).toLocaleString('fr-CA')}</td>
+          <td><a href="/admin/pages/${p.slug}" class="admin-btn admin-btn--ghost">Modifier</a></td>
+        </tr>
+      `).join('');
+    }
+
+    render();
+  </script>
+</AdminLayout>

@@ -1,0 +1,357 @@
+---
+import { site } from '../data/site';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import Doodle from './Doodle.astro';
+import TreshPageRenderer from './TreshPageRenderer.astro';
+import { getPageSeo, getPublicSiteSetting } from '../lib/content/publicContent';
+import {
+  getTreshDocumentPage,
+  getTreshGlobalChrome,
+  getTreshRelease,
+} from '../lib/treshRelease';
+import '../styles/global.scss';
+import '../styles/layout.scss';
+import '../styles/animations.scss';
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  noindex?: boolean;
+  // Slug for CMS SEO override (page_translations.seo_title/seo_description).
+  // Omitted on pages whose title is computed dynamically at render time
+  // (e.g. reserver.astro, which switches on nextWorkshop.status) — a static
+  // CMS override there would fight that logic.
+  pageSlug?: string;
+}
+
+const {
+  title,
+  description,
+  ogImage = site.og.image,
+  noindex = false,
+  pageSlug,
+} = Astro.props;
+
+const normalizedPath = Astro.url.pathname.replace(/^\/+|\/+$/g, '');
+const routeSlug = normalizedPath === '' ? 'home' : normalizedPath.split('/')[0];
+const treshDocumentPage = routeSlug
+  ? getTreshDocumentPage(routeSlug)
+  : null;
+
+const cmsSeo = pageSlug ? await getPageSeo(pageSlug) : null;
+const treshChrome = getTreshGlobalChrome();
+const isLocalTreshPreview =
+  getTreshRelease().status === 'local-preview';
+const treshBranding = treshChrome?.branding;
+const globalSiteName = treshBranding?.title || site.name;
+
+// Tresh controls the published page SEO once that route exists in the
+// immutable release. CMS/static values remain the safe fallback.
+const effectiveTitle =
+  treshDocumentPage?.title ||
+  cmsSeo?.title ||
+  title;
+const effectiveDescription =
+  treshDocumentPage?.description ||
+  cmsSeo?.description ||
+  description ||
+  treshBranding?.description ||
+  site.description;
+
+const pageTitle = effectiveTitle
+  ? `${effectiveTitle} — ${globalSiteName}`
+  : `${globalSiteName} | ${site.tagline}`;
+const canonicalUrl = new URL(Astro.url.pathname, site.url);
+const faviconUrl =
+  treshBranding?.faviconUrl || '/favicon-mandala-32.png';
+
+interface SiteIdentitySetting { name: string; domain: string; url: string; tagline: string; description: string }
+interface SocialSetting { instagram: string; facebook: string }
+
+const [cmsIdentity, cmsSocial] = await Promise.all([
+  getPublicSiteSetting<SiteIdentitySetting>('site_identity'),
+  getPublicSiteSetting<SocialSetting>('social'),
+]);
+
+// `contact.location` (e.g. "Longueuil, Rive-Sud de Montréal") is a free-text
+// label, not a structured address — the JSON-LD address block stays
+// hardcoded rather than trying to parse it, so `contact` isn't fetched here.
+const jsonLdOrg = {
+  name: treshBranding?.title || cmsIdentity?.name || site.name,
+  url: cmsIdentity?.url || site.url,
+  logo:
+    treshChrome?.navigation?.logoUrl ||
+    treshBranding?.faviconUrl ||
+    `${cmsIdentity?.url || site.url}/assets/images/logo-mark-512.png`,
+  description:
+    treshBranding?.description ||
+    cmsIdentity?.description ||
+    site.description,
+  instagram: cmsSocial?.instagram || site.instagram,
+  facebook: cmsSocial?.facebook || site.facebook,
+};
+
+// Site-wide continuous paint coverage: fixed offsets down the page (not tied
+// to any one section), bleeding left/right, scroll-parallax only. Shorter
+// pages simply never scroll far enough to reveal the later ones.
+// Roughly two large masses per viewport (previous pass under-filled at ~1
+// per 900px) — alternating sides, varied depth/scale/rotation so no two
+// read as the same gesture repeated.
+const siteBlotches = [
+  { top: 500,  side: 'left',  asset: 'paint-soft-peach',        w: 1344, h: 939,  size: '24rem', depth: 0.09, layer: 'l1', rot: -3 },
+  { top: 950,  side: 'right', asset: 'paint-disc-coral',        w: 1112, h: 1067, size: '20rem', depth: 0.16, layer: 'l2', rot: 2 },
+  { top: 1450, side: 'left',  asset: 'paint-bold-wave',         w: 1553, h: 767,  size: '30rem', depth: 0.12, layer: 'l2', rot: 4 },
+  { top: 1900, side: 'right', asset: 'paint-bold-orb',          w: 1169, h: 1115, size: '19rem', depth: 0.2,  layer: 'l3', rot: -2 },
+  { top: 2350, side: 'left',  asset: 'paint-pink-orb',          w: 1169, h: 1115, size: '20rem', depth: 0.14, layer: 'l1', rot: 3 },
+  { top: 2850, side: 'right', asset: 'paint-bold-cluster',      w: 1102, h: 1033, size: '20rem', depth: 0.18, layer: 'l2', rot: -3 },
+  { top: 3350, side: 'left',  asset: 'paint-bold-crescent',     w: 1322, h: 1037, size: '22rem', depth: 0.13, layer: 'l1', rot: 1 },
+  { top: 3800, side: 'right', asset: 'paint-vertical-flow',     w: 702,  h: 1406, size: '14rem', depth: 0.2,  layer: 'l2', rot: -1 },
+  { top: 4300, side: 'left',  asset: 'paint-cluster-pink-peach',w: 1029, h: 1269, size: '19rem', depth: 0.15, layer: 'l1', rot: 2 },
+  { top: 4750, side: 'right', asset: 'paint-bold-flame',        w: 828,  h: 1385, size: '14rem', depth: 0.22, layer: 'l3', rot: -4 },
+  { top: 5250, side: 'left',  asset: 'paint-bold-orb',          w: 1169, h: 1115, size: '18rem', depth: 0.17, layer: 'l2', rot: 3 },
+  { top: 5700, side: 'right', asset: 'paint-soft-peach',        w: 1344, h: 939,  size: '22rem', depth: 0.1,  layer: 'l1', rot: -2 },
+  { top: 6200, side: 'left',  asset: 'paint-disc-coral',        w: 1112, h: 1067, size: '19rem', depth: 0.19, layer: 'l3', rot: 2 },
+  { top: 6650, side: 'right', asset: 'paint-bold-wave',         w: 1553, h: 767,  size: '28rem', depth: 0.13, layer: 'l2', rot: -3 },
+  { top: 7150, side: 'left',  asset: 'paint-pink-orb',          w: 1169, h: 1115, size: '19rem', depth: 0.16, layer: 'l1', rot: 1 },
+  { top: 7600, side: 'right', asset: 'paint-bold-cluster',      w: 1102, h: 1033, size: '18rem', depth: 0.21, layer: 'l3', rot: -2 },
+  { top: 8100, side: 'left',  asset: 'paint-bold-crescent',     w: 1322, h: 1037, size: '20rem', depth: 0.14, layer: 'l1', rot: 3 },
+  { top: 8550, side: 'right', asset: 'paint-vertical-flow',     w: 702,  h: 1406, size: '13rem', depth: 0.2,  layer: 'l2', rot: -1 },
+  { top: 9050, side: 'left',  asset: 'paint-cluster-pink-peach',w: 1029, h: 1269, size: '18rem', depth: 0.15, layer: 'l1', rot: 2 },
+];
+
+const siteSparkles = [
+  { top: 600,  pct: 22, name: 'sparkle',  color: 'orange', size: '1.6rem', depth: 0.18, motion: 'float',  dur: '6s' },
+  { top: 1400, pct: 68, name: 'flower',   color: 'pink',   size: '2.2rem', depth: 0.24, motion: 'drift',  dur: '9s' },
+  { top: 2200, pct: 12, name: 'star',     color: 'orange', size: '1.9rem', depth: 0.15, motion: 'rotate', dur: '7s' },
+  { top: 3100, pct: 78, name: 'butterfly',color: 'pink',   size: '2.4rem', depth: 0.26, motion: 'float',  dur: '8s' },
+  { top: 4000, pct: 30, name: 'sparkle',  color: 'ink',    size: '1.5rem', depth: 0.2,  motion: 'pulse',  dur: '5s' },
+  { top: 4900, pct: 62, name: 'flower',   color: 'orange', size: '2rem',   depth: 0.16, motion: 'rotate', dur: '10s' },
+  { top: 5800, pct: 8,  name: 'spiral',   color: 'ink',    size: '1.8rem', depth: 0.22, motion: 'rotate', dur: '11s' },
+  { top: 6700, pct: 70, name: 'star',     color: 'pink',   size: '1.9rem', depth: 0.19, motion: 'pulse',  dur: '6.5s' },
+  { top: 7600, pct: 20, name: 'butterfly',color: 'orange', size: '2.2rem', depth: 0.14, motion: 'drift',  dur: '9.5s' },
+  { top: 8500, pct: 58, name: 'sparkle',  color: 'pink',   size: '1.6rem', depth: 0.25, motion: 'float',  dur: '7s' },
+];
+---
+
+<!doctype html>
+<html lang="fr-CA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={effectiveDescription} />
+    <link rel="canonical" href={canonicalUrl} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={effectiveDescription} />
+    <meta property="og:image" content={new URL(ogImage, site.url)} />
+    <meta property="og:locale" content={site.og.locale} />
+    <meta property="og:site_name" content={globalSiteName} />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={effectiveDescription} />
+    <meta name="twitter:image" content={new URL(ogImage, site.url)} />
+
+    <!-- Favicon: Tresh branding first, static mandala fallback -->
+    <link rel="icon" href={faviconUrl} />
+    <link rel="apple-touch-icon" href={faviconUrl} />
+
+    <!-- Structured data: Organization -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": jsonLdOrg.name,
+      "url": jsonLdOrg.url,
+      "logo": jsonLdOrg.logo,
+      "description": jsonLdOrg.description,
+      "sameAs": [jsonLdOrg.instagram, jsonLdOrg.facebook],
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Longueuil",
+        "addressRegion": "QC",
+        "addressCountry": "CA"
+      }
+    })} />
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+    {isLocalTreshPreview && (
+      <div class="tresh-local-preview-banner" role="status">
+        COPIE LOCALE TRESH — atelierexpression.ca n’est pas modifié
+      </div>
+    )}
+    <div id="app" class="site-shell">
+      <Header branding={treshBranding} navigation={treshChrome?.navigation} />
+      <main id="main-content" class="site-main">
+        <div class="paint-scene paint-scene--site" aria-hidden="true">
+          {siteBlotches.map((b) => (
+            <div
+              class={`paint-layer paint-layer--${b.layer} site-blotch site-blotch--${b.side}`}
+              style={`top:${b.top}px; width:${b.size}; --paint-rotation:${b.rot}deg;`}
+              data-parallax
+              data-parallax-depth={b.depth}
+              data-parallax-axis="y"
+            >
+              <img src={`/assets/images/decor/${b.asset}.webp`} alt="" width={b.w} height={b.h} loading="lazy" />
+            </div>
+          ))}
+          {siteSparkles.map((s) => (
+            <div
+              class:list={['site-sparkle', `doodle--${s.motion}`]}
+              style={`top:${s.top}px; left:${s.pct}%; width:${s.size}; animation-duration:${s.dur};`}
+              data-parallax
+              data-parallax-depth={s.depth}
+              data-parallax-axis="y"
+              aria-hidden="true"
+            >
+              <Doodle name={s.name as any} color={s.color as any} />
+            </div>
+          ))}
+        </div>
+        {treshDocumentPage ? (
+          <TreshPageRenderer page={treshDocumentPage} />
+        ) : (
+          <slot />
+        )}
+      </main>
+      <Footer branding={treshBranding} footer={treshChrome?.footer} />
+    </div>
+
+    <script>
+      import { initParallax } from '../lib/parallax';
+      initParallax();
+    </script>
+
+    <script>
+      // Scroll reveal
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('revealed');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+      );
+
+      document.querySelectorAll('[data-reveal]').forEach((el) => {
+        observer.observe(el);
+      });
+    </script>
+  </body>
+</html>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .tresh-local-preview-banner {
+    position: fixed;
+    inset: 0 auto auto 50%;
+    z-index: 10000;
+    transform: translateX(-50%);
+    padding: 0.55rem 1rem;
+    border-radius: 0 0 0.75rem 0.75rem;
+    background: #14161a;
+    color: #fff8ef;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  // Sticky-footer shell + height containment in one boundary. The global
+  // paint canvas below bleeds on fixed pixel offsets calibrated for the
+  // longest page (the homepage) — reused as-is on every page, those offsets
+  // run past the real content height of shorter routes. Left unclipped,
+  // that inflates document.scrollHeight far beyond the footer on every
+  // short page (verified: identical scrollHeight across pages of very
+  // different real length). overflow-x/y: clip on THIS wrapper (not
+  // #main-content) is the boundary, so it catches both mid-page canvas
+  // overflow and footer-region bleed (wave/doodles/divider) in one place.
+  // Both axes set explicitly (not left to default) to avoid the
+  // visible→auto computed-value conversion that broke position:sticky
+  // before (see body's overflow-x comment in global.scss) — and `clip`
+  // itself (unlike `hidden`) never establishes a scroll container, so it
+  // doesn't disturb the header's sticky containing block either.
+  :global(html), :global(body) {
+    min-height: 100%;
+  }
+
+  .site-shell {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: clip;
+    overflow-y: clip;
+  }
+
+  .site-main {
+    flex: 1 0 auto;
+  }
+
+  #main-content {
+    position: relative;
+  }
+
+  // :global() because the direct children here are slotted content from
+  // each page's own component — Astro's scoped styles never reach across
+  // a <slot />, so this rule would silently no-op without it. Real page
+  // content always paints above the continuous paint layer this way,
+  // regardless of DOM order (absolutely-positioned siblings would
+  // otherwise paint on top of static in-flow content).
+  :global(#main-content > :not(.paint-scene--site)) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .paint-scene--site {
+    // Still overflow:visible — clipping now happens once, at .site-shell's
+    // edge, not here. This keeps cross-section bleed (hero into manifest,
+    // etc.) intact while the shell boundary stops it going past real
+    // content at the very top/bottom of the page.
+    overflow: visible;
+  }
+
+  .site-blotch {
+    position: absolute;
+
+    &--left  { left: -12%; }
+    &--right { right: -12%; }
+  }
+
+  .site-sparkle {
+    position: absolute;
+    filter: drop-shadow(0 0.25rem 0.5rem rgba(50, 17, 31, 0.14));
+  }
+
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    background: $color-fuchsia;
+    color: $color-blanc;
+    padding: 0.5rem 1rem;
+    border-radius: $radius-md;
+    font-weight: $weight-bold;
+    z-index: 9999;
+    transition: top $transition-fast;
+
+    &:focus {
+      top: 1rem;
+    }
+  }
+</style>

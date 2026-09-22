@@ -1,0 +1,211 @@
+// ─── ATELIER EXPRESSION — LAYOUT ─────────────────────────────────────────────
+@use 'tokens' as *;
+
+// ─── GRID SYSTEMS ─────────────────────────────────────────────────────────────
+.grid-2 {
+  display: grid;
+  gap: $grid-gap;
+  grid-template-columns: 1fr;
+
+  @include md { grid-template-columns: repeat(2, 1fr); }
+}
+
+.grid-3 {
+  display: grid;
+  gap: $grid-gap;
+  grid-template-columns: 1fr;
+
+  @include md { grid-template-columns: repeat(2, 1fr); }
+  @include lg { grid-template-columns: repeat(3, 1fr); }
+}
+
+.grid-4 {
+  display: grid;
+  gap: $grid-gap;
+  grid-template-columns: repeat(2, 1fr);
+
+  @include lg { grid-template-columns: repeat(4, 1fr); }
+}
+
+.grid-auto {
+  display: grid;
+  gap: $grid-gap;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+// ─── FLEX HELPERS ─────────────────────────────────────────────────────────────
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+}
+
+// ─── STACK ────────────────────────────────────────────────────────────────────
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+
+  &--sm { gap: $space-3; }
+  &--lg { gap: $space-6; }
+  &--xl { gap: $space-8; }
+}
+
+// ─── TWO-COLUMN FEATURE ───────────────────────────────────────────────────────
+.feature-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $space-8;
+  align-items: center;
+
+  @include lg {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  &--reverse {
+    @include lg {
+      .feature-split__visual { order: -1; }
+    }
+  }
+}
+
+// ─── PILL STRIP ───────────────────────────────────────────────────────────────
+.pill-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+  align-items: center;
+}
+
+// ─── CARD GRID ────────────────────────────────────────────────────────────────
+.card-grid {
+  display: grid;
+  gap: $space-5;
+  grid-template-columns: 1fr;
+
+  @include md { grid-template-columns: repeat(2, 1fr); }
+  @include xl { grid-template-columns: repeat(3, 1fr); }
+}
+
+// ─── IMAGE MASKS ──────────────────────────────────────────────────────────────
+.img-rounded {
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.img-circle {
+  border-radius: $radius-full;
+  aspect-ratio: 1;
+  overflow: hidden;
+}
+
+.img-arch {
+  border-radius: 50% 50% 0 0 / 40% 40% 0 0;
+  overflow: hidden;
+}
+
+.img-blob {
+  border-radius: 60% 40% 55% 45% / 50% 60% 40% 50%;
+  overflow: hidden;
+}
+
+// ─── COLOR BAND (SECTION ACCENT) ──────────────────────────────────────────────
+// Bands are the site's remaining opaque, full-width rectangles — exactly what
+// chops the global paint canvas into disconnected slices at each boundary.
+// Rather than a hard horizontal cut, each edge gets two overlapping soft
+// blobs in the band's own color (via `background: inherit`, so every
+// modifier below gets it for free) so the transition reads as a painted
+// shape bleeding into the next section, not a card stacked on the page.
+.band {
+  position: relative;
+  padding-block: $section-pad;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: -8%;
+    width: 62%;
+    height: clamp(2.5rem, 7vw, 5rem);
+    background: inherit;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &::before { top: clamp(-1.6rem, -3vw, -1rem); transform: rotate(-2deg); }
+  &::after  { left: auto; right: -8%; bottom: clamp(-1.6rem, -3vw, -1rem); transform: rotate(2deg); }
+
+  &--encre {
+    background-color: $c-orange-deep;
+    color: $c-on-dark;
+  }
+
+  &--espresso,
+  &--plum {
+    background-color: $c-pink-deep;
+    color: $c-on-dark;
+  }
+
+  &--orange,
+  &--fuchsia {
+    background-color: $c-orange;
+    color: $c-on-orange;
+  }
+
+  &--pink,
+  &--corail {
+    background-color: $c-pink;
+    color: $c-on-pink;
+  }
+
+  &--gris,
+  &--wall-deep,
+  &--peach-deep {
+    background-color: $c-peach-deep;
+    color: $c-plum;
+  }
+
+  &--peach {
+    background-color: $c-peach;
+    color: $c-plum;
+  }
+
+  &--pink-soft {
+    background-color: rgba($c-pink, 0.08);
+    color: $c-plum;
+  }
+}
+
+// ─── TEXT ALIGNMENT ───────────────────────────────────────────────────────────
+.text-center { text-align: center; }
+.text-left   { text-align: left; }
+.text-right  { text-align: right; }
+
+// ─── DIVIDER ──────────────────────────────────────────────────────────────────
+.divider {
+  width: 64px;
+  height: 3px;
+  border-radius: 3px;
+  background-color: $c-orange;
+  margin-block: $space-4;
+
+  &--center { margin-inline: auto; }
+  &--pink   { background-color: $c-pink; }
+}

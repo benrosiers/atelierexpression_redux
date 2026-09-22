@@ -1,0 +1,53 @@
+---
+interface Props {
+  accent?: string;
+  title: string;
+  subtitle?: string;
+  centered?: boolean;
+  titleSize?: 'sm' | 'md' | 'lg';
+}
+
+const { accent, title, subtitle, centered = false, titleSize = 'md' } = Astro.props;
+---
+
+<div class:list={['section-intro', { 'section-intro--centered': centered }]}>
+  {accent && <span class="accent-handwritten">{accent}</span>}
+  <h2 class:list={['section-intro__title', `section-intro__title--${titleSize}`]}>{title}</h2>
+  {subtitle && <p class="section-intro__subtitle">{subtitle}</p>}
+  <div class:list={['divider', { 'divider--center': centered }]}></div>
+</div>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .section-intro {
+    margin-bottom: $space-10;
+
+    &--centered {
+      text-align: center;
+    }
+  }
+
+  .section-intro__title {
+    font-family: $font-serif;
+    font-weight: $weight-bold;
+    line-height: $leading-tight;
+    margin-top: $space-2;
+
+    &--sm  { font-size: $text-2xl; }
+    &--md  { font-size: $text-3xl; }
+    &--lg  { font-size: $text-4xl; }
+  }
+
+  .section-intro__subtitle {
+    font-size: $text-lg;
+    color: $color-gris-moyen;
+    margin-top: $space-4;
+    max-width: 580px;
+    line-height: $leading-normal;
+
+    .section-intro--centered & {
+      margin-inline: auto;
+    }
+  }
+</style>

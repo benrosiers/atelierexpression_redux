@@ -1,0 +1,185 @@
+---
+// /admin/workshops/edit?id=<uuid> — same query-param pattern as
+// /admin/pages/edit, for the same reason (static site, no build-time
+// knowledge of every workshop id — see the comment in pages/edit.astro).
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Modifier un atelier" activeNav="workshops">
+  <div id="workshop-editor-root">
+    <p class="admin-empty-note">Chargement…</p>
+  </div>
+
+  <style>
+    .workshop-form {
+      display: grid;
+      gap: 1rem;
+      max-width: 640px;
+    }
+    .workshop-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .workshop-toggles {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .workshop-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 0.9rem;
+    }
+  </style>
+
+  <script>
+    import { getWorkshop, updateWorkshop, updateWorkshopTranslation } from '../../../lib/content/workshops';
+    import { isSupabaseConfigured } from '../../../lib/supabase/client';
+
+    const VARIANTS = ['fuchsia', 'corail', 'soleil', 'emeraude'];
+    const root = document.getElementById('workshop-editor-root')!;
+    const id = new URLSearchParams(window.location.search).get('id');
+
+    function notify(message: string, kind: 'success' | 'error') {
+      const container = document.getElementById('admin-notifications');
+      if (!container) return;
+      const el = document.createElement('div');
+      el.className = `admin-notice admin-notice--${kind}`;
+      el.textContent = message;
+      container.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }
+
+    async function render() {
+      if (!isSupabaseConfigured()) {
+        root.innerHTML = '<p class="admin-empty-note">CMS non configuré.</p>';
+        return;
+      }
+      if (!id) {
+        root.innerHTML = '<p class="admin-empty-note">Aucun id fourni (utiliser ?id=...).</p>';
+        return;
+      }
+
+      const w = await getWorkshop(id);
+      if (!w) {
+        root.innerHTML = `<p class="admin-empty-note">Atelier introuvable.</p>`;
+        return;
+      }
+
+      root.innerHTML = `
+        <h1>${w.title ?? w.slug}</h1>
+        <p class="admin-page-sub">Slug : <code>${w.slug}</code></p>
+
+        <div class="workshop-form">
+          <div class="admin-form-field">
+            <label for="wf-title">Titre</label>
+            <input type="text" id="wf-title" value="${(w.title ?? '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="admin-form-field">
+            <label for="wf-tagline">Sous-titre</label>
+            <input type="text" id="wf-tagline" value="${(w.tagline ?? '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="admin-form-field">
+            <label for="wf-description">Description</label>
+            <textarea id="wf-description" rows="4">${w.description ?? ''}</textarea>
+          </div>
+          <div class="admin-form-field">
+            <label for="wf-audience">Niveau / public</label>
+            <input type="text" id="wf-audience" value="${(w.audience ?? '').replace(/"/g, '&quot;')}" />
+          </div>
+
+          <div class="workshop-form-row">
+            <div class="admin-form-field">
+              <label for="wf-price">Prix ($ CA, vide = "à venir")</label>
+              <input type="number" id="wf-price" step="0.01" min="0" value="${w.price_cents != null ? (w.price_cents / 100).toFixed(2) : ''}" />
+            </div>
+            <div class="admin-form-field">
+              <label for="wf-duration">Durée (minutes)</label>
+              <input type="number" id="wf-duration" min="0" value="${w.duration_minutes ?? ''}" />
+            </div>
+          </div>
+
+          <div class="workshop-form-row">
+            <div class="admin-form-field">
+              <label for="wf-capacity-min">Capacité min.</label>
+              <input type="number" id="wf-capacity-min" min="0" value="${w.capacity_min ?? ''}" />
+            </div>
+            <div class="admin-form-field">
+              <label for="wf-capacity-max">Capacité max.</label>
+              <input type="number" id="wf-capacity-max" min="0" value="${w.capacity_max ?? ''}" />
+            </div>
+          </div>
+
+          <div class="admin-form-field">
+            <label for="wf-location">Lieu</label>
+            <input type="text" id="wf-location" value="${(w.location ?? '').replace(/"/g, '&quot;')}" />
+          </div>
+
+          <div class="admin-form-field">
+            <label for="wf-variant">Variante visuelle</label>
+            <select id="wf-variant">
+              ${VARIANTS.map((v) => `<option value="${v}" ${w.visual_variant === v ? 'selected' : ''}>${v}</option>`).join('')}
+            </select>
+          </div>
+
+          <div class="admin-form-field">
+            <label for="wf-status">Statut</label>
+            <select id="wf-status">
+              <option value="draft" ${w.status === 'draft' ? 'selected' : ''}>Brouillon</option>
+              <option value="published" ${w.status === 'published' ? 'selected' : ''}>Publié</option>
+              <option value="archived" ${w.status === 'archived' ? 'selected' : ''}>Archivé</option>
+            </select>
+          </div>
+
+          <div class="workshop-toggles">
+            <label class="workshop-toggle"><input type="checkbox" id="wf-visible" ${w.visible ? 'checked' : ''} /> Visible</label>
+            <label class="workshop-toggle"><input type="checkbox" id="wf-featured" ${w.featured ? 'checked' : ''} /> Mis en avant</label>
+            <label class="workshop-toggle"><input type="checkbox" id="wf-coming-soon" ${w.coming_soon ? 'checked' : ''} /> Bientôt disponible</label>
+          </div>
+
+          <div>
+            <button type="button" class="admin-btn admin-btn--primary" id="wf-save-btn">Enregistrer</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('wf-save-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('wf-save-btn') as HTMLButtonElement;
+        btn.disabled = true;
+
+        const priceInput = (document.getElementById('wf-price') as HTMLInputElement).value;
+        const durationInput = (document.getElementById('wf-duration') as HTMLInputElement).value;
+        const capMinInput = (document.getElementById('wf-capacity-min') as HTMLInputElement).value;
+        const capMaxInput = (document.getElementById('wf-capacity-max') as HTMLInputElement).value;
+
+        const fieldsResult = await updateWorkshop(id, {
+          status: (document.getElementById('wf-status') as HTMLSelectElement).value as any,
+          visible: (document.getElementById('wf-visible') as HTMLInputElement).checked,
+          featured: (document.getElementById('wf-featured') as HTMLInputElement).checked,
+          coming_soon: (document.getElementById('wf-coming-soon') as HTMLInputElement).checked,
+          price_cents: priceInput ? Math.round(parseFloat(priceInput) * 100) : null,
+          duration_minutes: durationInput ? parseInt(durationInput, 10) : null,
+          capacity_min: capMinInput ? parseInt(capMinInput, 10) : null,
+          capacity_max: capMaxInput ? parseInt(capMaxInput, 10) : null,
+          location: (document.getElementById('wf-location') as HTMLInputElement).value,
+          visual_variant: (document.getElementById('wf-variant') as HTMLSelectElement).value,
+        });
+
+        const translationResult = await updateWorkshopTranslation(id, {
+          title: (document.getElementById('wf-title') as HTMLInputElement).value,
+          tagline: (document.getElementById('wf-tagline') as HTMLInputElement).value,
+          description: (document.getElementById('wf-description') as HTMLTextAreaElement).value,
+          audience: (document.getElementById('wf-audience') as HTMLInputElement).value,
+        });
+
+        btn.disabled = false;
+        const ok = fieldsResult.ok && translationResult.ok;
+        notify(ok ? 'Enregistré.' : `Erreur : ${fieldsResult.error ?? translationResult.error}`, ok ? 'success' : 'error');
+      });
+    }
+
+    render();
+  </script>
+</AdminLayout>

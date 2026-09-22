@@ -1,0 +1,127 @@
+---
+import type { Testimonial } from '../data/testimonials';
+
+interface Props {
+  testimonial: Testimonial;
+  index?: number;
+}
+
+const { testimonial, index = 0 } = Astro.props;
+const variant = ['peach', 'pink', 'orange'][index % 3];
+const tilt = [-2, 1.5, -1][index % 3];
+---
+
+<blockquote
+  class:list={['testimonial-card', `testimonial-card--${variant}`, { 'testimonial-card--placeholder': testimonial.isPlaceholder }]}
+  style={`--tilt: ${tilt}deg;`}
+>
+  {testimonial.isPlaceholder && (
+    <div class="testimonial-card__placeholder-notice">Témoignage à venir</div>
+  )}
+  <p class="testimonial-card__quote">"{testimonial.quote}"</p>
+  <div class="testimonial-card__footer">
+    <div class="testimonial-card__avatar" aria-hidden="true">
+      {testimonial.name.charAt(0)}
+    </div>
+    <div>
+      <cite class="testimonial-card__name">{testimonial.name}</cite>
+      <span class="testimonial-card__detail">{testimonial.detail}</span>
+    </div>
+  </div>
+</blockquote>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  // Three irregular painted blotches, not three rectangles — each a
+  // distinct silhouette/rotation so the row doesn't read as a grid.
+  .testimonial-card {
+    padding: $space-6;
+    box-shadow: $paint-shadow-mid;
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+    position: relative;
+    transform: rotate(var(--tilt, 0deg));
+    transition: transform $transition-base, box-shadow $transition-base;
+    border: 1px solid rgba($c-ink, 0.08);
+
+    &:hover {
+      transform: rotate(0deg) translateY(-4px);
+      box-shadow: $paint-shadow-high;
+      @include reduced-motion { transform: rotate(var(--tilt, 0deg)); }
+    }
+
+    &--peach  { background-color: $c-peach-deep;        border-radius: 44% 56% 40% 60% / 55% 45% 55% 45%; }
+    &--pink   { background-color: rgba($c-pink, 0.14);   border-radius: 58% 42% 60% 40% / 42% 58% 42% 58%; }
+    &--orange { background-color: rgba($c-orange, 0.14); border-radius: 40% 60% 55% 45% / 60% 40% 45% 55%; }
+
+    &--placeholder {
+      opacity: 0.88;
+      padding-top: $space-10;
+    }
+  }
+
+  .testimonial-card__placeholder-notice {
+    position: absolute;
+    top: $space-4;
+    right: $space-4;
+    font-size: $text-xs;
+    color: $color-gris-moyen;
+    background-color: $color-gris-doux;
+    padding: 0.2em 0.6em;
+    border-radius: $radius-full;
+    font-weight: $weight-medium;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .testimonial-card__quote {
+    font-family: $font-serif;
+    font-style: italic;
+    font-size: $text-lg;
+    color: $color-encre;
+    line-height: $leading-snug;
+    flex: 1;
+
+    &::before {
+      content: '';
+    }
+  }
+
+  .testimonial-card__footer {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+  }
+
+  .testimonial-card__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: $radius-full;
+    background-color: $c-orange;
+    color: $c-on-orange;
+    font-family: $font-serif;
+    font-weight: $weight-bold;
+    font-size: $text-lg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .testimonial-card__name {
+    display: block;
+    font-weight: $weight-bold;
+    font-size: $text-sm;
+    color: $color-encre;
+    font-style: normal;
+  }
+
+  .testimonial-card__detail {
+    display: block;
+    font-size: $text-xs;
+    color: $color-gris-moyen;
+    margin-top: $space-1;
+  }
+</style>

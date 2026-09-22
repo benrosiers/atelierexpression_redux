@@ -1,0 +1,154 @@
+// ─── ATELIER EXPRESSION — ANIMATIONS ─────────────────────────────────────────
+@use 'tokens' as *;
+
+// ─── KEYFRAMES ────────────────────────────────────────────────────────────────
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%       { transform: rotate(-3deg); }
+  75%       { transform: rotate(3deg); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.15); opacity: 0.8; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes draw-underline {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+// ─── DOODLE LIFE — small, slow, never synchronized ───────────────────────────
+@keyframes doodle-float {
+  0%, 100% { transform: translateY(-4px) rotate(0deg); }
+  50%       { transform: translateY(4px) rotate(1deg); }
+}
+
+@keyframes doodle-rotate {
+  0%, 100% { transform: rotate(-2deg); }
+  50%       { transform: rotate(2deg); }
+}
+
+@keyframes doodle-pulse-scale {
+  0%, 100% { transform: scale(0.96); }
+  50%       { transform: scale(1.04); }
+}
+
+@keyframes doodle-drift {
+  0%, 100% { transform: translateX(-4px); }
+  50%       { transform: translateX(4px); }
+}
+
+@keyframes doodle-scribble {
+  0%   { stroke-dashoffset: 40; }
+  100% { stroke-dashoffset: 0; }
+}
+
+// ─── ANIMATION UTILITIES ──────────────────────────────────────────────────────
+.animate-fade-up {
+  animation: fadeUp 600ms ease both;
+
+  @include reduced-motion { animation: none; opacity: 1; transform: none; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 500ms ease both;
+
+  @include reduced-motion { animation: none; opacity: 1; }
+}
+
+.animate-scale-in {
+  animation: scaleIn 400ms $transition-bounce both;
+
+  @include reduced-motion { animation: none; opacity: 1; transform: none; }
+}
+
+// Stagger helpers
+@for $i from 1 through 8 {
+  .delay-#{$i * 100} { animation-delay: #{$i * 100}ms; }
+}
+
+// ─── HOVER MICRO-INTERACTIONS ─────────────────────────────────────────────────
+.hover-wiggle:hover {
+  animation: wiggle 400ms $transition-bounce;
+
+  @include reduced-motion { animation: none; }
+}
+
+.hover-float {
+  transition: transform $transition-slow;
+  &:hover {
+    transform: translateY(-4px);
+
+    @include reduced-motion { transform: none; }
+  }
+}
+
+// ─── DOODLE PULSE ─────────────────────────────────────────────────────────────
+.doodle-pulse {
+  animation: pulse-dot 2.5s ease-in-out infinite;
+
+  @include reduced-motion { animation: none; }
+}
+
+.doodle-float {
+  animation: float 4s ease-in-out infinite;
+
+  @include reduced-motion { animation: none; }
+}
+
+// ─── DOODLE MOTION MODIFIERS ──────────────────────────────────────────────────
+// Applied to the wrapping element (not the SVG itself) so transforms compose
+// cleanly with any parallax translate already on a paint-scene ancestor.
+// Durations and delays are varied per-instance via inline style so nothing
+// on the page beats in sync.
+.doodle--float {
+  animation: doodle-float 6s ease-in-out infinite;
+  @include reduced-motion { animation: none; }
+}
+
+.doodle--rotate {
+  animation: doodle-rotate 7s ease-in-out infinite;
+  @include reduced-motion { animation: none; }
+}
+
+.doodle--pulse {
+  animation: doodle-pulse-scale 5s ease-in-out infinite;
+  @include reduced-motion { animation: none; }
+}
+
+.doodle--drift {
+  animation: doodle-drift 9s ease-in-out infinite;
+  @include reduced-motion { animation: none; }
+}
+
+.doodle--scribble path {
+  stroke-dasharray: 40;
+  animation: doodle-scribble 8s ease-in-out infinite;
+  @include reduced-motion { animation: none; stroke-dashoffset: 0; }
+}

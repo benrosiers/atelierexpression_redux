@@ -1,0 +1,127 @@
+---
+import type { Offer } from '../data/offers';
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getNextWorkshop } from '../lib/content/publicContent';
+
+interface Props {
+  offer: Offer;
+}
+
+const { offer } = Astro.props;
+const isComingSoon = offer.status === 'coming-soon';
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+const activeCtaLabel = nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place';
+---
+
+<article class:list={['workshop-card', `workshop-card--${offer.accentColor}`, { 'workshop-card--soon': isComingSoon }]}>
+  <div class="workshop-card__icon">{offer.icon}</div>
+  {isComingSoon && <span class="paint-pastille paint-pastille--dark workshop-card__badge">Bientôt</span>}
+  <h3 class="workshop-card__title">{offer.title}</h3>
+  <p class="workshop-card__subtitle">{offer.subtitle}</p>
+  <p class="workshop-card__description">{offer.description}</p>
+  <ul class="workshop-card__meta" role="list">
+    <li class="paint-pastille paint-pastille--cream"><span class="workshop-card__meta-icon">⏱</span> {offer.duration}</li>
+    <li class="paint-pastille paint-pastille--cream"><span class="workshop-card__meta-icon">👥</span> {offer.groupSize}</li>
+    <li class="paint-pastille paint-pastille--cream"><span class="workshop-card__meta-icon">📍</span> {offer.location}</li>
+    <li class="paint-pastille paint-pastille--cream"><span class="workshop-card__meta-icon">💰</span> {offer.price}</li>
+    <li class="paint-pastille paint-pastille--cream"><span class="workshop-card__meta-icon">✓</span> {offer.level}</li>
+  </ul>
+  {!isComingSoon ? (
+    <a href="/reserver" class="btn btn--primary workshop-card__cta">{activeCtaLabel}</a>
+  ) : (
+    <a href="/communaute" class="btn btn--secondary workshop-card__cta">Me prévenir à l'ouverture</a>
+  )}
+</article>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .workshop-card {
+    background-color: $c-cream;
+    border-radius: 40% 60% 55% 45% / 6% 6% 94% 94%;
+    padding: $space-8 $space-6;
+    box-shadow: $paint-shadow-ellipse;
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+    position: relative;
+    transform: rotate(-1.4deg);
+    transition: transform $transition-base, box-shadow $transition-base;
+
+    &:nth-child(3n+2) { transform: rotate(1.1deg); }
+    &:nth-child(3n)   { transform: rotate(-0.7deg); }
+
+    &:hover {
+      transform: rotate(0deg) translateY(-4px);
+      box-shadow: $paint-shadow-ellipse-dense;
+
+      @include reduced-motion { transform: rotate(0deg); }
+    }
+
+    &--fuchsia,
+    &--corail,
+    &--soleil,
+    &--emeraude {
+      .workshop-card__icon { color: $c-orange; }
+    }
+
+    &--soon {
+      opacity: 0.9;
+    }
+  }
+
+  .workshop-card__icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .workshop-card__badge {
+    position: absolute;
+    top: $space-5;
+    right: $space-5;
+  }
+
+  .workshop-card__title {
+    font-family: $font-serif;
+    font-size: $text-2xl;
+    font-weight: $weight-bold;
+    color: $color-encre;
+    line-height: $leading-tight;
+  }
+
+  .workshop-card__subtitle {
+    font-family: $font-handwritten;
+    font-size: $text-lg;
+    color: $c-pink;
+  }
+
+  .workshop-card__description {
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    line-height: $leading-normal;
+    flex: 1;
+  }
+
+  .workshop-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+    margin-top: $space-2;
+    padding-top: $space-4;
+
+    li {
+      font-size: $text-xs;
+      gap: 0.35em;
+      --pastille-tilt: 0deg;
+    }
+  }
+
+  .workshop-card__meta-icon {
+    font-size: $text-sm;
+  }
+
+  .workshop-card__cta {
+    margin-top: $space-3;
+    width: 100%;
+  }
+</style>

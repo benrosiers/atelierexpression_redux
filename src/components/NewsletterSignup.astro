@@ -1,0 +1,268 @@
+---
+import { site } from '../data/site';
+import { isFormConfigured } from '../lib/formspree';
+import { getPublicSiteSetting, type FormMessagesSetting } from '../lib/content/publicContent';
+
+interface Props {
+  title?: string;
+  subtitle?: string;
+  variant?: 'light' | 'dark';
+}
+
+const {
+  title = 'Reste dans la boucle',
+  subtitle = 'Dates d\'ateliers, coulisses, et petites doses de joie dans ta boîte mail. On ne spamme pas.',
+  variant = 'dark',
+} = Astro.props;
+
+const configured = isFormConfigured();
+
+const cmsMessages = (await getPublicSiteSetting<FormMessagesSetting>('form_messages'))?.newsletter;
+const submitLabel = cmsMessages?.submitLabel || 'Je m\'inscris';
+const loadingLabel = cmsMessages?.loadingLabel || '…';
+const successMessage = cmsMessages?.successMessage || '✓ Merci! Tu seras la première personne informée des nouveaux ateliers.';
+---
+
+<div class:list={['newsletter', `newsletter--${variant}`]}>
+  <div class="newsletter__content">
+    <span class="accent-handwritten">infolettre</span>
+    <h2 class="newsletter__title">{title}</h2>
+    <p class="newsletter__subtitle">{subtitle}</p>
+  </div>
+  {configured ? (
+    <form class="newsletter__form" data-newsletter-form aria-label="Inscription à l'infolettre">
+      <div class="newsletter__field-group">
+        <input
+          type="email"
+          name="email"
+          placeholder="ton@courriel.ca"
+          class="newsletter__input"
+          aria-label="Adresse courriel"
+          required
+        />
+        <button type="submit" class="btn btn--primary newsletter__submit">
+          <span class="newsletter__submit-label">{submitLabel}</span>
+          <span class="newsletter__submit-loading" hidden>{loadingLabel}</span>
+        </button>
+      </div>
+      <p class="newsletter__notice">Aucune obligation. Tu te désabonnes en un clic.</p>
+      <div class="newsletter__success" role="status" aria-live="polite" hidden>
+        <p>{successMessage}</p>
+      </div>
+      <div class="newsletter__error" role="alert" aria-live="assertive" hidden>
+        <p>
+          L'envoi a échoué. Écris-nous plutôt à <a href={`mailto:${site.email}`}>{site.email}</a>.
+        </p>
+      </div>
+    </form>
+  ) : (
+    <div class="newsletter__not-configured">
+      <p>
+        L'inscription en ligne n'est pas encore activée. Écris-nous à
+        {' '}<a href={`mailto:${site.email}`}>{site.email}</a> pour être ajouté·e à la liste.
+      </p>
+    </div>
+  )}
+</div>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .newsletter {
+    position: relative;
+    overflow: visible;
+    padding: $space-12;
+    border-radius: 16px;
+
+    // A soft painted bite entering from the top so the box reads as a
+    // painted shape rather than a flat colored rectangle dropped on the page.
+    &::before {
+      content: '';
+      position: absolute;
+      top: -1.4rem;
+      left: 10%;
+      width: 50%;
+      height: 2.8rem;
+      background: inherit;
+      border-radius: 50%;
+      transform: rotate(-3deg);
+      pointer-events: none;
+    }
+
+    @include md {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $space-10;
+      align-items: center;
+    }
+
+    &--dark {
+      background-color: $c-pink-deep;
+      color: $c-on-dark;
+
+      .newsletter__title { color: $c-on-dark; }
+      .newsletter__subtitle { color: $c-on-dark-soft; }
+      .newsletter__notice { color: $c-on-dark-soft; opacity: 1; }
+      .accent-handwritten { color: $c-on-dark-soft; }
+    }
+
+    &--light {
+      background-color: $c-cream;
+      color: $c-plum;
+      border: 2px solid $c-peach-deep;
+
+      .newsletter__title { color: $c-plum; }
+      .newsletter__subtitle { color: $c-plum-soft; }
+    }
+  }
+
+  .newsletter__content {
+    margin-bottom: $space-6;
+
+    @include md { margin-bottom: 0; }
+  }
+
+  .newsletter__title {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    font-weight: $weight-bold;
+    line-height: $leading-tight;
+    margin-top: $space-2;
+  }
+
+  .newsletter__subtitle {
+    font-size: $text-base;
+    line-height: $leading-normal;
+    margin-top: $space-3;
+  }
+
+  .newsletter__field-group {
+    display: flex;
+    gap: 0;
+
+    @include sm {
+      flex-direction: row;
+    }
+
+    flex-direction: column;
+    gap: $space-3;
+
+    @include sm {
+      gap: 0;
+    }
+  }
+
+  .newsletter__input {
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: $radius-full;
+    padding: 0.8em 1.2em;
+    color: $color-creme;
+    font-size: $text-base;
+    outline: none;
+    transition: border-color $transition-base;
+
+    @include sm {
+      border-radius: $radius-full 0 0 $radius-full;
+      border-right: none;
+    }
+
+    &::placeholder { color: rgba(255, 255, 255, 0.45); }
+
+    &:focus { border-color: $color-fuchsia; }
+
+    .newsletter--light & {
+      background-color: $color-blanc;
+      border-color: $color-gris-doux;
+      color: $color-encre;
+
+      &::placeholder { color: $color-gris-moyen; }
+    }
+  }
+
+  .newsletter__submit {
+    border-radius: $radius-full;
+    white-space: nowrap;
+
+    @include sm {
+      border-radius: 0 $radius-full $radius-full 0;
+    }
+  }
+
+  .newsletter__notice {
+    font-size: $text-xs;
+    margin-top: $space-3;
+  }
+
+  .newsletter__success,
+  .newsletter__error {
+    margin-top: $space-4;
+    padding: $space-3 $space-4;
+    border-radius: $radius-md;
+    font-weight: $weight-medium;
+
+    &:not([hidden]) {
+      display: block;
+    }
+  }
+
+  .newsletter__success {
+    background-color: rgba($c-orange, 0.12);
+    color: $c-plum;
+  }
+
+  .newsletter__error {
+    background-color: rgba($color-corail, 0.1);
+    color: $color-encre;
+
+    a { color: $color-fuchsia; }
+  }
+
+  .newsletter__not-configured {
+    font-size: $text-sm;
+
+    a { color: $color-fuchsia; }
+  }
+</style>
+
+<script>
+  import { submitForm } from '../lib/formspree';
+
+  const forms = document.querySelectorAll<HTMLFormElement>('[data-newsletter-form]');
+
+  forms.forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const fieldGroup = form.querySelector<HTMLElement>('.newsletter__field-group');
+      const success = form.querySelector<HTMLElement>('.newsletter__success');
+      const errorBox = form.querySelector<HTMLElement>('.newsletter__error');
+      const submitBtn = form.querySelector<HTMLButtonElement>('.newsletter__submit');
+      const label = form.querySelector<HTMLElement>('.newsletter__submit-label');
+      const loading = form.querySelector<HTMLElement>('.newsletter__submit-loading');
+
+      if (submitBtn) submitBtn.disabled = true;
+      label?.setAttribute('hidden', 'true');
+      loading?.removeAttribute('hidden');
+      errorBox?.setAttribute('hidden', 'true');
+
+      const formData = new FormData(form);
+      const data: Record<string, string> = {};
+      formData.forEach((value, key) => { data[key] = String(value); });
+
+      const result = await submitForm('newsletter', data);
+
+      if (submitBtn) submitBtn.disabled = false;
+      loading?.setAttribute('hidden', 'true');
+      label?.removeAttribute('hidden');
+
+      if (result.ok) {
+        if (fieldGroup) fieldGroup.style.display = 'none';
+        success?.removeAttribute('hidden');
+      } else {
+        errorBox?.removeAttribute('hidden');
+      }
+    });
+  });
+</script>

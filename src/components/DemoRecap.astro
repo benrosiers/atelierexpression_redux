@@ -1,0 +1,108 @@
+---
+// Real recap of the 2026-07-08 demo workshop in Longueuil. Photo consent: participants were
+// recruited specifically for this filmed demo session (no signed release, but filming was the
+// explicit, understood purpose of the invitation — confirmed directly by the operator).
+// See docs/DEMO_WORKSHOP_RECAP_NOTES.md for the full consent note and source review method.
+import { nextWorkshop as staticNextWorkshop } from '../data/nextWorkshop';
+import { getNextWorkshop } from '../lib/content/publicContent';
+
+const nextWorkshop = (await getNextWorkshop()) ?? staticNextWorkshop;
+---
+
+<section class="demo-recap" aria-labelledby="demo-recap-heading">
+  <div class="container">
+    <div class="dr-layout">
+      <div class="dr-photo-col" data-reveal="left">
+        <picture>
+          <source srcset="/assets/images/demo-groupe-tableau.webp" type="image/webp" />
+          <img
+            src="/assets/images/demo-groupe-tableau.jpg"
+            alt="Le groupe de l'atelier démo, en pleine pose collective — bras levés, énergie et rire"
+            width="1400"
+            height="1050"
+            loading="lazy"
+            class="dr-photo"
+          />
+        </picture>
+        <p class="dr-photo-caption">L'atelier démo, le 8 juillet 2026, à Longueuil.</p>
+      </div>
+
+      <div class="dr-content" data-reveal>
+        <span class="accent-handwritten">c'est déjà arrivé une fois</span>
+        <h2 id="demo-recap-heading" class="dr-heading">
+          Ce qui s'est passé lors de notre atelier démo.
+        </h2>
+        <p class="dr-body">
+          Le 8 juillet, une dizaine de personnes se sont prêtées au jeu pour une première version
+          de l'atelier. Exercices à deux en cercle, danse à partenaires tournants, poses de groupe
+          improvisées, et une bataille de nouilles de piscine qui a fini par gagner tout le monde.
+        </p>
+        <p class="dr-body">
+          Pas de mise en scène. Pas de talent requis. Juste un groupe qui a accepté d'essayer,
+          et qui a fini debout, en mouvement, à rire ensemble.
+        </p>
+
+        <a
+          href={nextWorkshop.status === 'building' ? '#interet-prochain-atelier' : '/reserver'}
+          class="btn btn--primary dr-cta"
+        >
+          {nextWorkshop.status === 'building' ? nextWorkshop.ctaLabel : 'Réserver ma place'}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .demo-recap {
+    padding-block: $section-pad;
+    background-color: $c-peach;
+  }
+
+  .dr-layout {
+    display: grid;
+    gap: $space-10;
+    align-items: center;
+
+    @include lg { grid-template-columns: 1.2fr 1fr; }
+  }
+
+  .dr-photo {
+    width: 100%;
+    border-radius: 20px;
+    object-fit: cover;
+    aspect-ratio: 4/3;
+    box-shadow: 6px 6px 0 $c-pink;
+    display: block;
+  }
+
+  .dr-photo-caption {
+    text-align: center;
+    font-size: $text-sm;
+    color: $color-gris-moyen;
+    font-style: italic;
+    margin-top: $space-3;
+  }
+
+  .dr-heading {
+    font-family: $font-serif;
+    font-size: $text-3xl;
+    color: $color-encre;
+    line-height: $leading-tight;
+    margin-top: $space-3;
+    margin-bottom: $space-5;
+  }
+
+  .dr-body {
+    font-size: $text-base;
+    color: $color-gris-moyen;
+    line-height: $leading-loose;
+    margin-bottom: $space-5;
+  }
+
+  .dr-cta {
+    margin-top: $space-2;
+  }
+</style>

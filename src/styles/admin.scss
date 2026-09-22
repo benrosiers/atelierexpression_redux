@@ -1,0 +1,315 @@
+// ─── ADMIN SHELL — deliberately plain ────────────────────────────────────────
+// Reuses the public site's color tokens for brand coherence (ink/cream/orange)
+// but none of paint.scss's decorative system (no blotches, no parallax, no
+// doodles, no tilt) — see docs/CMS_MIGRATION_PLAN.md §9: "priorité est
+// l'utilisabilité", not art direction.
+@use 'tokens' as *;
+
+// Minimal reset — deliberately not importing global.scss, which pulls in
+// paint.scss's whole decorative system via `@use 'paint';`. The admin needs
+// none of that (see file header).
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+body {
+  font-family: $font-sans;
+  font-size: $text-base;
+  color: $c-ink;
+  background-color: #FAFAF8;
+}
+
+code {
+  background-color: #EFEFEC;
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+// ─── BANNERS ──────────────────────────────────────────────────────────────────
+.admin-banner {
+  padding: $space-3 $space-5;
+  font-size: $text-sm;
+
+  &--warning {
+    background-color: #FFF4E0;
+    color: #6B4A00;
+    border-bottom: 1px solid #E8C97A;
+  }
+
+  &--error {
+    background-color: #FDEBEA;
+    color: #7A1F17;
+    border-bottom: 1px solid #F2B8B3;
+  }
+}
+
+// ─── SHELL LAYOUT ─────────────────────────────────────────────────────────────
+.admin-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background-color: $c-ink;
+  color: #FFF1E8;
+  display: flex;
+  flex-direction: column;
+  padding: $space-5 0;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.admin-sidebar__brand {
+  display: block;
+  padding: 0 $space-5 $space-5;
+  font-family: $font-serif;
+  font-weight: $weight-bold;
+  font-size: $text-lg;
+  color: #FFF1E8;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 241, 232, 0.15);
+  margin-bottom: $space-4;
+}
+
+.admin-nav-link {
+  display: block;
+  padding: 0.65em $space-5;
+  color: rgba(255, 241, 232, 0.75);
+  text-decoration: none;
+  font-size: $text-sm;
+  font-weight: $weight-medium;
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background-color: rgba(255, 241, 232, 0.06);
+    color: #FFF1E8;
+  }
+
+  &.is-active {
+    background-color: rgba(255, 90, 31, 0.16);
+    color: #FFF1E8;
+    border-left-color: $c-orange;
+  }
+}
+
+.admin-main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+// ─── TOPBAR ───────────────────────────────────────────────────────────────────
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: $space-5;
+  padding: $space-3 $space-5;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E5E2DA;
+  flex-wrap: wrap;
+}
+
+.admin-topbar__locale {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  font-size: $text-sm;
+
+  select {
+    padding: 0.35em 0.6em;
+    border-radius: 6px;
+    border: 1px solid #CFCBC0;
+    font-size: $text-sm;
+  }
+}
+
+.admin-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  margin-left: auto;
+}
+
+.admin-topbar__user {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  font-size: $text-sm;
+  color: $c-ink-soft;
+}
+
+.admin-save-state {
+  font-size: $text-xs;
+  color: $c-ink-soft;
+  white-space: nowrap;
+}
+
+// ─── BUTTONS ──────────────────────────────────────────────────────────────────
+.admin-btn {
+  font-family: $font-sans;
+  font-size: $text-sm;
+  font-weight: $weight-bold;
+  padding: 0.5em 1.1em;
+  border-radius: 6px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  &--ghost {
+    background: none;
+    border-color: #CFCBC0;
+    color: $c-ink;
+
+    &:hover { background-color: #F2F1EC; }
+  }
+
+  &--primary {
+    background-color: $c-orange-deep;
+    border-color: $c-orange-deep;
+    color: #FFF1E8;
+
+    &:hover { background-color: #A8341A; }
+  }
+
+  &--danger {
+    background-color: #C0392B;
+    border-color: #C0392B;
+    color: #FFF1E8;
+
+    &:hover { background-color: #9C2E22; }
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+.admin-notifications {
+  padding: 0 $space-5;
+
+  &:empty { display: none; }
+}
+
+.admin-notice {
+  margin-top: $space-3;
+  padding: $space-3 $space-4;
+  border-radius: 8px;
+  font-size: $text-sm;
+
+  &--success { background-color: #E4F5E9; color: #1E5C33; }
+  &--error   { background-color: #FDEBEA; color: #7A1F17; }
+  &--info    { background-color: #EAF1FB; color: #1E3A5C; }
+}
+
+// ─── CONTENT ──────────────────────────────────────────────────────────────────
+.admin-content {
+  flex: 1;
+  padding: $space-6 $space-5;
+  max-width: 1100px;
+}
+
+.admin-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E2DA;
+  border-radius: 10px;
+  padding: $space-5;
+  margin-bottom: $space-5;
+}
+
+.admin-card h2 {
+  font-family: $font-serif;
+  font-size: $text-xl;
+  margin: 0 0 $space-3;
+  color: $c-ink;
+}
+
+.admin-grid {
+  display: grid;
+  gap: $space-4;
+  grid-template-columns: 1fr;
+
+  @media (min-width: 700px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (min-width: 1000px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.admin-stat {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E2DA;
+  border-radius: 10px;
+  padding: $space-4;
+}
+
+.admin-stat__label {
+  display: block;
+  font-size: $text-xs;
+  font-weight: $weight-bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $c-ink-soft;
+  margin-bottom: $space-2;
+}
+
+.admin-stat__value {
+  display: block;
+  font-family: $font-serif;
+  font-size: $text-2xl;
+  font-weight: $weight-bold;
+  color: $c-ink;
+}
+
+.admin-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  margin-bottom: $space-4;
+
+  label {
+    font-size: $text-sm;
+    font-weight: $weight-bold;
+    color: $c-ink;
+  }
+
+  input, textarea, select {
+    font-family: $font-sans;
+    font-size: $text-base;
+    padding: 0.6em 0.8em;
+    border-radius: 6px;
+    border: 1.5px solid #CFCBC0;
+    color: $c-ink;
+
+    &:focus {
+      outline: none;
+      border-color: $c-orange-deep;
+    }
+  }
+}
+
+.admin-field-hint {
+  margin: $space-1 0 0;
+  font-size: $text-sm;
+  color: #6B6255;
+}

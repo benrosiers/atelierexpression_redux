@@ -1,0 +1,80 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Ateliers" activeNav="workshops">
+  <h1>Ateliers</h1>
+  <p class="admin-page-sub">Le catalogue d'ateliers affiché sur la page publique /ateliers.</p>
+
+  <div class="admin-card">
+    <table class="admin-table" id="workshops-table">
+      <thead>
+        <tr>
+          <th>Titre</th>
+          <th>Statut</th>
+          <th>Prix</th>
+          <th>Durée</th>
+          <th>Capacité</th>
+          <th>Visible</th>
+          <th>Bientôt</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="workshops-tbody">
+        <tr><td colspan="8" class="admin-empty-note">Chargement…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    .admin-page-sub { color: #6B6255; font-size: 0.9rem; margin: -0.5rem 0 1.5rem; }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .admin-table th { text-align: left; padding: 0.6em 0.8em; border-bottom: 2px solid #E5E2DA; color: #6B6255; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .admin-table td { padding: 0.7em 0.8em; border-bottom: 1px solid #EFEDE7; }
+    .status-pill { display: inline-block; padding: 0.2em 0.7em; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .status-pill--published { background: #E4F5E9; color: #1E5C33; }
+    .status-pill--draft { background: #FFF4E0; color: #6B4A00; }
+    .status-pill--archived { background: #EDEBE6; color: #6B6255; }
+  </style>
+
+  <script>
+    import { listWorkshops } from '../../../lib/content/workshops';
+    import { isSupabaseConfigured } from '../../../lib/supabase/client';
+
+    async function render() {
+      const tbody = document.getElementById('workshops-tbody');
+      if (!tbody) return;
+
+      if (!isSupabaseConfigured()) {
+        tbody.innerHTML = '<tr><td colspan="8" class="admin-empty-note">CMS non configuré.</td></tr>';
+        return;
+      }
+
+      const workshops = await listWorkshops();
+      if (workshops.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="admin-empty-note">Aucun atelier pour l\'instant.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = workshops.map((w) => {
+        const price = w.price_cents != null ? `${(w.price_cents / 100).toFixed(2)} $ ${w.currency}` : 'À venir';
+        const duration = w.duration_minutes != null ? `${Math.round(w.duration_minutes / 60 * 10) / 10} h` : '—';
+        const capacity = (w.capacity_min != null && w.capacity_max != null) ? `${w.capacity_min}–${w.capacity_max}` : '—';
+        return `
+          <tr>
+            <td>${w.title ?? w.slug}${w.featured ? ' ⭐' : ''}</td>
+            <td><span class="status-pill status-pill--${w.status}">${w.status}</span></td>
+            <td>${price}</td>
+            <td>${duration}</td>
+            <td>${capacity}</td>
+            <td>${w.visible ? '✓' : '—'}</td>
+            <td>${w.coming_soon ? '✓' : '—'}</td>
+            <td><a href="/admin/workshops/edit?id=${w.id}" class="admin-btn admin-btn--ghost">Modifier</a></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    render();
+  </script>
+</AdminLayout>

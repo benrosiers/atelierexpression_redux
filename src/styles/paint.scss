@@ -1,0 +1,347 @@
+// ─── ATELIER EXPRESSION — PAINT IN MOTION DECORATIVE LAYER SYSTEM ────────────
+@use 'tokens' as *;
+
+@mixin paint-tokens {
+  --parallax-x: 0px;
+  --parallax-y: 0px;
+  --paint-rotation: 0deg;
+}
+
+// .paint-scene wraps a section and hosts absolutely-positioned .paint-layer
+// shapes + .logo-patch marks. Everything here is decorative: aria-hidden,
+// pointer-events: none, and always stacked below real content.
+.paint-scene {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.paint-layer {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  will-change: transform;
+  transform-origin: center;
+  transform: translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0)
+    rotate(var(--paint-rotation, 0deg));
+  // Découpage look: each blotch reads as a cut-paper piece with its own drop
+  // shadow, layered on top of the section rather than flat-printed onto it.
+  filter: drop-shadow(0 0.9rem 1.6rem rgba(#351426, 0.16));
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+  }
+}
+
+.paint-layer--l1 { opacity: 0.75; }
+.paint-layer--l2 { opacity: 0.92; }
+.paint-layer--l3 { opacity: 0.95; } // deeper/bolder-saturation blotches, scroll-dominant
+
+.logo-patch {
+  position: absolute;
+  pointer-events: none;
+}
+
+.logo-patch__frame {
+  display: block;
+  will-change: transform;
+  transform: translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0)
+    rotate(var(--paint-rotation, 0deg));
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 50%; // fallback when mask-image is unsupported
+  }
+}
+
+.logo-patch--primary {
+  z-index: 1;
+  filter: drop-shadow(0 1.1rem 2.2rem rgba($c-plum, 0.16));
+}
+
+.logo-patch--ambient {
+  z-index: 0;
+  opacity: 0.1;
+}
+
+// A second reading of the mandala mark, still bleeding off the section edge,
+// but visible enough to register as the pink-circle motif rather than a
+// pure background watermark.
+.logo-patch--ambient-visible {
+  z-index: 0;
+  opacity: 0.4;
+}
+
+// Small floating motifs (sparkle, flower, butterfly, star) — scroll-parallax
+// only, never pointer-driven. Purely decorative, aria-hidden.
+.paint-sparkle {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform;
+  transform: translate3d(var(--parallax-x, 0px), var(--parallax-y, 0px), 0);
+  font-size: var(--sparkle-size, 1.5rem);
+  line-height: 1;
+  user-select: none;
+  filter: drop-shadow(0 0.2rem 0.4rem rgba(#351426, 0.1));
+}
+
+@include reduced-motion {
+  .paint-layer,
+  .logo-patch__frame,
+  .paint-sparkle {
+    transition: none !important;
+  }
+}
+
+// ─── PAINT CARD — organic blotch standing in for a rectangular card ─────────
+// A blob shape (irregular border-radius, slight rotation, colored warm
+// shadow) used everywhere a white rectangle would otherwise appear: info
+// tiles, steps, testimonials, FAQ highlights, stats.
+.paint-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: $space-5 $space-4;
+  background-color: $c-cream;
+  border-radius: 42% 58% 61% 39% / 46% 42% 58% 54%;
+  box-shadow: $paint-shadow-low;
+  color: $c-ink;
+  transform: rotate(-1deg);
+  transition: transform $transition-base, box-shadow $transition-base;
+
+  &:nth-child(even)  { transform: rotate(1.5deg); }
+  &:nth-child(3n)    { transform: rotate(-2deg); border-radius: 50% 50% 65% 35% / 40% 60% 40% 60%; }
+  &:nth-child(4n)    { transform: rotate(2deg); border-radius: 58% 42% 39% 61% / 54% 58% 42% 46%; }
+
+  &:hover {
+    transform: translateY(-4px) rotate(0deg);
+    box-shadow: $paint-shadow-mid;
+    @include reduced-motion { transform: rotate(0deg); }
+  }
+
+  &--orange { background-color: rgba($c-orange, 0.12); }
+  &--pink   { background-color: rgba($c-pink, 0.12); }
+  &--peach  { background-color: $c-peach-deep; }
+  &--coral  { background-color: rgba($c-coral, 0.16); }
+
+  &--wide     { grid-column: span 2; }
+  &--compact  { padding: $space-4 $space-3; }
+}
+
+// ─── PAINT DIVIDER — full-bleed horizontal wave marking a scene change ──────
+// Oversized, deliberately wider than the viewport, meant to be layered
+// behind the tail of one section and the head of the next.
+.paint-divider {
+  position: relative;
+  width: 130vw;
+  margin-inline: -15vw;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 1.2rem 2rem rgba($c-plum, 0.16));
+  }
+
+  &--hero        { height: clamp(220px, 32vw, 420px); margin-top: clamp(-160px, -14vw, -60px); }
+  &--manifest    { height: clamp(200px, 28vw, 380px); }
+  &--expressions { height: clamp(240px, 34vw, 440px); }
+  &--community   { height: clamp(220px, 30vw, 400px); }
+  &--footer      { height: clamp(200px, 26vw, 360px); margin-bottom: clamp(-140px, -12vw, -50px); }
+}
+
+// ─── PAINT ELLIPSE — giant stretched mass marking a curved scene limit ──────
+// Not a thin wave divider and not a repeated SVG curve: one oversized,
+// flattened, imperfect ellipse that overlaps the tail of the section above
+// and the head of the section below, so no straight edge is ever exposed at
+// the boundary. Color comes from --paint-ellipse-color (falls back to
+// `inherit`, i.e. whatever background the placing element already has).
+// Always position:absolute inside a positioned ancestor — never lets the
+// document grow past real content (see BaseLayout's .site-shell clip).
+.paint-ellipse {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  z-index: 0;
+  pointer-events: none;
+  width: clamp(900px, 130vw, 2200px);
+  height: clamp(120px, 20vw, 300px);
+  // --paint-ellipse-bias controls the up/down split around the placement
+  // line (top:0 of a .scene-seam). It MUST be a percentage of the
+  // element's own size, not the container's — the container is
+  // deliberately height:0 (see .scene-seam below), and a percentage `top`
+  // against a zero-height parent always resolves to 0px regardless of the
+  // value, so that split cannot be expressed via `top` at all. -50%
+  // (default) centers the mass on the line; e.g. -8% leaves only 8% of
+  // the height above the line and 92% below.
+  transform: translate(-50%, var(--paint-ellipse-bias, -50%)) rotate(var(--paint-ellipse-tilt, -2deg));
+  border-radius: 50%;
+  background: var(--paint-ellipse-color, inherit);
+  opacity: var(--paint-ellipse-opacity, 1);
+  box-shadow: $paint-shadow-ellipse;
+
+  @media (max-width: 767px) {
+    width: clamp(150vw, 200vw, 260vw);
+  }
+}
+
+// Zero-height seam placed between two sections — hosts one or more
+// .paint-ellipse children straddling the boundary itself (each ellipse's
+// own --paint-ellipse-bias controls how much sits above vs below), so the
+// mass bridges both neighbors regardless of how tall either section's real
+// content turns out to be.
+//
+// STACKING WARNING: a seam sits AFTER the preceding section in DOM order.
+// At equal z-index, later wins ties — so a seam's upward bleed paints OVER
+// the ENTIRE preceding section (background AND text), never just its
+// background. There is no CSS-only way to be "above that section's
+// background but below its text" from a sibling position. Whenever a seam
+// biases upward into a section that has real text/CTA nearby, that
+// upward reach MUST stay within that section's real measured
+// content-to-edge clearance (getBoundingClientRect, not a guess) — this
+// bit us once already (see the footer-entry seam usage in index.astro).
+.scene-seam {
+  position: relative;
+  height: 0;
+  overflow: visible;
+  z-index: 1;
+}
+
+// Very wide, comparatively flat — the "stretched ellipse" reading.
+.paint-ellipse--long {
+  width: clamp(1100px, 160vw, 2200px);
+  height: clamp(120px, 14vw, 220px);
+}
+
+// The largest mass in a scene — anchors the composition (use at most once
+// per boundary; pair with --long or a couple of small doodles, not another
+// --giant, or the effect stops reading as hierarchy and starts reading as
+// clutter).
+.paint-ellipse--giant {
+  width: clamp(1300px, 180vw, 2200px);
+  height: clamp(280px, 28vw, 520px);
+}
+
+.paint-ellipse--tilted {
+  // Steeper default tilt only — must keep the same translate(-50%, bias) as
+  // the base rule, or the Y-bias fix above silently disappears the moment
+  // this modifier is used (it did, until this fix — never used yet, caught
+  // in review).
+  transform: translate(-50%, var(--paint-ellipse-bias, -50%)) rotate(var(--paint-ellipse-tilt, -7deg));
+}
+
+.paint-ellipse--soft {
+  --paint-ellipse-opacity: 0.5;
+  filter: blur(2px);
+}
+
+.paint-ellipse--dense {
+  box-shadow: $paint-shadow-ellipse-dense;
+}
+
+// Raises the ellipse above the section's own real content backdrop so it
+// visibly overlaps the neighboring section's edge rather than sitting
+// behind it — content itself still stays above (see z-index:1 rule on
+// direct section children).
+.paint-ellipse--overlap {
+  z-index: 1;
+}
+
+// ─── PAINT TOTEM — vertical anchor shape ─────────────────────────────────────
+// Internal pages read as flat/horizontal-only without a vertical anchor.
+// A totem is a tall, organic mass — column, pillar, upward brushstroke —
+// used to break horizontality, support a photo, or visually link two
+// content zones stacked in the same section. Always a DESCENDANT of a
+// section's own .paint-scene (z-index:0), never a cross-section sibling —
+// totems don't need to bleed across boundaries, so they carry none of
+// .paint-ellipse's DOM-order stacking risk; keep it that way by only ever
+// placing one inside an existing paint-scene, alongside real content at
+// z-index:1+.
+.paint-totem {
+  position: absolute;
+  width: clamp(120px, 14vw, 220px);
+  height: clamp(360px, 46vw, 720px);
+  border-radius: 44% 56% 38% 62% / 18% 22% 78% 82%;
+  background: var(--paint-totem-color, inherit);
+  box-shadow: $paint-shadow-ellipse;
+  transform: rotate(var(--paint-totem-tilt, -3deg));
+  opacity: var(--paint-totem-opacity, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.paint-totem--wide {
+  width: clamp(180px, 20vw, 320px);
+}
+
+.paint-totem--soft {
+  --paint-totem-opacity: 0.55;
+}
+
+// Same vertical language, but capsule-shaped (stadium, not organic-blob) —
+// for a cleaner "column" reading next to a photo.
+.paint-totem--capsule {
+  border-radius: 999px;
+}
+
+// ─── PAINT PANEL — inclined content panel ────────────────────────────────────
+// A card allowed a deliberate, controlled tilt (-2deg to +3deg) instead of
+// sitting perfectly level — generalizes the FAQ-preview pastille language
+// from the homepage into a reusable panel for internal pages: category
+// groups, info blocks, pull quotes, format summaries.
+.paint-panel {
+  position: relative;
+  background-color: $c-cream;
+  border-radius: 20px;
+  box-shadow: $paint-shadow-ellipse;
+  color: $c-ink;
+  transform: rotate(var(--panel-tilt, -1.5deg));
+  transition: transform $transition-base, box-shadow $transition-base;
+
+  &--peach  { background-color: $c-peach-deep; }
+  &--pink   { background-color: rgba($c-pink, 0.16); }
+  &--orange { background-color: rgba($c-orange, 0.14); }
+  &--dark   { background-color: $c-orange-deep; color: $c-cream; }
+  &--dense  { box-shadow: $paint-shadow-ellipse-dense; }
+}
+
+// ─── PAINT PASTILLE — organic tag / badge ────────────────────────────────────
+// Blob-shaped label standing in for a rigid rounded-rectangle badge:
+// category tags, "bientôt" markers, benefit callouts, secondary nav chips.
+// Text color fixed to ink — every variant below is measured to clear WCAG
+// AA against its own background (see contrast audit in the Pass 5 report).
+.paint-pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.45em 1.1em;
+  border-radius: 46% 54% 61% 39% / 55% 45% 55% 45%;
+  font-size: $text-sm;
+  font-weight: $weight-bold;
+  color: $c-ink;
+  background: var(--pastille-color, #{$c-peach-deep});
+  box-shadow: $paint-shadow-ellipse;
+  transform: rotate(var(--pastille-tilt, -1deg));
+  white-space: nowrap;
+
+  &--orange { --pastille-color: #{rgba($c-orange, 0.85)}; }
+  &--pink   { --pastille-color: #{rgba($c-pink, 0.22)}; }
+  &--peach  { --pastille-color: #{$c-peach-deep}; }
+  &--cream  { --pastille-color: #{$c-cream}; }
+
+  &--dark {
+    --pastille-color: #{$c-orange-deep};
+    color: $c-cream;
+  }
+}

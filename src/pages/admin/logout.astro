@@ -1,0 +1,36 @@
+---
+import '../../styles/admin.scss';
+---
+
+<!doctype html>
+<html lang="fr-CA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Déconnexion — Admin Atelier Expression</title>
+  </head>
+  <body>
+    <div class="login-page">
+      <div class="admin-card login-card">
+        <p id="logout-message">Déconnexion…</p>
+      </div>
+    </div>
+
+    <style>
+      .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+      .login-card { max-width: 380px; text-align: center; }
+    </style>
+
+    <script>
+      import { signOut } from '../../lib/supabase/auth';
+
+      (async () => {
+        await signOut();
+        const el = document.getElementById('logout-message');
+        if (el) el.textContent = 'Déconnecté·e. Redirection…';
+        setTimeout(() => { window.location.href = '/admin/login'; }, 600);
+      })();
+    </script>
+  </body>
+</html>

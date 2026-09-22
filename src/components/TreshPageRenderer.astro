@@ -1,0 +1,774 @@
+---
+import TreshDynamicModule from './TreshDynamicModule.astro';
+import type {
+  TreshButtonElement,
+  TreshButtonStyle,
+  TreshButtonVariant,
+  TreshPageDocument,
+  TreshPlacement,
+  TreshResponsivePlacement,
+  TreshSceneElement,
+  TreshShapeElement,
+  TreshTextElement,
+  TreshTextFontFamily,
+  TreshTextTypography,
+} from '../lib/treshRelease';
+
+interface Props {
+  page: TreshPageDocument;
+}
+
+const { page } = Astro.props;
+
+const dynamicSectionTypes = new Set([
+  'WorkshopCatalogSection',
+  'EventsFeedSection',
+  'FaqListSection',
+  'ContactFormSection',
+  'ReservationSection',
+  'TestimonialsSection',
+  'CommunitySection',
+  'ResourcesSection',
+  'ProgramPathSection',
+]);
+
+const paintColors = {
+  coral: '#E98B5F',
+  rose: '#E8A0B0',
+  peach: '#F2C79A',
+} as const;
+
+const textFontStacks: Record<TreshTextFontFamily, string> = {
+  serif: "'Fraunces', Georgia, serif",
+  sans: "'Inter', system-ui, sans-serif",
+  mono: "'IBM Plex Mono', ui-monospace, monospace",
+  system:
+    'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+};
+
+const defaultTextTypography: Record<
+  TreshTextElement['variant'],
+  TreshTextTypography
+> = {
+  eyebrow: {
+    color: '#E98B5F',
+    fontFamily: 'mono',
+    fontWeight: 500,
+    fontStyle: 'normal',
+    textAlign: 'left',
+    lineHeight: 1.08,
+    letterSpacing: 0.12,
+    textTransform: 'uppercase',
+  },
+  heading: {
+    color: '#2B2620',
+    fontFamily: 'serif',
+    fontWeight: 600,
+    fontStyle: 'italic',
+    textAlign: 'left',
+    lineHeight: 1.08,
+    letterSpacing: -0.035,
+    textTransform: 'none',
+  },
+  body: {
+    color: '#2B2620',
+    fontFamily: 'serif',
+    fontWeight: 300,
+    fontStyle: 'normal',
+    textAlign: 'left',
+    lineHeight: 1.42,
+    letterSpacing: 0,
+    textTransform: 'none',
+  },
+};
+
+const defaultButtonStyles: Record<
+  TreshButtonVariant,
+  TreshButtonStyle
+> = {
+  primary: {
+    backgroundColor: '#FF4E38',
+    textColor: '#28150F',
+    borderColor: '#FF4E38',
+    borderWidth: 0,
+    borderRadius: 999,
+    fontFamily: 'sans',
+    fontSize: 14,
+    fontWeight: 700,
+    hoverBackgroundColor: '#E63F2D',
+    hoverTextColor: '#28150F',
+    hoverBorderColor: '#E63F2D',
+  },
+  secondary: {
+    backgroundColor: '#FFFFFF',
+    textColor: '#2B2620',
+    borderColor: '#2B2620',
+    borderWidth: 1,
+    borderRadius: 999,
+    fontFamily: 'sans',
+    fontSize: 14,
+    fontWeight: 700,
+    hoverBackgroundColor: '#F2C79A',
+    hoverTextColor: '#2B2620',
+    hoverBorderColor: '#2B2620',
+  },
+  text: {
+    backgroundColor: '#FFFFFF',
+    textColor: '#E98B5F',
+    borderColor: '#E98B5F',
+    borderWidth: 0,
+    borderRadius: 0,
+    fontFamily: 'sans',
+    fontSize: 14,
+    fontWeight: 700,
+    hoverBackgroundColor: '#FFFFFF',
+    hoverTextColor: '#C65E38',
+    hoverBorderColor: '#C65E38',
+  },
+};
+
+function mergePlacement(
+  placement: TreshResponsivePlacement,
+  breakpoint: 'desktop' | 'tablet' | 'mobile',
+): TreshPlacement {
+  if (breakpoint === 'desktop') return placement.desktop;
+  return {
+    ...placement.desktop,
+    ...(placement[breakpoint] ?? {}),
+  };
+}
+
+function cssValue(value: number | undefined, fallback: number): number {
+  return Number.isFinite(value) ? Number(value) : fallback;
+}
+
+function clampPercent(value: number | undefined, fallback = 50): number {
+  if (!Number.isFinite(value)) return fallback;
+  return Math.max(0, Math.min(100, Number(value)));
+}
+
+function imageStyle(
+  element: Extract<TreshSceneElement, { type: 'image' }>,
+): string {
+  const desktop = mergePlacement(element.placement, 'desktop');
+  const tablet = mergePlacement(element.placement, 'tablet');
+  const mobile = mergePlacement(element.placement, 'mobile');
+  const ratio = Math.max(element.aspectRatio ?? 0.82, 0.1);
+
+  const frameValue = (placement: TreshPlacement): string =>
+    placement.heightPercent === undefined
+      ? 'auto'
+      : `${cssValue(placement.heightPercent, 18)}%`;
+
+  const aspectValue = (placement: TreshPlacement): string =>
+    placement.heightPercent === undefined ? String(ratio) : 'auto';
+
+  return [
+    `--image-radius:${element.cornerRadius}px`,
+    `--image-fit-d:${desktop.imageFit ?? element.fit ?? 'cover'}`,
+    `--image-fit-t:${tablet.imageFit ?? element.fit ?? 'cover'}`,
+    `--image-fit-m:${mobile.imageFit ?? element.fit ?? 'cover'}`,
+    `--image-position-d:${clampPercent(desktop.imageFocalX)}% ${clampPercent(desktop.imageFocalY)}%`,
+    `--image-position-t:${clampPercent(tablet.imageFocalX)}% ${clampPercent(tablet.imageFocalY)}%`,
+    `--image-position-m:${clampPercent(mobile.imageFocalX)}% ${clampPercent(mobile.imageFocalY)}%`,
+    `--image-height-d:${frameValue(desktop)}`,
+    `--image-height-t:${frameValue(tablet)}`,
+    `--image-height-m:${frameValue(mobile)}`,
+    `--image-aspect-d:${aspectValue(desktop)}`,
+    `--image-aspect-t:${aspectValue(tablet)}`,
+    `--image-aspect-m:${aspectValue(mobile)}`,
+  ].join(';');
+}
+
+function elementStyle(element: TreshSceneElement): string {
+  const desktop = mergePlacement(element.placement, 'desktop');
+  const tablet = mergePlacement(element.placement, 'tablet');
+  const mobile = mergePlacement(element.placement, 'mobile');
+
+  const shadow = element.effects?.shadow;
+  const glow = element.effects?.glow;
+  const filters: string[] = [];
+
+  if (shadow?.enabled) {
+    filters.push(
+      `drop-shadow(${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${hexToRgba(
+        shadow.color,
+        shadow.opacity,
+      )})`,
+    );
+  }
+
+  if (glow?.enabled) {
+    filters.push(
+      `drop-shadow(0 0 ${Math.max(1, glow.blur * 0.45)}px ${hexToRgba(
+        glow.color,
+        glow.intensity,
+      )})`,
+    );
+    filters.push(
+      `drop-shadow(0 0 ${glow.blur}px ${hexToRgba(
+        glow.color,
+        glow.intensity * 0.65,
+      )})`,
+    );
+  }
+
+  return [
+    `--x-d:${cssValue(desktop.xPercent, 50)}%`,
+    `--y-d:${cssValue(desktop.yPercent, 50)}%`,
+    `--w-d:${cssValue(desktop.widthPercent, 40)}%`,
+    `--h-d:${cssValue(desktop.heightPercent, 18)}%`,
+    `--r-d:${cssValue(desktop.rotationDegrees, 0)}deg`,
+    `--z-d:${cssValue(desktop.zIndex, 1)}`,
+    `--o-d:${cssValue(desktop.opacity, 1)}`,
+    `--fs-d:${cssValue(desktop.fontSize, 17)}px`,
+    `--x-t:${cssValue(tablet.xPercent, desktop.xPercent)}%`,
+    `--y-t:${cssValue(tablet.yPercent, desktop.yPercent)}%`,
+    `--w-t:${cssValue(tablet.widthPercent, desktop.widthPercent)}%`,
+    `--h-t:${cssValue(tablet.heightPercent, desktop.heightPercent ?? 18)}%`,
+    `--r-t:${cssValue(tablet.rotationDegrees, desktop.rotationDegrees)}deg`,
+    `--z-t:${cssValue(tablet.zIndex, desktop.zIndex)}`,
+    `--o-t:${cssValue(tablet.opacity, desktop.opacity)}`,
+    `--fs-t:${cssValue(tablet.fontSize, desktop.fontSize ?? 17)}px`,
+    `--x-m:${cssValue(mobile.xPercent, desktop.xPercent)}%`,
+    `--y-m:${cssValue(mobile.yPercent, desktop.yPercent)}%`,
+    `--w-m:${cssValue(mobile.widthPercent, desktop.widthPercent)}%`,
+    `--h-m:${cssValue(mobile.heightPercent, desktop.heightPercent ?? 18)}%`,
+    `--r-m:${cssValue(mobile.rotationDegrees, desktop.rotationDegrees)}deg`,
+    `--z-m:${cssValue(mobile.zIndex, desktop.zIndex)}`,
+    `--o-m:${cssValue(mobile.opacity, desktop.opacity)}`,
+    `--fs-m:${cssValue(mobile.fontSize, desktop.fontSize ?? 17)}px`,
+    filters.length > 0 ? `filter:${filters.join(' ')}` : '',
+  ]
+    .filter(Boolean)
+    .join(';');
+}
+
+function textStyle(element: TreshTextElement): string {
+  const typography = {
+    ...defaultTextTypography[element.variant],
+    ...(element.typography ?? {}),
+  };
+
+  return [
+    `color:${typography.color}`,
+    `font-family:${textFontStacks[typography.fontFamily]}`,
+    `font-weight:${typography.fontWeight}`,
+    `font-style:${typography.fontStyle}`,
+    `text-align:${typography.textAlign}`,
+    `line-height:${typography.lineHeight}`,
+    `letter-spacing:${typography.letterSpacing}em`,
+    `text-transform:${typography.textTransform}`,
+  ].join(';');
+}
+
+function buttonStyle(element: TreshButtonElement): string {
+  const style = {
+    ...defaultButtonStyles[element.variant],
+    ...(element.style ?? {}),
+  };
+
+  return [
+    `--button-bg:${style.backgroundColor}`,
+    `--button-text:${style.textColor}`,
+    `--button-border:${style.borderColor}`,
+    `--button-border-width:${style.borderWidth}px`,
+    `--button-radius:${style.borderRadius}px`,
+    `--button-font-family:${textFontStacks[style.fontFamily]}`,
+    `--button-font-size:${style.fontSize}px`,
+    `--button-font-weight:${style.fontWeight}`,
+    `--button-hover-bg:${style.hoverBackgroundColor}`,
+    `--button-hover-text:${style.hoverTextColor}`,
+    `--button-hover-border:${style.hoverBorderColor}`,
+  ].join(';');
+}
+
+function sectionStyle(section: TreshPageDocument['sections'][number]): string {
+  return [
+    `--section-height-d:${section.height.desktop}px`,
+    `--section-height-t:${section.height.tablet}px`,
+    `--section-height-m:${section.height.mobile}px`,
+  ].join(';');
+}
+
+function hexToRgba(color: string, opacity: number): string {
+  const normalized = color.replace('#', '');
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
+    return `rgba(0, 0, 0, ${opacity})`;
+  }
+
+  const red = Number.parseInt(normalized.slice(0, 2), 16);
+  const green = Number.parseInt(normalized.slice(2, 4), 16);
+  const blue = Number.parseInt(normalized.slice(4, 6), 16);
+  return `rgba(${red}, ${green}, ${blue}, ${Math.max(0, Math.min(1, opacity))})`;
+}
+
+function localized(value: Record<string, string>): string {
+  return value['fr-CA'] ?? value.fr ?? Object.values(value)[0] ?? '';
+}
+
+function imageSource(element: Extract<TreshSceneElement, { type: 'image' }>): string | null {
+  return element.source.kind === 'url' ? element.source.url : null;
+}
+
+function shapePoints(shape: TreshShapeElement['shapeKind']): string | null {
+  if (shape === 'triangle') return '50,2 98,98 2,98';
+  if (shape === 'diamond') return '50,2 98,50 50,98 2,50';
+  if (shape === 'star') {
+    return '50,2 61,35 96,35 68,56 79,92 50,71 21,92 32,56 4,35 39,35';
+  }
+  return null;
+}
+---
+
+<div class="tresh-public-page" data-tresh-page={page.slug}>
+  {page.sections.filter((section) => section.visible).map((section) => {
+    const hasDynamicModule = dynamicSectionTypes.has(section.type);
+
+    return (
+      <section
+        id={section.id}
+        class:list={[
+          'tresh-public-section',
+          hasDynamicModule && 'tresh-public-section--dynamic',
+        ]}
+        style={sectionStyle(section)}
+        data-tresh-section-type={section.type}
+      >
+        <div class="tresh-public-section__scene">
+          {section.scene.filter((element) => element.visible).map((element) => {
+            if (element.type === 'text') {
+              const Tag = element.variant === 'heading' ? 'h2' : 'div';
+              return (
+                <Tag
+                  class:list={[
+                    'tresh-public-element',
+                    'tresh-public-text',
+                    `tresh-public-text--${element.variant}`,
+                  ]}
+                  style={`${elementStyle(element)};${textStyle(element)}`}
+                >
+                  {localized(element.text)}
+                </Tag>
+              );
+            }
+
+            if (element.type === 'button') {
+              return (
+                <a
+                  class:list={[
+                    'tresh-public-element',
+                    'tresh-public-button-wrap',
+                  ]}
+                  style={elementStyle(element)}
+                  href={element.href}
+                  target={element.openInNewTab ? '_blank' : undefined}
+                  rel={element.openInNewTab ? 'noopener noreferrer' : undefined}
+                >
+                  <span
+                    class:list={['tresh-public-button', `tresh-public-button--${element.variant}`]}
+                    style={buttonStyle(element)}
+                  >
+                    {localized(element.label)}
+                  </span>
+                </a>
+              );
+            }
+
+            if (element.type === 'image') {
+              const source = imageSource(element);
+              return (
+                <div
+                  class="tresh-public-element tresh-public-image"
+                  style={`${elementStyle(element)};${imageStyle(element)}`}
+                >
+                  {source ? (
+                    <img
+                      src={source}
+                      alt={localized(element.altText)}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="tresh-public-image__placeholder" aria-label={localized(element.altText)}>
+                      <span aria-hidden="true">▨</span>
+                      <strong>
+                        {element.source.kind === 'placeholder'
+                          ? element.source.label
+                          : 'Média Tresh'}
+                      </strong>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            if (element.type === 'paint') {
+              return (
+                <div
+                  class="tresh-public-element tresh-public-paint"
+                  style={`${elementStyle(element)};--paint-color:${element.customColor ?? paintColors[element.assetKey]}`}
+                  aria-hidden="true"
+                >
+                  <span />
+                </div>
+              );
+            }
+
+            const polygon = shapePoints(element.shapeKind);
+            return (
+              <div
+                class:list={[
+                  'tresh-public-element',
+                  'tresh-public-shape',
+                  ['square', 'circle', 'triangle', 'diamond', 'star'].includes(element.shapeKind) &&
+                    'tresh-public-shape--fixed-ratio',
+                ]}
+                style={elementStyle(element)}
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                  {(element.shapeKind === 'rectangle' || element.shapeKind === 'square') && (
+                    <rect
+                      x="2"
+                      y="2"
+                      width="96"
+                      height="96"
+                      rx={element.cornerRadius}
+                      ry={element.cornerRadius}
+                      fill={element.fillColor}
+                      stroke={element.strokeWidth > 0 ? element.strokeColor : 'none'}
+                      stroke-width={element.strokeWidth}
+                      vector-effect="non-scaling-stroke"
+                    />
+                  )}
+                  {element.shapeKind === 'circle' && (
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="48"
+                      fill={element.fillColor}
+                      stroke={element.strokeWidth > 0 ? element.strokeColor : 'none'}
+                      stroke-width={element.strokeWidth}
+                      vector-effect="non-scaling-stroke"
+                    />
+                  )}
+                  {element.shapeKind === 'ellipse' && (
+                    <ellipse
+                      cx="50"
+                      cy="50"
+                      rx="48"
+                      ry="46"
+                      fill={element.fillColor}
+                      stroke={element.strokeWidth > 0 ? element.strokeColor : 'none'}
+                      stroke-width={element.strokeWidth}
+                      vector-effect="non-scaling-stroke"
+                    />
+                  )}
+                  {polygon && (
+                    <polygon
+                      points={polygon}
+                      fill={element.fillColor}
+                      stroke={element.strokeWidth > 0 ? element.strokeColor : 'none'}
+                      stroke-width={element.strokeWidth}
+                      vector-effect="non-scaling-stroke"
+                      stroke-linejoin="round"
+                    />
+                  )}
+                  {element.shapeKind === 'line' && (
+                    <line
+                      x1="3"
+                      y1="50"
+                      x2="97"
+                      y2="50"
+                      stroke={element.strokeColor}
+                      stroke-width={Math.max(1, element.strokeWidth || 4)}
+                      stroke-linecap="round"
+                      vector-effect="non-scaling-stroke"
+                    />
+                  )}
+                </svg>
+              </div>
+            );
+          })}
+        </div>
+
+        {hasDynamicModule && (
+          <TreshDynamicModule
+            pageSlug={page.slug}
+            sectionType={section.type}
+          />
+        )}
+      </section>
+    );
+  })}
+</div>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .tresh-public-page {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 1440px);
+    max-width: 1440px;
+    margin-inline: auto;
+    overflow: clip;
+    background: $color-creme;
+  }
+
+  .tresh-public-section {
+    position: relative;
+    width: 100%;
+    min-height: var(--section-height-d);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.66), transparent 28%),
+      $color-creme;
+  }
+
+  .tresh-public-section + .tresh-public-section {
+    border-top: 1px solid rgba(43, 38, 32, 0.08);
+  }
+
+  .tresh-public-section__scene {
+    position: relative;
+    width: 100%;
+    height: var(--section-height-d);
+    overflow: hidden;
+  }
+
+  .tresh-public-element {
+    position: absolute;
+    left: var(--x-d);
+    top: var(--y-d);
+    z-index: var(--z-d);
+    width: var(--w-d);
+    height: var(--h-d);
+    opacity: var(--o-d);
+    transform: rotate(var(--r-d));
+    transform-origin: center;
+  }
+
+  .tresh-public-text {
+    height: auto;
+    margin: 0;
+    color: $color-encre;
+    font-size: var(--fs-d);
+    line-height: 1.22;
+    white-space: pre-wrap;
+  }
+
+  .tresh-public-text--eyebrow {
+    color: $color-fuchsia;
+    font-family: $font-sans;
+    font-size: var(--fs-d);
+    font-weight: $weight-bold;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .tresh-public-text--heading {
+    font-family: $font-serif;
+    font-weight: $weight-bold;
+    letter-spacing: -0.025em;
+  }
+
+  .tresh-public-text--body {
+    font-family: $font-sans;
+    line-height: 1.58;
+  }
+
+  .tresh-public-button-wrap {
+    display: block;
+    height: auto;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .tresh-public-button {
+    display: inline-flex;
+    min-height: 44px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 18px;
+    border: var(--button-border-width) solid var(--button-border);
+    border-radius: var(--button-radius);
+    background: var(--button-bg);
+    color: var(--button-text);
+    font-family: var(--button-font-family);
+    font-size: var(--button-font-size);
+    font-weight: var(--button-font-weight);
+    line-height: 1.1;
+    text-align: center;
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .tresh-public-button:hover {
+    border-color: var(--button-hover-border);
+    background: var(--button-hover-bg);
+    color: var(--button-hover-text);
+    transform: translateY(-2px);
+  }
+
+  .tresh-public-button--text {
+    min-height: 0;
+    padding-inline: 0;
+    border-color: transparent;
+    background: transparent;
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
+
+  .tresh-public-button--text:hover {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .tresh-public-image {
+    height: var(--image-height-d);
+    aspect-ratio: var(--image-aspect-d);
+    overflow: hidden;
+    border-radius: var(--image-radius);
+    background: transparent;
+  }
+
+  .tresh-public-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: var(--image-fit-d);
+    object-position: var(--image-position-d);
+  }
+
+  .tresh-public-image__placeholder {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-content: center;
+    gap: 0.5rem;
+    border: 2px dashed rgba(43, 38, 32, 0.28);
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.46);
+    color: rgba(43, 38, 32, 0.68);
+    text-align: center;
+  }
+
+  .tresh-public-image__placeholder span {
+    font-size: 2rem;
+  }
+
+  .tresh-public-paint {
+    height: auto;
+    aspect-ratio: 1;
+    pointer-events: none;
+  }
+
+  .tresh-public-paint span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 42% 58% 63% 37% / 46% 39% 61% 54%;
+    background:
+      radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.34), transparent 36%),
+      var(--paint-color);
+    clip-path: polygon(7% 25%, 25% 7%, 62% 2%, 91% 19%, 98% 53%, 82% 88%, 48% 98%, 17% 84%, 1% 55%);
+  }
+
+  .tresh-public-shape--fixed-ratio {
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .tresh-public-shape svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  @media (max-width: 1023px) {
+    .tresh-public-section {
+      min-height: var(--section-height-t);
+    }
+
+    .tresh-public-section__scene {
+      height: var(--section-height-t);
+    }
+
+    .tresh-public-element {
+      left: var(--x-t);
+      top: var(--y-t);
+      z-index: var(--z-t);
+      width: var(--w-t);
+      height: var(--h-t);
+      opacity: var(--o-t);
+      transform: rotate(var(--r-t));
+    }
+
+    .tresh-public-text,
+    .tresh-public-text--eyebrow {
+      font-size: var(--fs-t);
+    }
+
+    .tresh-public-image {
+      height: var(--image-height-t);
+      aspect-ratio: var(--image-aspect-t);
+    }
+
+    .tresh-public-image img {
+      object-fit: var(--image-fit-t);
+      object-position: var(--image-position-t);
+    }
+  }
+
+  @media (max-width: 639px) {
+    .tresh-public-section {
+      min-height: var(--section-height-m);
+    }
+
+    .tresh-public-section__scene {
+      height: var(--section-height-m);
+    }
+
+    .tresh-public-element {
+      left: var(--x-m);
+      top: var(--y-m);
+      z-index: var(--z-m);
+      width: var(--w-m);
+      height: var(--h-m);
+      opacity: var(--o-m);
+      transform: rotate(var(--r-m));
+    }
+
+    .tresh-public-text,
+    .tresh-public-text--eyebrow {
+      font-size: var(--fs-m);
+    }
+
+    .tresh-public-image {
+      height: var(--image-height-m);
+      aspect-ratio: var(--image-aspect-m);
+    }
+
+    .tresh-public-image img {
+      object-fit: var(--image-fit-m);
+      object-position: var(--image-position-m);
+    }
+
+    .tresh-public-button {
+      min-height: 42px;
+      padding: 0.7rem 1rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tresh-public-button {
+      transition: none;
+    }
+  }
+</style>

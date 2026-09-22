@@ -1,0 +1,156 @@
+---
+import type { FAQ } from '../data/faqs';
+
+interface Props {
+  faqs: FAQ[];
+}
+
+const { faqs } = Astro.props;
+---
+
+<div class="faq-accordion" role="list">
+  {faqs.map((faq, i) => (
+    <div class="faq-item" role="listitem">
+      <h3 class="faq-item__heading">
+        <button
+          class="faq-item__trigger"
+          aria-expanded="false"
+          aria-controls={`faq-answer-${i}`}
+          id={`faq-question-${i}`}
+        >
+          <span class="faq-item__question">{faq.question}</span>
+          <span class="faq-item__icon" aria-hidden="true">+</span>
+        </button>
+      </h3>
+      <div
+        class="faq-item__answer"
+        id={`faq-answer-${i}`}
+        role="region"
+        aria-labelledby={`faq-question-${i}`}
+        hidden
+      >
+        <div class="faq-item__answer-inner">
+          <p>{faq.answer}</p>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+<style lang="scss">
+  @use '../styles/tokens' as *;
+
+  .faq-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: $space-3;
+  }
+
+  .faq-item {
+    background-color: rgba($c-cream, 0.75);
+    border-radius: 16px;
+    border: 1.5px solid rgba($c-ink, 0.08);
+    overflow: hidden;
+    transition: box-shadow $transition-base, background-color $transition-base;
+
+    &:has(.faq-item__trigger[aria-expanded="true"]) {
+      box-shadow: $paint-shadow-ellipse;
+      background-color: $c-cream;
+      border-color: rgba($c-orange-deep, 0.3);
+    }
+  }
+
+  .faq-item__heading {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+  }
+
+  .faq-item__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-4;
+    width: 100%;
+    padding: $space-5 $space-6;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-family: $font-sans;
+    font-size: $text-base;
+    font-weight: $weight-medium;
+    color: $color-encre;
+    transition: color $transition-base;
+
+    &:hover {
+      color: $color-fuchsia;
+    }
+
+    &[aria-expanded="true"] {
+      color: $color-fuchsia;
+
+      .faq-item__icon {
+        transform: rotate(45deg);
+        color: $color-fuchsia;
+      }
+    }
+
+    &:focus-visible {
+      outline: 3px solid $color-fuchsia;
+      outline-offset: -3px;
+    }
+  }
+
+  .faq-item__question {
+    flex: 1;
+    line-height: $leading-snug;
+  }
+
+  .faq-item__icon {
+    font-size: $text-2xl;
+    font-weight: $weight-regular;
+    color: $color-gris-moyen;
+    flex-shrink: 0;
+    transition: transform $transition-base, color $transition-base;
+    line-height: 1;
+    width: 1em;
+    text-align: center;
+  }
+
+  .faq-item__answer {
+    &:not([hidden]) {
+      display: block;
+    }
+  }
+
+  .faq-item__answer-inner {
+    padding: 0 $space-6 $space-5;
+
+    p {
+      font-size: $text-base;
+      color: $color-gris-moyen;
+      line-height: $leading-loose;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.faq-item__trigger').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      const expanded = trigger.getAttribute('aria-expanded') === 'true';
+      const answerId = trigger.getAttribute('aria-controls');
+      const answer = answerId ? document.getElementById(answerId) : null;
+
+      trigger.setAttribute('aria-expanded', String(!expanded));
+
+      if (answer) {
+        if (expanded) {
+          answer.hidden = true;
+        } else {
+          answer.hidden = false;
+        }
+      }
+    });
+  });
+</script>
